@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{common/header :: globalHeader('회원가입')}"></th:block>
+</head>
+<body class="text-gray-100 min-h-screen flex flex-col justify-between relative">
+
+<div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+<nav class="w-full max-w-7xl mx-auto px-6 py-5 z-50 relative">
+    <a th:href="@{/}" class="text-2xl font-bold tracking-tight flex items-center gap-2 w-max">
+        <span class="text-brand-primary"><i class="fa-solid fa-map-location-dot"></i></span>
+        <span>Route<span class="text-indigo-400">Mate</span></span>
+    </a>
+</nav>
+
+<main class="w-full max-w-md mx-auto px-6 py-12 flex-grow flex flex-col justify-center z-10">
+    <div class="theme-glass-card shadow-2xl backdrop-blur-xl">
+
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-extrabold tracking-tight mb-2">반갑습니다 🗺️</h2>
+            <p class="text-sm text-gray-400">RouteMate와 함께 스마트한 여행 동선을 설계해 보세요.</p>
+        </div>
+
+        <form id="joinForm" onsubmit="submitJoinForm(event)" class="space-y-5">
+
+            <div>
+                <label for="userEmail" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">이메일 주소</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500"><i class="fa-regular fa-envelope"></i></span>
+                    <input type="email" id="userEmail" required autocomplete="username"
+                           class="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition"
+                           placeholder="name@example.com">
+                </div>
+            </div>
+
+            <div>
+                <label for="userNicknm" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">닉네임</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500"><i class="fa-regular fa-user"></i></span>
+                    <input type="text" id="userNicknm" required
+                           class="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition"
+                           placeholder="여행가준표">
+                </div>
+            </div>
+
+            <div>
+                <label for="userPwd" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">비밀번호</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" id="userPwd" required autocomplete="new-password"
+                           class="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition"
+                           placeholder="••••••••">
+                </div>
+            </div>
+
+            <div>
+                <label for="userPwdCheck" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">비밀번호 확인</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500"><i class="fa-solid fa-shield-halved"></i></span>
+                    <input type="password" id="userPwdCheck" required autocomplete="new-password"
+                           class="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition"
+                           placeholder="••••••••">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full theme-btn-primary py-4 mt-4 font-semibold text-sm">
+                가입 완료하기
+            </button>
+        </form>
+
+        <div class="text-center mt-6 pt-6 border-t border-white/5 text-xs text-gray-400">
+            이미 계정이 있으신가요? <a href="#" class="text-brand-primary hover:underline font-medium ml-1">로그인하기</a>
+        </div>
+
+    </div>
+</main>
+
+<footer class="w-full max-w-7xl mx-auto px-6 py-6 text-center text-xs text-gray-600 z-10 relative">
+    &copy; 2026 RouteMate. All Rights Reserved.
+</footer>
+
+<script>
+    async function submitJoinForm(event) {
+        event.preventDefault(); // 기본 폼 전송 이벤트 차단
+
+        const email = document.getElementById('userEmail').value;
+        const nicknm = document.getElementById('userNicknm').value;
+        const pwd = document.getElementById('userPwd').value;
+        const pwdCheck = document.getElementById('userPwdCheck').value;
+
+        // 프론트엔드 1차 패스워드 일치 검증
+        if (pwd !== pwdCheck) {
+            alert('입력하신 비밀번호가 서로 일치하지 않습니다.');
+            return;
+        }
+
+        // 요청 데이터 DTO 구조 매핑
+        const joinData = {
+            userEmail: email,
+            userNicknm: nicknm,
+            userPwd: pwd,
+            userPwdCheck: pwdCheck
+        };
+
+        try {
+            // 아까 포스트맨으로 쐈던 백엔드 가입 API 호출
+            const response = await fetch('/api/user/join', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(joinData)
+            });
+
+            const message = await response.text();
+
+            if (response.ok) {
+                // 가입 성공 시 알림 후 메인 화면으로 이동
+                alert(message);
+                window.location.href = '/';
+            } else {
+                // 백엔드 비즈니스 에러 발생 시 예외 메시지 출력 (중복 이메일 등)
+                alert('회원가입 실패: ' + message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('서버 통신 중 에러가 발생했습니다.');
+        }
+    }
+</script>
+</body>
+</html>

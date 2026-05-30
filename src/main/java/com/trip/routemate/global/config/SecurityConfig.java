@@ -1,0 +1,65 @@
+package com.trip.routemate.global.config;
+
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest; // 👈 정확한 패키지 경로로 교체되었습니다!
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    /**
+     * 비밀번호 암호화 빈(Bean) 등록
+     */
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * 1. 정적 자원 우회 설정
+     * 정적 파일들은 시큐리티 필터 자체를 타지 않도록 원천 차단하여 403 에러를 예방합니다.
+     */
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+                .requestMatchers(
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/favicon.ico",
+                        "/error" // 스프링 내부 에러 페이지 우회
+                );
+    }
+
+    /**
+     * 2. HTTP 보안 필터 체인 세부 설정
+     */
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                // 비동기 Fetch 통신 및 Postman 요청을 위해 CSRF 보안 초기 해제
+                .csrf(AbstractHttpConfigurer::disable)
+
+                // URL별 인가 관문 설정 (가장 직관적인 스프링 부트 3.x 표준 문자열 매칭)
+                .authorizeHttpRequests(auth -> auth
+                        // 메인화면, 회원가입 화면, 회원가입 API 전면 개방
+                        .requestMatchers("/", "/join", "/api/user/join").permitAll()
+                        // 그 외 모든 요청은 인증 잠금
+                        .anyRequest().authenticated()
+                )
+
+                // 기본 로그인창 가로채기 및 HTTP Basic 인증 해제
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable);
+
+        return http.build();
+    }
+}

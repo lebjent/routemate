@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{common/header :: globalHeader('스마트 트래블 플래너')}"></th:block>
+</head>
+<body>
+
+<div class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-pink-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+<nav class="w-full max-w-7xl mx-auto px-6 py-5 flex justify-between items-center z-50 relative">
+    <div class="text-2xl font-bold tracking-tight flex items-center gap-2">
+        <span class="text-brand-primary"><i class="fa-solid fa-map-location-dot"></i></span>
+        <span>Route<span class="text-indigo-400">Mate</span></span>
+    </div>
+    <div class="flex items-center gap-4">
+        <a href="#" class="text-sm text-gray-400 hover:text-white transition">서비스 소개</a>
+        <a th:href="@{/join}" class="text-sm bg-brand-primary hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-600/20 transition duration-300">
+            시작하기
+        </a>
+    </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-6 py-20 text-center flex-grow flex flex-col justify-center items-center relative z-10">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 mb-6 animate-pulse">
+            <i class="fa-solid fa-award"></i> 2026 관광데이터 활용 공모전 출품작
+        </span>
+
+    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.15]">
+        대한민국 구석구석,<br>
+        <span class="theme-gradient-text">가장 완벽한 동선</span>을 잇다. </h1>
+
+    <p class="text-lg md:text-xl text-gray-400 max-w-2xl mb-10 leading-relaxed font-light">
+        한국관광공사 TourAPI 4.0 고속 캐싱 인프라 기반 알고리즘으로<br>
+        동행과의 비용 정산부터 맞춤형 복합 루트까지 한 번에 해결하세요.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center w-full">
+        <a th:href="@{/join}" class="w-full sm:w-auto text-base theme-btn-primary px-8 py-4 group">
+            플래너 생성하기 (회원가입)
+            <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-24">
+        <div class="theme-glass-card text-left"> <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xl mb-5">
+            <i class="fa-solid fa-bolt"></i>
+        </div>
+            <h3 class="text-lg font-semibold mb-2 text-white">TourAPI 4.0 인프라</h3>
+            <p class="text-sm text-gray-400 leading-relaxed">전국 수만 개의 관광지 정보를 실시간 연동 및 메모리 기반 고속 캐싱 서빙</p>
+        </div>
+
+        <div class="theme-glass-card text-left">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl mb-5">
+                <i class="fa-solid fa-route"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-white">가상 스레드 최적화</h3>
+            <p class="text-sm text-gray-400 leading-relaxed">Java 21 가상 스레드 모델 아키텍처로 대량의 동선 최적화 요청 연산 레이턴시 최소화</p>
+        </div>
+
+        <div class="theme-glass-card text-left">
+            <div class="w-12 h-12 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-xl mb-5">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-white">스마트 복식 정산</h3>
+            <p class="text-sm text-gray-400 leading-relaxed">동행 간 복잡하게 얽히는 지출 및 수납 내역을 무결하게 검증하는 정산 시스템</p>
+        </div>
+    </div>
+</main>
+
+<footer class="w-full max-w-7xl mx-auto px-6 py-8 border-t border-gray-800/60 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 z-10 relative">
+    <div>&copy; 2026 RouteMate. All Production Standards Applied.</div>
+</footer>
+</body>
+</html>

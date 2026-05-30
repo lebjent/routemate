@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="globalHeader(title)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' — RouteMate'"></title>
+
+    <script th:src="@{/js/common/tailwindcss.3.4.17.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/common/all.min.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // 시스템의 메인 브랜드 컬러를 이곳에서 통제합니다. (나중에 색상 일괄 변경 시 여기만 수정)
+                        brand: {
+                            base: '#0b0f19',     // 기본 딥다크 배경색
+                            primary: '#6366f1',  // 메인 인디고 포인트
+                            secondary: '#a855f7',// 서브 퍼플 포인트
+                            accent: '#ec4899'    // 하이라이트 핑크
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-brand-base text-gray-100 font-['Inter'] overflow-x-hidden min-h-screen flex flex-col justify-between;
+            }
+        }
+        @layer components {
+            /* 은은하게 빛나는 텍스트 그라데이션 */
+            .theme-gradient-text {
+                @apply bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent [-webkit-background-clip:text] [-webkit-text-fill-color:transparent];
+            }
+            /* 배경 유리 보드 (글래스모피즘) */
+            .theme-glass-card {
+                @apply bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-2xl p-8 transition duration-300 hover:border-gray-700/50;
+            }
+            /* 모던 액션 버튼 스타일 */
+            .theme-btn-primary {
+                @apply bg-gradient-to-r from-brand-primary to-brand-secondary hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-2xl shadow-xl shadow-indigo-600/20 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2;
+            }
+        }
+    </style>
+</head>
+<body>
+</body>
+</html>
