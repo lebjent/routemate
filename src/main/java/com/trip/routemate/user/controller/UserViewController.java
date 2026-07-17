@@ -15,4 +15,11 @@ public class UserViewController {
         // src/main/resources/templates/user/join.html 파일을 찾아가라!
         return "user/join";
     }
+
+    // 🔥 로그인 화면 이동 메서드 추가!
+    @GetMapping("/login")
+    public String loginPage() {
+        // src/main/resources/templates/user/login.html 파일을 찾아갑니다.
+        return "user/login";
+    }
 }

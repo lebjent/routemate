@@ -37,6 +37,11 @@ public class UserService {
                 .userEmail(dto.getUserEmail())
                 .userPwd(passwordEncoder.encode(dto.getUserPwd())) // 🔥 평문 비번을 시큐리티로 암호화!
                 .userNicknm(dto.getUserNicknm())
+                .userPhone(dto.getUserPhone())
+                .userZipcode(dto.getUserZipcode())
+                .userAddr(dto.getUserAddr())
+                .userAddrDetail(dto.getUserAddrDetail())
+                .userBirth(dto.getUserBirth())
                 .build();
 
         // 4. 오라클 DB에 최종 저장(Insert)

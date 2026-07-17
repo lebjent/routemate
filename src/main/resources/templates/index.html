@@ -1,75 +1,104 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <th:block th:replace="~{common/header :: globalHeader('스마트 트래블 플래너')}"></th:block>
+    <th:block th:replace="~{common/header :: globalHeader('RouteMate — 글로벌 스마트 트래블 플래너')}"></th:block>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between bg-brand-base text-gray-100 relative overflow-x-hidden">
 
-<div class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-<div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-pink-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+<nav th:replace="~{common/header :: globalNav}"></nav>
 
-<nav class="w-full max-w-7xl mx-auto px-6 py-5 flex justify-between items-center z-50 relative">
-    <div class="text-2xl font-bold tracking-tight flex items-center gap-2">
-        <span class="text-brand-primary"><i class="fa-solid fa-map-location-dot"></i></span>
-        <span>Route<span class="text-indigo-400">Mate</span></span>
-    </div>
-    <div class="flex items-center gap-4">
-        <a href="#" class="text-sm text-gray-400 hover:text-white transition">서비스 소개</a>
-        <a th:href="@{/join}" class="text-sm bg-brand-primary hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-600/20 transition duration-300">
-            시작하기
-        </a>
-    </div>
-</nav>
+<div class="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+<div class="absolute top-[40%] right-[-10%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-<main class="max-w-5xl mx-auto px-6 py-20 text-center flex-grow flex flex-col justify-center items-center relative z-10">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 mb-6 animate-pulse">
-            <i class="fa-solid fa-award"></i> 2026 관광데이터 활용 공모전 출품작
+<main class="max-w-7xl mx-auto px-6 py-16 text-center flex-grow flex flex-col justify-center items-center relative z-10">
+
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-indigo-500/10 to-purple-500/10 text-indigo-300 border border-indigo-500/20 mb-6 animate-pulse">
+            <i class="fa-solid fa-earth-americas"></i> 전 세계 도심 루트 최적화 엔진 탑재
         </span>
 
-    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.15]">
-        대한민국 구석구석,<br>
-        <span class="theme-gradient-text">가장 완벽한 동선</span>을 잇다. </h1>
+    <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 leading-[1.15]">
+        지구 반대편 여정까지,<br>
+        <span class="theme-gradient-text">가장 완벽한 동선</span>을 잇다
+    </h1>
 
-    <p class="text-lg md:text-xl text-gray-400 max-w-2xl mb-10 leading-relaxed font-light">
-        한국관광공사 TourAPI 4.0 고속 캐싱 인프라 기반 알고리즘으로<br>
-        동행과의 비용 정산부터 맞춤형 복합 루트까지 한 번에 해결하세요.
+    <p class="text-base md:text-lg text-gray-400 max-w-2xl mb-10 leading-relaxed font-light">
+        복잡한 도심 속 스팟부터 국경을 넘나드는 장거리 복합 경로까지.<br>
+        동행과의 실시간 일정 조율, 스마트 환율 정산까지 RouteMate 하나로 끝내세요.
     </p>
 
-    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center w-full">
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md mb-24">
         <a th:href="@{/join}" class="w-full sm:w-auto text-base theme-btn-primary px-8 py-4 group">
-            플래너 생성하기 (회원가입)
+            플래너 생성하기
             <i class="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+        </a>
+        <a th:href="@{/login}" class="w-full sm:w-auto text-base bg-white/[0.04] hover:bg-white/[0.08] text-gray-200 hover:text-white border border-white/[0.08] px-8 py-4 rounded-2xl font-semibold transition duration-300 flex items-center justify-center gap-2">
+            내 일정 불러오기 (로그인)
         </a>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-24">
-        <div class="theme-glass-card text-left"> <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xl mb-5">
-            <i class="fa-solid fa-bolt"></i>
-        </div>
-            <h3 class="text-lg font-semibold mb-2 text-white">TourAPI 4.0 인프라</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">전국 수만 개의 관광지 정보를 실시간 연동 및 메모리 기반 고속 캐싱 서빙</p>
-        </div>
+    <!-- 1. 인기 글로벌 루트 (일정 추천) -->
+    <div class="w-full text-left mb-6">
+        <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-compass text-purple-400"></i> 지금 이 순간 가장 인기 있는 글로벌 루트
+        </h2>
+        <p class="text-sm text-gray-400 font-light">다른 여행자들이 최적화한 무결한 동선을 확인하고 내 플래너로 가져오세요.</p>
+    </div>
 
-        <div class="theme-glass-card text-left">
-            <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl mb-5">
-                <i class="fa-solid fa-route"></i>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full text-left mb-16">
+        <div th:each="plan : ${plans}" class="theme-glass-card !p-0 overflow-hidden flex flex-col group cursor-pointer">
+            <div class="relative h-56 w-full overflow-hidden">
+                <img th:src="${plan.imageUrl}"
+                     th:alt="${plan.title}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                <span class="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-xs text-white px-3 py-1.5 rounded-full font-medium">
+                        <i class="fa-solid fa-user text-indigo-300 mr-1"></i> <span th:text="${plan.userNicknm}">작성자</span>
+                </span>
             </div>
-            <h3 class="text-lg font-semibold mb-2 text-white">가상 스레드 최적화</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">Java 21 가상 스레드 모델 아키텍처로 대량의 동선 최적화 요청 연산 레이턴시 최소화</p>
-        </div>
-
-        <div class="theme-glass-card text-left">
-            <div class="w-12 h-12 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-xl mb-5">
-                <i class="fa-solid fa-receipt"></i>
+            <div class="p-6 flex-grow flex flex-col justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-2 group-hover:text-indigo-400 transition" th:text="${plan.title}">에펠탑에서 몽마르뜨까지, 감성 도보 힐링 루트</h3>
+                    <p class="text-sm text-gray-400 font-light leading-relaxed mb-4" th:text="${plan.description}">대중교통 환승 동선과 골목길 카페 명소까지 완벽하게 매칭된 3박 4일 파리 에센셜 코스</p>
+                </div>
+                <div class="flex justify-between items-center text-xs text-gray-500 border-t border-gray-800/60 pt-4">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-route"></i> <span th:text="|${plan.spotCount}개 스팟|">12개 스팟</span></span>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-heart text-pink-500"></i> <span th:text="${#numbers.formatInteger(plan.likeCount, 0, 'COMMA')}">1,420</span></span>
+                </div>
             </div>
-            <h3 class="text-lg font-semibold mb-2 text-white">스마트 복식 정산</h3>
-            <p class="text-sm text-gray-400 leading-relaxed">동행 간 복잡하게 얽히는 지출 및 수납 내역을 무결하게 검증하는 정산 시스템</p>
         </div>
     </div>
+
+    <!-- 2. 추천 명소 (여행지 추천) -->
+    <div class="w-full text-left mb-6">
+        <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-map-pin text-indigo-400"></i> RouteMate 추천 명소
+        </h2>
+        <p class="text-sm text-gray-400 font-light">지금 바로 떠나기 좋은 세계 각지의 인기 명소 정보입니다.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full text-left">
+        <div th:each="dest : ${destinations}" class="theme-glass-card !p-0 overflow-hidden flex flex-col group cursor-pointer">
+            <div class="relative h-56 w-full overflow-hidden">
+                <img th:src="${dest.imageUrl}"
+                     th:alt="${dest.destName}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                <span class="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-xs text-white px-3 py-1.5 rounded-full font-medium">
+                        <i class="fa-solid fa-location-dot text-red-400 mr-1"></i> <span th:text="|${dest.country} ${dest.city}|">프랑스 파리</span>
+                </span>
+            </div>
+            <div class="p-6 flex-grow flex flex-col justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-2 group-hover:text-indigo-400 transition" th:text="${dest.destName}">에펠탑</h3>
+                    <p class="text-sm text-gray-400 font-light leading-relaxed mb-4" th:text="${dest.destDesc}">에펠탑 설명...</p>
+                </div>
+                <div class="flex justify-between items-center text-xs text-gray-500 border-t border-gray-800/60 pt-4">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-tags"></i> <span th:text="${dest.category}">SIGHTSEEING</span></span>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-heart text-pink-500"></i> <span th:text="${#numbers.formatInteger(dest.likeCount, 0, 'COMMA')}">1,500</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </main>
 
-<footer class="w-full max-w-7xl mx-auto px-6 py-8 border-t border-gray-800/60 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 z-10 relative">
-    <div>&copy; 2026 RouteMate. All Production Standards Applied.</div>
-</footer>
+<footer th:replace="~{common/header :: globalFooter}"></footer>
+
 </body>
 </html>

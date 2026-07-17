@@ -48,6 +48,21 @@ public class UserMstr {
     @Builder.Default
     private String delYn = "N";
 
+    @Column(name = "USER_PHONE", length = 20)
+    private String userPhone;
+
+    @Column(name = "USER_ZIPCODE", length = 10)
+    private String userZipcode;
+
+    @Column(name = "USER_ADDR", length = 200)
+    private String userAddr;
+
+    @Column(name = "USER_ADDR_DETAIL", length = 200)
+    private String userAddrDetail;
+
+    @Column(name = "USER_BIRTH", length = 10)
+    private String userBirth;
+
     @CreationTimestamp // 데이터가 인서트될 때 오라클 SYSDATE를 자동으로 박아줍니다.
     @Column(name = "JOIN_DT", nullable = false, updatable = false)
     private LocalDateTime joinDt;

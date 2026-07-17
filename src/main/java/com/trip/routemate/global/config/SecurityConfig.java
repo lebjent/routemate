@@ -50,8 +50,8 @@ public class SecurityConfig {
 
                 // URL별 인가 관문 설정 (가장 직관적인 스프링 부트 3.x 표준 문자열 매칭)
                 .authorizeHttpRequests(auth -> auth
-                        // 메인화면, 회원가입 화면, 회원가입 API 전면 개방
-                        .requestMatchers("/", "/join", "/api/user/join").permitAll()
+                        // 메인화면, 회원가입 화면, 회원가입 API 전면 개방, 로또 페이지 개방
+                        .requestMatchers("/", "/join", "/api/user/join", "/login", "/lotto").permitAll()
                         // 그 외 모든 요청은 인증 잠금
                         .anyRequest().authenticated()
                 )
