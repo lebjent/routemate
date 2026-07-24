@@ -34,7 +34,9 @@ public class SecurityConfig {
                         "/css/**",
                         "/js/**",
                         "/images/**",
+                        "/assets/**",
                         "/favicon.ico",
+                        "/index.html",
                         "/error" // 스프링 내부 에러 페이지 우회
                 );
     }

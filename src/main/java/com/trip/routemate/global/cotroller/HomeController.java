@@ -3,11 +3,14 @@ package com.trip.routemate.global.cotroller;
 import com.trip.routemate.destination.repository.DestinationRepository;
 import com.trip.routemate.plan.repository.TravelPlanRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
 @RequiredArgsConstructor
 public class HomeController {
 
@@ -15,15 +18,15 @@ public class HomeController {
     private final TravelPlanRepository travelPlanRepository;
 
     /**
-     * 메인 화면 (Home)
-     * GET http://localhost:8090/
+     * 메인 화면 데이터 조회 API
+     * GET http://localhost:8090/api/home/data
      */
-    @GetMapping("/")
-    public String home(Model model) {
-        // 데이터베이스에서 상위 3개 인기 여행지와 상위 3개 인기 일정을 조회하여 모델에 추가합니다.
-        model.addAttribute("destinations", destinationRepository.findTop3ByOrderByLikeCountDesc());
-        model.addAttribute("plans", travelPlanRepository.findTop3ByIsPublicOrderByLikeCountDesc("Y"));
-        return "index"; // src/main/resources/templates/index.html 파일을 찾아갑니다.
+    @GetMapping("/api/home/data")
+    public ResponseEntity<Map<String, Object>> getHomeData() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("destinations", destinationRepository.findTop3ByOrderByLikeCountDesc());
+        data.put("plans", travelPlanRepository.findTop3ByIsPublicOrderByLikeCountDesc("Y"));
+        return ResponseEntity.ok(data);
     }
 
 }
