@@ -1,5 +1,8 @@
-import DatePicker from 'react-datepicker';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { ko } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
+
+registerLocale('ko', ko);
 
 interface CustomCalendarProps {
   value: string;
@@ -9,6 +12,7 @@ interface CustomCalendarProps {
 
 export const CustomCalendar = ({ value, onChange, placeholder }: CustomCalendarProps) => {
   const selectedDate = value ? new Date(value) : null;
+  const isWeekend = (date: Date) => date.getDay() === 0 || date.getDay() === 6;
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
@@ -29,11 +33,14 @@ export const CustomCalendar = ({ value, onChange, placeholder }: CustomCalendarP
       <DatePicker
         selected={selectedDate}
         onChange={handleDateChange}
+        locale="ko"
         dateFormat="yyyy-MM-dd"
         maxDate={new Date()}
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"
+        dayClassName={(date) => (isWeekend(date) ? 'datepicker-weekend' : '')}
+        weekDayClassName={(date) => (isWeekend(date) ? 'datepicker-weekend' : '')}
         placeholderText={placeholder || "생년월일을 선택해 주세요"}
         className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-10 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition cursor-pointer"
       />

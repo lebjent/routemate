@@ -8,7 +8,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.SecurityFilterChain;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -20,6 +24,11 @@ public class SecurityConfig {
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
     }
 
     /**
@@ -45,22 +54,33 @@ public class SecurityConfig {
      * 2. HTTP 보안 필터 체인 세부 설정
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, SecurityContextRepository securityContextRepository) throws Exception {
         http
                 // 비동기 Fetch 통신 및 Postman 요청을 위해 CSRF 보안 초기 해제
                 .csrf(AbstractHttpConfigurer::disable)
 
+                .securityContext(context -> context
+                        .securityContextRepository(securityContextRepository)
+                )
+
                 // URL별 인가 관문 설정 (가장 직관적인 스프링 부트 3.x 표준 문자열 매칭)
                 .authorizeHttpRequests(auth -> auth
-                        // 메인화면, 회원가입 화면, 회원가입 API 전면 개방, 로또 페이지 개방
-                        .requestMatchers("/", "/join", "/api/user/join", "/login", "/lotto").permitAll()
+                        // 공개 화면에서 사용하는 API도 함께 허용해야 브라우저의 비동기 요청이 차단되지 않습니다.
+                        .requestMatchers("/", "/join", "/api/user/join", "/api/auth/login", "/api/home/data", "/login", "/lotto", "/api/lotto/numbers").permitAll()
                         // 그 외 모든 요청은 인증 잠금
                         .anyRequest().authenticated()
                 )
 
                 // 기본 로그인창 가로채기 및 HTTP Basic 인증 해제
                 .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable);
+                .httpBasic(AbstractHttpConfigurer::disable)
+
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler((request, response, authentication) ->
+                                response.setStatus(HttpServletResponse.SC_NO_CONTENT))
+                        .permitAll()
+                );
 
         return http.build();
     }

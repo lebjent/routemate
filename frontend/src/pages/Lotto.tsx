@@ -4,19 +4,28 @@ import axios from 'axios';
 export const Lotto = () => {
   const [numbers, setNumbers] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchLottoNumbers = () => {
+  const fetchLottoNumbers = async () => {
     setLoading(true);
-    axios.get('/api/lotto/numbers')
-      .then(res => {
-        setNumbers(res.data || []);
-      })
-      .catch(err => {
-        console.error("Failed to fetch lotto numbers", err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    setError(null);
+
+    try {
+      const response = await axios.get<number[]>('/api/lotto/numbers');
+      const lottoNumbers = response.data;
+
+      if (!Array.isArray(lottoNumbers) || lottoNumbers.length !== 6) {
+        throw new Error('Invalid lotto number response');
+      }
+
+      setNumbers(lottoNumbers);
+    } catch (err) {
+      console.error('Failed to fetch lotto numbers', err);
+      setNumbers([]);
+      setError('번호를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -47,23 +56,28 @@ export const Lotto = () => {
           </div>
         ) : (
           <>
-            <div className="flex justify-center gap-4 my-8 flex-wrap">
-              {numbers.map((num, idx) => (
-                <div
-                  key={idx}
-                  className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-white text-xl shadow-lg border border-white/10 ${getBallColorClass(num)}`}
-                  style={{
-                    textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
-                    boxShadow: 'inset -3px -3px 5px rgba(0,0,0,0.3), 2px 2px 5px rgba(0,0,0,0.2)'
-                  }}
-                >
-                  {num}
-                </div>
-              ))}
-            </div>
+            {error ? (
+              <p className="my-8 text-sm text-red-300">{error}</p>
+            ) : (
+              <div className="flex justify-center gap-4 my-8 flex-wrap">
+                {numbers.map((num) => (
+                  <div
+                    key={num}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-white text-xl shadow-lg border border-white/10 ${getBallColorClass(num)}`}
+                    style={{
+                      textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
+                      boxShadow: 'inset -3px -3px 5px rgba(0,0,0,0.3), 2px 2px 5px rgba(0,0,0,0.2)'
+                    }}
+                  >
+                    {num}
+                  </div>
+                ))}
+              </div>
+            )}
 
             <button
               onClick={fetchLottoNumbers}
+              disabled={loading}
               className="theme-btn-primary px-8 py-3.5 mt-4 text-sm font-semibold tracking-wide"
             >
               새로 뽑기

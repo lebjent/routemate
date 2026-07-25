@@ -87,12 +87,16 @@ body {
 
 .react-datepicker__month-select,
 .react-datepicker__year-select {
-  background-color: rgba(0, 0, 0, 0.5) !important;
+  /* Native select controls need an opaque background for reliable contrast on Windows. */
+  background-color: #312e81 !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid #818cf8 !important;
   border-radius: 12px !important;
-  padding: 6px 12px !important;
+  padding: 7px 30px 7px 12px !important;
   font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  color-scheme: dark !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35) !important;
   outline: none !important;
   cursor: pointer !important;
   transition: all 0.2s !important;
@@ -100,8 +104,21 @@ body {
 
 .react-datepicker__month-select:hover,
 .react-datepicker__year-select:hover {
-  border-color: rgba(99, 102, 241, 0.5) !important;
-  background-color: rgba(99, 102, 241, 0.1) !important;
+  border-color: #c4b5fd !important;
+  background-color: #4338ca !important;
+}
+
+.react-datepicker__month-select:focus,
+.react-datepicker__year-select:focus {
+  border-color: #ddd6fe !important;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35) !important;
+}
+
+.react-datepicker__month-select option,
+.react-datepicker__year-select option {
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-weight: 600;
 }
 
 .react-datepicker__day-names {
@@ -125,10 +142,20 @@ body {
   transition: all 0.2s !important;
 }
 
+.react-datepicker__day-name.datepicker-weekend,
+.react-datepicker__day.datepicker-weekend {
+  color: #fb7185 !important;
+}
+
 .react-datepicker__day:hover {
   background-color: rgba(99, 102, 241, 0.2) !important;
   color: #a5b4fc !important;
   transform: scale(1.1) !important;
+}
+
+.react-datepicker__day.datepicker-weekend:hover {
+  background-color: rgba(244, 63, 94, 0.2) !important;
+  color: #fda4af !important;
 }
 
 .react-datepicker__day--today {
@@ -185,5 +212,3 @@ body {
 .react-datepicker__triangle {
   display: none !important;
 }
-
-

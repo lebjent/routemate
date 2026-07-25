@@ -1,16 +1,37 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useAuth, type AuthUser } from '../contexts/AuthContext';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login for this prototype stage
-    alert('로그인 성공! 환영합니다.');
-    navigate('/');
+    setError(null);
+    setLoading(true);
+
+    try {
+      const response = await axios.post<AuthUser>('/api/auth/login', {
+        userEmail: email,
+        userPwd: password,
+      });
+      login(response.data);
+      navigate('/');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.detail || '로그인에 실패했습니다. 다시 시도해 주세요.');
+      } else {
+        setError('로그인에 실패했습니다. 다시 시도해 주세요.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -61,10 +82,15 @@ export const Login = () => {
             </div>
           </div>
 
-          <button type="submit" className="w-full theme-btn-primary py-4 mt-2 text-base font-semibold tracking-wide">
-            내 여정 불러오기
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full theme-btn-primary py-4 mt-2 text-base font-semibold tracking-wide disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? '로그인 중...' : '내 여정 불러오기'}
             <i className="fa-solid fa-right-to-bracket ml-1"></i>
           </button>
+          {error && <p role="alert" className="text-center text-sm text-red-300">{error}</p>}
         </form>
 
         <div className="text-center mt-8 pt-6 border-t border-gray-800/60 text-sm">
