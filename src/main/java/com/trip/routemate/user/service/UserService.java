@@ -17,6 +17,20 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder; // SecurityConfig에서 등록한 빈이 주입됩니다.
 
     /**
+     * 닉네임 중복 확인 로직
+     */
+    public boolean checkNicknameDuplicate(String nicknm) {
+        return userMstrRepository.existsByUserNicknm(nicknm);
+    }
+
+    /**
+     * 이메일 중복 확인 로직
+     */
+    public boolean checkEmailDuplicate(String email) {
+        return userMstrRepository.existsByUserEmail(email);
+    }
+
+    /**
      * 회원가입 비즈니스 로직
      */
     @Transactional // 데이터 변경이 일어나므로 가입 메서드에는 별도로 @Transactional을 붙여줍니다.

@@ -15,7 +15,11 @@ export const Join = () => {
 
   // Form states
   const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [emailSuccess, setEmailSuccess] = useState('');
   const [nicknm, setNicknm] = useState('');
+  const [nicknmError, setNicknmError] = useState('');
+  const [nicknmSuccess, setNicknmSuccess] = useState('');
   const [pwd, setPwd] = useState('');
   const [pwdCheck, setPwdCheck] = useState('');
   const [birth, setBirth] = useState('');
@@ -88,9 +92,72 @@ export const Join = () => {
     }).open();
   };
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    setEmailSuccess('');
+    
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (value && !emailRegex.test(value)) {
+      setEmailError('이메일 주소 양식에 맞지 않습니다.');
+    } else {
+      setEmailError('');
+    }
+  };
+
+  const checkEmailDuplicate = async () => {
+    if (!email || emailError) {
+      return;
+    }
+    
+    try {
+      const response = await axios.get(`/api/user/check-email?email=${encodeURIComponent(email)}`);
+      if (response.data === true) {
+        setEmailError('이미 가입된 이메일 주소입니다.');
+        setEmailSuccess('');
+      } else {
+        setEmailError('');
+        setEmailSuccess('사용 가능한 이메일입니다.');
+      }
+    } catch (error) {
+      console.error('Email check failed:', error);
+    }
+  };
+
+  const checkNicknmDuplicate = async () => {
+    if (!nicknm) {
+      setNicknmError('');
+      setNicknmSuccess('');
+      return;
+    }
+    
+    try {
+      const response = await axios.get(`/api/user/check-nickname?nicknm=${encodeURIComponent(nicknm)}`);
+      if (response.data === true) {
+        setNicknmError('이미 사용 중인 닉네임입니다.');
+        setNicknmSuccess('');
+      } else {
+        setNicknmError('');
+        setNicknmSuccess('사용 가능한 닉네임입니다.');
+      }
+    } catch (error) {
+      console.error('Nickname check failed:', error);
+    }
+  };
+
   // Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (emailError) {
+      alert('이메일 양식을 확인해 주세요.');
+      return;
+    }
+
+    if (nicknmError) {
+      alert('닉네임 중복을 확인해 주세요.');
+      return;
+    }
 
     if (pwd !== pwdCheck) {
       alert('입력하신 비밀번호가 서로 일치하지 않습니다.');
@@ -144,11 +211,14 @@ export const Join = () => {
                 id="userEmail"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition"
+                onChange={handleEmailChange}
+                onBlur={checkEmailDuplicate}
+                className={`w-full bg-black/40 border ${emailError ? 'border-red-500/80 focus:border-red-500 focus:ring-red-500' : emailSuccess ? 'border-green-500/80 focus:border-green-500 focus:ring-green-500' : 'border-white/10 focus:border-brand-primary focus:ring-brand-primary'} rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 transition`}
                 placeholder="name@example.com"
               />
             </div>
+            {emailError && <p className="text-red-500 text-xs mt-1.5 ml-1"><i className="fa-solid fa-circle-exclamation mr-1"></i>{emailError}</p>}
+            {emailSuccess && <p className="text-green-500 text-xs mt-1.5 ml-1"><i className="fa-solid fa-circle-check mr-1"></i>{emailSuccess}</p>}
           </div>
 
           <div>
@@ -160,11 +230,18 @@ export const Join = () => {
                 id="userNicknm"
                 required
                 value={nicknm}
-                onChange={(e) => setNicknm(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition"
+                onChange={(e) => {
+                  setNicknm(e.target.value);
+                  setNicknmError('');
+                  setNicknmSuccess('');
+                }}
+                onBlur={checkNicknmDuplicate}
+                className={`w-full bg-black/40 border ${nicknmError ? 'border-red-500/80 focus:border-red-500 focus:ring-red-500' : nicknmSuccess ? 'border-green-500/80 focus:border-green-500 focus:ring-green-500' : 'border-white/10 focus:border-brand-primary focus:ring-brand-primary'} rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 transition`}
                 placeholder="닉네임을 입력해주세요."
               />
             </div>
+            {nicknmError && <p className="text-red-500 text-xs mt-1.5 ml-1"><i className="fa-solid fa-circle-exclamation mr-1"></i>{nicknmError}</p>}
+            {nicknmSuccess && <p className="text-green-500 text-xs mt-1.5 ml-1"><i className="fa-solid fa-circle-check mr-1"></i>{nicknmSuccess}</p>}
           </div>
 
           <div>

@@ -28,4 +28,24 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    /**
+     * 닉네임 중복 체크 API
+     * GET http://localhost:8090/api/user/check-nickname?nicknm=...
+     */
+    @GetMapping("/check-nickname")
+    public ResponseEntity<Boolean> checkNickname(@RequestParam("nicknm") String nicknm) {
+        boolean exists = userService.checkNicknameDuplicate(nicknm);
+        return ResponseEntity.ok(exists);
+    }
+
+    /**
+     * 이메일 중복 체크 API
+     * GET http://localhost:8090/api/user/check-email?email=...
+     */
+    @GetMapping("/check-email")
+    public ResponseEntity<Boolean> checkEmail(@RequestParam("email") String email) {
+        boolean exists = userService.checkEmailDuplicate(email);
+        return ResponseEntity.ok(exists);
+    }
 }

@@ -63,6 +63,9 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<UserLoginResponse> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.ok().build();
+        }
         UserMstr user = userMstrRepository.findByUserEmail(authentication.getName())
                 .filter(this::isActiveUser)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."));
