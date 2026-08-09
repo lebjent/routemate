@@ -1,4 +1,4 @@
-package com.trip.routemate.global.cotroller;
+package com.trip.routemate.global.controller;
 
 import com.trip.routemate.destination.repository.DestinationRepository;
 import com.trip.routemate.plan.repository.TravelPlanRepository;
