@@ -12,6 +12,7 @@ export const Navbar = () => {
       </Link>
       <div className="flex items-center gap-6">
         <Link to="/" className="text-sm text-gray-400 hover:text-white transition hidden md:block">탐색하기</Link>
+        <Link to="/my-trips" className="text-sm text-gray-400 hover:text-white transition hidden md:block">내 여행</Link>
         <Link to="/lotto" className="text-sm text-gray-400 hover:text-white transition hidden md:block">행운의 로또</Link>
         {!loading && (user ? (
           <>

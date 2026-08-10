@@ -113,13 +113,13 @@ export const Home: React.FC = () => {
 
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md mb-10">
         {isLoggedIn ? (
-          <a
-            href="#recommended-destinations"
+          <Link
+            to="/my-trips"
             className="w-full sm:w-auto text-base theme-btn-primary px-8 py-4 group"
           >
             내 여행 둘러보기
             <i className="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1 ml-1"></i>
-          </a>
+          </Link>
         ) : (
           <Link to="/join" className="w-full sm:w-auto text-base theme-btn-primary px-8 py-4 group">
             회원가입

@@ -5,6 +5,8 @@ import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Join } from './pages/Join';
 import { Lotto } from './pages/Lotto';
+import { MyTrips } from './pages/MyTrips';
+import { CreateTrip } from './pages/CreateTrip';
 import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/join" element={<Join />} />
             <Route path="/lotto" element={<Lotto />} />
+            <Route path="/my-trips" element={<MyTrips />} />
+            <Route path="/my-trips/new" element={<CreateTrip />} />
           </Routes>
           <Footer />
         </div>
