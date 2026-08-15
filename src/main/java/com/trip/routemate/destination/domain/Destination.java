@@ -26,11 +26,13 @@ public class Destination {
     @Column(name = "DEST_DESC")
     private String destDesc;
 
-    @Column(name = "COUNTRY", nullable = false, length = 50)
-    private String country;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "COUNTRY_ID", nullable = false)
+    private Country country;
 
-    @Column(name = "CITY", nullable = false, length = 50)
-    private String city;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "REGION_ID", nullable = false)
+    private Region region;
 
     @Column(name = "CATEGORY", nullable = false, length = 30)
     private String category;

@@ -1,20 +1,28 @@
 package com.trip.routemate.global.config;
 
 import com.trip.routemate.destination.domain.Destination;
+import com.trip.routemate.destination.domain.Country;
+import com.trip.routemate.destination.domain.Region;
 import com.trip.routemate.destination.repository.DestinationRepository;
+import com.trip.routemate.destination.repository.CountryRepository;
+import com.trip.routemate.destination.repository.RegionRepository;
 import com.trip.routemate.plan.domain.TravelPlan;
 import com.trip.routemate.plan.repository.TravelPlanRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(prefix = "app.seed", name = "enabled", havingValue = "true")
 public class DataInitializer implements CommandLineRunner {
 
     private final DestinationRepository destinationRepository;
+    private final CountryRepository countryRepository;
+    private final RegionRepository regionRepository;
     private final TravelPlanRepository travelPlanRepository;
 
     @Override
@@ -22,13 +30,45 @@ public class DataInitializer implements CommandLineRunner {
         log.info("DataInitializer: 초기 더미 데이터 검사 및 로딩 시작...");
 
         // 1. 여행지 더미 데이터 삽입
-        if (destinationRepository.count() == 0) {
+        if (countryRepository.count() == 0 && regionRepository.count() == 0 && destinationRepository.count() == 0) {
             log.info("Destination 데이터가 비어 있습니다. 더미 데이터를 저장합니다.");
+            Country france = countryRepository.save(Country.builder()
+                    .countryName("프랑스")
+                    .countryCode("FR")
+                    .build());
+            Country japan = countryRepository.save(Country.builder()
+                    .countryName("일본")
+                    .countryCode("JP")
+                    .build());
+            Country usa = countryRepository.save(Country.builder()
+                    .countryName("미국")
+                    .countryCode("US")
+                    .build());
+
+            Region paris = regionRepository.save(Region.builder()
+                    .country(france)
+                    .regionName("파리")
+                    .regionCode("PAR")
+                    .sortOrder(1)
+                    .build());
+            Region tokyo = regionRepository.save(Region.builder()
+                    .country(japan)
+                    .regionName("도쿄")
+                    .regionCode("TYO")
+                    .sortOrder(1)
+                    .build());
+            Region newYork = regionRepository.save(Region.builder()
+                    .country(usa)
+                    .regionName("뉴욕")
+                    .regionCode("NYC")
+                    .sortOrder(1)
+                    .build());
+
             destinationRepository.save(Destination.builder()
                     .destName("에펠탑")
                     .destDesc("프랑스 파리의 상징적인 철탑으로 전 세계 여행객이 방문하는 랜드마크입니다.")
-                    .country("프랑스")
-                    .city("파리")
+                    .country(france)
+                    .region(paris)
                     .category("SIGHTSEEING")
                     .imageUrl("https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80")
                     .mapLat(48.8584)
@@ -39,8 +79,8 @@ public class DataInitializer implements CommandLineRunner {
             destinationRepository.save(Destination.builder()
                     .destName("센소지")
                     .destDesc("도쿄에서 가장 오래된 절로 전통적인 일본의 멋을 느낄 수 있는 곳입니다.")
-                    .country("일본")
-                    .city("도쿄")
+                    .country(japan)
+                    .region(tokyo)
                     .category("CULTURE")
                     .imageUrl("https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80")
                     .mapLat(35.7148)
@@ -51,8 +91,8 @@ public class DataInitializer implements CommandLineRunner {
             destinationRepository.save(Destination.builder()
                     .destName("타임스 스퀘어")
                     .destDesc("미국 뉴욕 맨해튼의 중심부로 화려한 광고판과 문화의 용광로입니다.")
-                    .country("미국")
-                    .city("뉴욕")
+                    .country(usa)
+                    .region(newYork)
                     .category("SHOPPING")
                     .imageUrl("https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=600&q=80")
                     .mapLat(40.7580)

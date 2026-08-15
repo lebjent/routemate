@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.trip.routemate.user.domain.UserMstr;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "TB_TRAVEL_PLAN")
@@ -23,6 +25,10 @@ public class TravelPlan {
     @Column(name = "USER_NICKNM", nullable = false, length = 50)
     private String userNicknm;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID")
+    private UserMstr user;
+
     @Column(name = "TITLE", nullable = false, length = 150)
     private String title;
 
@@ -31,6 +37,12 @@ public class TravelPlan {
 
     @Column(name = "IMAGE_URL", length = 500)
     private String imageUrl;
+
+    @Column(name = "TRAVEL_START_DT")
+    private LocalDate travelStartDate;
+
+    @Column(name = "TRAVEL_END_DT")
+    private LocalDate travelEndDate;
 
     @Column(name = "SPOT_COUNT")
     @Builder.Default
@@ -51,4 +63,8 @@ public class TravelPlan {
     @UpdateTimestamp
     @Column(name = "MDFY_DT", nullable = false)
     private LocalDateTime mdfyDt;
+
+    public void updateSpotCount(int spotCount) {
+        this.spotCount = Math.max(spotCount, 0);
+    }
 }

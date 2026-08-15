@@ -8,10 +8,12 @@ interface CustomCalendarProps {
   value: string;
   onChange: (dateStr: string) => void;
   placeholder?: string;
+  maxDate?: Date;
+  minDate?: Date;
 }
 
-export const CustomCalendar = ({ value, onChange, placeholder }: CustomCalendarProps) => {
-  const selectedDate = value ? new Date(value) : null;
+export const CustomCalendar = ({ value, onChange, placeholder, maxDate, minDate }: CustomCalendarProps) => {
+  const selectedDate = value ? new Date(`${value}T00:00:00`) : null;
   const isWeekend = (date: Date) => date.getDay() === 0 || date.getDay() === 6;
 
   const handleDateChange = (date: Date | null) => {
@@ -35,7 +37,9 @@ export const CustomCalendar = ({ value, onChange, placeholder }: CustomCalendarP
         onChange={handleDateChange}
         locale="ko"
         dateFormat="yyyy-MM-dd"
-        maxDate={new Date()}
+        maxDate={maxDate}
+        minDate={minDate}
+        portalId="routemate-datepicker-portal"
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"

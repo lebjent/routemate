@@ -7,6 +7,7 @@ import { Join } from './pages/Join';
 import { Lotto } from './pages/Lotto';
 import { MyTrips } from './pages/MyTrips';
 import { CreateTrip } from './pages/CreateTrip';
+import { TripDetail } from './pages/TripDetail';
 import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             <Route path="/lotto" element={<Lotto />} />
             <Route path="/my-trips" element={<MyTrips />} />
             <Route path="/my-trips/new" element={<CreateTrip />} />
+            <Route path="/my-trips/:planId" element={<TripDetail />} />
           </Routes>
           <Footer />
         </div>

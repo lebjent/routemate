@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 interface MyTravelPlan {
   planId: number;
@@ -12,6 +12,8 @@ interface MyTravelPlan {
   spotCount: number;
   likeCount: number;
   isPublic: string;
+  travelStartDate: string | null;
+  travelEndDate: string | null;
   createDt: string;
   mdfyDt: string;
 }
@@ -239,6 +241,12 @@ export const MyTrips = () => {
                           {plan.userNicknm}
                         </span>
                         <span>수정 {new Date(plan.mdfyDt).toLocaleDateString('ko-KR')}</span>
+                        {plan.travelStartDate && plan.travelEndDate ? (
+                          <span className="inline-flex items-center gap-1.5 text-indigo-200">
+                            <i className="fa-regular fa-calendar-days" />
+                            {plan.travelStartDate.replaceAll('-', '.')} - {plan.travelEndDate.replaceAll('-', '.')}
+                          </span>
+                        ) : null}
                       </div>
 
                       <h2 className="text-2xl font-bold text-white leading-snug">{plan.title}</h2>
@@ -259,13 +267,13 @@ export const MyTrips = () => {
                         </span>
                       </div>
 
-                      <button
-                        type="button"
+                      <Link
+                        to={`/my-trips/${plan.planId}`}
                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-300 hover:text-indigo-200 transition"
                       >
                         상세 보기
                         <i className="fa-solid fa-arrow-right text-xs" />
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>

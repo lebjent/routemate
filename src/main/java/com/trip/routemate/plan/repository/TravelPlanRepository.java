@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TravelPlanRepository extends JpaRepository<TravelPlan, Long> {
@@ -17,5 +18,7 @@ public interface TravelPlanRepository extends JpaRepository<TravelPlan, Long> {
     /**
      * 로그인한 사용자의 여행 일정을 수정일 최신순으로 조회합니다.
      */
-    List<TravelPlan> findByUserNicknmOrderByMdfyDtDesc(String userNicknm);
+    List<TravelPlan> findByUser_UserIdOrderByMdfyDtDesc(Long userId);
+
+    Optional<TravelPlan> findByPlanIdAndUser_UserId(Long planId, Long userId);
 }
