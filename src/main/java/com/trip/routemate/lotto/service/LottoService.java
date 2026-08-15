@@ -1,7 +1,11 @@
 package com.trip.routemate.lotto.service;
 
+import com.trip.routemate.lotto.dto.LottoFrequencyResponse;
+
 import java.util.List;
 
 public interface LottoService {
-    public List<Integer> generateLottoNumbers();
+    List<Integer> generateLottoNumbers();
+
+    LottoFrequencyResponse generateFrequentLottoNumbers();
 }

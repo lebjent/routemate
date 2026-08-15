@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
+import { formatTravelDuration } from '../features/trip-builder/model';
 
 interface TravelPlan {
   title: string;
   description: string;
   imageUrl: string;
   userNicknm: string;
-  spotCount: number;
   likeCount: number;
+  travelStartDate: string | null;
+  travelEndDate: string | null;
 }
 
 interface Destination {
@@ -205,8 +207,8 @@ export const Home: React.FC = () => {
                   </div>
                   <div className="flex justify-between items-center text-xs text-gray-500 border-t border-gray-800/60 pt-4">
                     <span className="flex items-center gap-1">
-                      <i className="fa-solid fa-route"></i>
-                      <span>{plan.spotCount}개 스팟</span>
+                      <i className="fa-regular fa-calendar-days"></i>
+                      <span>{formatTravelDuration(plan.travelStartDate, plan.travelEndDate)}</span>
                     </span>
                     <span className="flex items-center gap-1">
                       <i className="fa-solid fa-heart text-pink-500"></i>

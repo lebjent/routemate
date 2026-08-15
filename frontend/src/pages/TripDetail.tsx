@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { formatTravelDuration } from '../features/trip-builder/model';
 
 type Schedule = {
   time: string | null;
@@ -36,7 +37,6 @@ type TripDetail = {
   description: string | null;
   imageUrl: string | null;
   userNicknm: string;
-  spotCount: number;
   isPublic: string;
   travelStartDate: string | null;
   travelEndDate: string | null;
@@ -106,6 +106,8 @@ export const TripDetail = () => {
     );
   }
 
+  const regionCount = trip.days.reduce((total, day) => total + day.regions.length, 0);
+
   return (
     <main className="relative z-10 w-full flex-grow">
       <div className="pointer-events-none absolute -left-36 top-0 h-[460px] w-[460px] rounded-full bg-indigo-500/10 blur-[140px]" />
@@ -121,7 +123,7 @@ export const TripDetail = () => {
               {trip.description ? <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200 md:text-base">{trip.description}</p> : null}
             </div>
           </div>
-          <div className="grid gap-4 border-b border-white/10 p-5 sm:grid-cols-3 md:p-6"><div><p className="text-xs text-slate-500">여행 기간</p><p className="mt-1 font-bold text-white">{trip.days.length}일</p></div><div><p className="text-xs text-slate-500">입력한 일정</p><p className="mt-1 font-bold text-white">{trip.spotCount}개</p></div><div><p className="text-xs text-slate-500">작성자</p><p className="mt-1 font-bold text-white">{trip.userNicknm}</p></div></div>
+          <div className="grid gap-4 border-b border-white/10 p-5 sm:grid-cols-3 md:p-6"><div><p className="text-xs text-slate-500">여행 기간</p><p className="mt-1 font-bold text-white">{formatTravelDuration(trip.travelStartDate, trip.travelEndDate)}</p></div><div><p className="text-xs text-slate-500">방문 지역</p><p className="mt-1 font-bold text-white">{regionCount}곳</p></div><div><p className="text-xs text-slate-500">작성자</p><p className="mt-1 font-bold text-white">{trip.userNicknm}</p></div></div>
           <div className="space-y-5 p-4 sm:p-6">
             {trip.days.map((day) => (
               <article key={day.dayNumber} className="rounded-[24px] border border-white/10 bg-white/[0.025]">

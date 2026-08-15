@@ -1,5 +1,6 @@
 package com.trip.routemate.lotto.controller;
 
+import com.trip.routemate.lotto.dto.LottoFrequencyResponse;
 import com.trip.routemate.lotto.service.LottoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,11 @@ public class LottoController {
 
     @GetMapping("/api/lotto/numbers")
     public ResponseEntity<List<Integer>> getLottoNumbers() {
-        // 로또 번호 생성 후 리스트 형태로 반환
         return ResponseEntity.ok(lottoService.generateLottoNumbers());
+    }
+
+    @GetMapping("/api/lotto/frequent-numbers")
+    public ResponseEntity<LottoFrequencyResponse> getFrequentLottoNumbers() {
+        return ResponseEntity.ok(lottoService.generateFrequentLottoNumbers());
     }
 }

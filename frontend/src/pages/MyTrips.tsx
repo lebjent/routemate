@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { formatTravelDuration, getTravelDurationDays } from '../features/trip-builder/model';
 
 interface MyTravelPlan {
   planId: number;
@@ -9,7 +10,6 @@ interface MyTravelPlan {
   description: string;
   imageUrl: string;
   userNicknm: string;
-  spotCount: number;
   likeCount: number;
   isPublic: string;
   travelStartDate: string | null;
@@ -78,7 +78,10 @@ export const MyTrips = () => {
     });
   }, [plans, query, statusFilter]);
 
-  const totalSpotCount = plans.reduce((sum, plan) => sum + (plan.spotCount || 0), 0);
+  const totalTravelDays = plans.reduce(
+    (sum, plan) => sum + getTravelDurationDays(plan.travelStartDate, plan.travelEndDate),
+    0
+  );
   const publicCount = plans.filter((plan) => plan.isPublic === 'Y').length;
   const privateCount = plans.filter((plan) => plan.isPublic === 'N').length;
 
@@ -112,7 +115,7 @@ export const MyTrips = () => {
           {[
             { label: '전체 일정', value: plans.length },
             { label: '공개 일정', value: publicCount },
-            { label: '총 스팟 수', value: totalSpotCount },
+            { label: '총 여행일', value: `${totalTravelDays}일` },
           ].map((item) => (
             <div
               key={item.label}
@@ -258,8 +261,8 @@ export const MyTrips = () => {
                     <div className="flex items-center justify-between gap-4 border-t border-white/8 pt-4">
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-300">
                         <span className="inline-flex items-center gap-1.5">
-                          <i className="fa-solid fa-route text-indigo-400" />
-                          {plan.spotCount}개 스팟
+                          <i className="fa-regular fa-calendar-days text-indigo-400" />
+                          {formatTravelDuration(plan.travelStartDate, plan.travelEndDate)}
                         </span>
                         <span className="inline-flex items-center gap-1.5">
                           <i className="fa-solid fa-heart text-pink-500" />

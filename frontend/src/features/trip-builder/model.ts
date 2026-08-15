@@ -124,6 +124,19 @@ export const formatDateWithYear = (value: string) => {
   return `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}.`;
 };
 
+export const getTravelDurationDays = (startDate?: string | null, endDate?: string | null) => {
+  if (!startDate || !endDate) return 0;
+  const start = parseLocalDate(startDate);
+  const end = parseLocalDate(endDate);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) return 0;
+  return Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1;
+};
+
+export const formatTravelDuration = (startDate?: string | null, endDate?: string | null) => {
+  const days = getTravelDurationDays(startDate, endDate);
+  return days > 0 ? `${days}일 여행` : '기간 미정';
+};
+
 export const createDays = (travelStartDate: string, travelEndDate: string): DayDescriptor[] => {
   if (!travelStartDate || !travelEndDate) return [];
   const start = parseLocalDate(travelStartDate);
