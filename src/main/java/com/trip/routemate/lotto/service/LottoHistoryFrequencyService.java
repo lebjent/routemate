@@ -17,6 +17,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -90,6 +91,9 @@ public class LottoHistoryFrequencyService {
         for (var drawNumber = latestPage.latestDrawNumber() - 10; drawNumber > 0; drawNumber -= 10) {
             history.addAll(requestDrawPage(drawNumber));
         }
+        // The official history endpoint centers its response around the requested draw.
+        // Requesting draw 1 ensures the first draw is included at the lower boundary.
+        history.addAll(requestDrawPage(1));
         return history;
     }
 
@@ -130,8 +134,9 @@ public class LottoHistoryFrequencyService {
         var counts = new int[MAX_LOTTO_NUMBER + 1];
         var validDrawCount = 0;
         var latestDrawNumber = 0;
+        var processedDrawNumbers = new HashSet<Integer>();
         for (var draw : history) {
-            if (!isValidDraw(draw)) {
+            if (!isValidDraw(draw) || !processedDrawNumbers.add(draw.drawNumber())) {
                 continue;
             }
             draw.numbers().forEach(number -> counts[number]++);
