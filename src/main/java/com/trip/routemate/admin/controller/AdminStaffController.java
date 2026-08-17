@@ -44,7 +44,7 @@ public class AdminStaffController {
     @PatchMapping("/{userId}/role")
     public ResponseEntity<AdminStaffListResponse.StaffItem> updateRole(
             Authentication authentication,
-            @PathVariable Long userId,
+            @PathVariable("userId") Long userId,
             @Valid @RequestBody AdminStaffRoleUpdateRequest request
     ) {
         return ResponseEntity.ok(adminStaffService.updateRole(authentication.getName(), userId, request.userRole()));
@@ -53,7 +53,7 @@ public class AdminStaffController {
     @PatchMapping("/{userId}/status")
     public ResponseEntity<AdminStaffListResponse.StaffItem> updateStatus(
             Authentication authentication,
-            @PathVariable Long userId,
+            @PathVariable("userId") Long userId,
             @Valid @RequestBody AdminUserStatusUpdateRequest request
     ) {
         return ResponseEntity.ok(adminStaffService.updateStatus(authentication.getName(), userId, request.userStatCd()));

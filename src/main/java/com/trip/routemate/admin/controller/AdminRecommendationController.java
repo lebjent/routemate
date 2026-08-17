@@ -21,5 +21,5 @@ public class AdminRecommendationController {
     public ResponseEntity<AdminRecommendationResponse.Item> create(@Valid @RequestBody AdminRecommendationRequest request) { return ResponseEntity.status(201).body(recommendationService.create(request)); }
 
     @PatchMapping("/{recommendId}")
-    public ResponseEntity<AdminRecommendationResponse.Item> update(@PathVariable Long recommendId, @Valid @RequestBody AdminRecommendationRequest request) { return ResponseEntity.ok(recommendationService.update(recommendId, request)); }
+    public ResponseEntity<AdminRecommendationResponse.Item> update(@PathVariable("recommendId") Long recommendId, @Valid @RequestBody AdminRecommendationRequest request) { return ResponseEntity.ok(recommendationService.update(recommendId, request)); }
 }

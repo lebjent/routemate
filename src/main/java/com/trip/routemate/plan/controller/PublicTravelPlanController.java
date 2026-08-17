@@ -17,7 +17,7 @@ public class PublicTravelPlanController {
     private final TravelPlanService travelPlanService;
 
     @GetMapping("/{planId}")
-    public ResponseEntity<TravelPlanDetailResponse> getPublicTravelPlan(@PathVariable Long planId) {
+    public ResponseEntity<TravelPlanDetailResponse> getPublicTravelPlan(@PathVariable("planId") Long planId) {
         return ResponseEntity.ok(travelPlanService.getPublicTravelPlan(planId));
     }
 }

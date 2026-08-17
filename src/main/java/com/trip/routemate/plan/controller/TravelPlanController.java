@@ -37,7 +37,7 @@ public class TravelPlanController {
     @GetMapping("/{planId}")
     public ResponseEntity<TravelPlanDetailResponse> getTravelPlan(
             Authentication authentication,
-            @PathVariable Long planId
+            @PathVariable("planId") Long planId
     ) {
         return ResponseEntity.ok(travelPlanService.getTravelPlan(resolveUserEmail(authentication), planId));
     }
@@ -55,7 +55,7 @@ public class TravelPlanController {
     @PutMapping("/{planId}")
     public ResponseEntity<TravelPlanResponse> updateTravelPlan(
             Authentication authentication,
-            @PathVariable Long planId,
+            @PathVariable("planId") Long planId,
             @Valid @RequestBody CreateTravelPlanRequest request
     ) {
         return ResponseEntity.ok(travelPlanService.updateTravelPlan(resolveUserEmail(authentication), planId, request));

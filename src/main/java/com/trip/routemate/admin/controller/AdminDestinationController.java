@@ -22,13 +22,13 @@ public class AdminDestinationController {
     @PostMapping("/countries")
     public ResponseEntity<AdminDestinationResponse.CountryItem> createCountry(@Valid @RequestBody AdminCountryRequest request) { return ResponseEntity.status(201).body(adminDestinationService.createCountry(request)); }
     @PatchMapping("/countries/{countryId}")
-    public ResponseEntity<AdminDestinationResponse.CountryItem> updateCountry(@PathVariable Long countryId, @Valid @RequestBody AdminCountryRequest request) { return ResponseEntity.ok(adminDestinationService.updateCountry(countryId, request)); }
+    public ResponseEntity<AdminDestinationResponse.CountryItem> updateCountry(@PathVariable("countryId") Long countryId, @Valid @RequestBody AdminCountryRequest request) { return ResponseEntity.ok(adminDestinationService.updateCountry(countryId, request)); }
     @GetMapping("/countries/{countryId}/regions")
-    public ResponseEntity<java.util.List<AdminDestinationResponse.RegionItem>> getRegions(@PathVariable Long countryId) { return ResponseEntity.ok(adminDestinationService.getRegions(countryId)); }
+    public ResponseEntity<java.util.List<AdminDestinationResponse.RegionItem>> getRegions(@PathVariable("countryId") Long countryId) { return ResponseEntity.ok(adminDestinationService.getRegions(countryId)); }
     @PostMapping("/countries/{countryId}/regions")
-    public ResponseEntity<AdminDestinationResponse.RegionItem> createRegion(@PathVariable Long countryId, @Valid @RequestBody AdminRegionRequest request) { return ResponseEntity.status(201).body(adminDestinationService.createRegion(countryId, request)); }
+    public ResponseEntity<AdminDestinationResponse.RegionItem> createRegion(@PathVariable("countryId") Long countryId, @Valid @RequestBody AdminRegionRequest request) { return ResponseEntity.status(201).body(adminDestinationService.createRegion(countryId, request)); }
     @PatchMapping("/countries/{countryId}/regions/{regionId}")
-    public ResponseEntity<AdminDestinationResponse.RegionItem> updateRegion(@PathVariable Long countryId, @PathVariable Long regionId, @Valid @RequestBody AdminRegionRequest request) { return ResponseEntity.ok(adminDestinationService.updateRegion(countryId, regionId, request)); }
+    public ResponseEntity<AdminDestinationResponse.RegionItem> updateRegion(@PathVariable("countryId") Long countryId, @PathVariable("regionId") Long regionId, @Valid @RequestBody AdminRegionRequest request) { return ResponseEntity.ok(adminDestinationService.updateRegion(countryId, regionId, request)); }
 
     @GetMapping("/places")
     public ResponseEntity<AdminDestinationPlaceResponse> getPlaces(@RequestParam(required = false) Long countryId, @RequestParam(required = false) Long regionId) { return ResponseEntity.ok(adminDestinationService.getPlaces(countryId, regionId)); }
@@ -37,5 +37,5 @@ public class AdminDestinationController {
     public ResponseEntity<AdminDestinationPlaceResponse.PlaceItem> createPlace(@Valid @RequestBody AdminDestinationPlaceRequest request) { return ResponseEntity.status(201).body(adminDestinationService.createPlace(request)); }
 
     @PatchMapping("/places/{destinationId}")
-    public ResponseEntity<AdminDestinationPlaceResponse.PlaceItem> updatePlace(@PathVariable Long destinationId, @Valid @RequestBody AdminDestinationPlaceRequest request) { return ResponseEntity.ok(adminDestinationService.updatePlace(destinationId, request)); }
+    public ResponseEntity<AdminDestinationPlaceResponse.PlaceItem> updatePlace(@PathVariable("destinationId") Long destinationId, @Valid @RequestBody AdminDestinationPlaceRequest request) { return ResponseEntity.ok(adminDestinationService.updatePlace(destinationId, request)); }
 }

@@ -33,7 +33,7 @@ public class AdminUserController {
     @PatchMapping("/{userId}/status")
     public ResponseEntity<AdminUserListResponse.UserItem> updateUserStatus(
             Authentication authentication,
-            @PathVariable Long userId,
+            @PathVariable("userId") Long userId,
             @Valid @RequestBody AdminUserStatusUpdateRequest request
     ) {
         return ResponseEntity.ok(adminUserService.updateUserStatus(
