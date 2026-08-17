@@ -1,6 +1,7 @@
 package com.trip.routemate.admin.service;
 
 import com.trip.routemate.admin.security.AdminRolePolicy;
+import com.trip.routemate.admin.dto.AdminStaffCreateRequest;
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.repository.UserMstrRepository;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,11 +19,13 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class AdminStaffServiceTest {
 
     @Mock private UserMstrRepository userMstrRepository;
+    @Mock private PasswordEncoder passwordEncoder;
     @InjectMocks private AdminStaffService adminStaffService;
 
     @Test
@@ -54,6 +58,19 @@ class AdminStaffServiceTest {
 
         assertThat(result.userRole()).isEqualTo("SENIOR");
         assertThat(junior.getUserRole()).isEqualTo("SENIOR");
+    }
+
+    @Test
+    void createStaff_createsActiveLocalStaffAccount() {
+        var request = new AdminStaffCreateRequest(" Staff@RouteMate.com ", "password123", "신입 운영자", "JUNIOR");
+        when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
+        when(userMstrRepository.save(any(UserMstr.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = adminStaffService.createStaff(request);
+
+        assertThat(result.userEmail()).isEqualTo("staff@routemate.com");
+        assertThat(result.userRole()).isEqualTo("JUNIOR");
+        assertThat(result.userStatCd()).isEqualTo("ACTIVE");
     }
 
     @Test

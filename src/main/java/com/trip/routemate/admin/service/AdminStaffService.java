@@ -1,12 +1,14 @@
 package com.trip.routemate.admin.service;
 
 import com.trip.routemate.admin.dto.AdminStaffListResponse;
+import com.trip.routemate.admin.dto.AdminStaffCreateRequest;
 import com.trip.routemate.admin.security.AdminRolePolicy;
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.repository.UserMstrRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,6 +28,7 @@ public class AdminStaffService {
     );
 
     private final UserMstrRepository userMstrRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @PreAuthorize("hasAuthority('STAFF_VIEW')")
     public AdminStaffListResponse getStaff(String query, String status, String role) {
@@ -47,6 +50,30 @@ public class AdminStaffService {
                 .map(AdminStaffListResponse.StaffItem::from)
                 .toList();
         return new AdminStaffListResponse(summary, staff);
+    }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('STAFF_MANAGE')")
+    public AdminStaffListResponse.StaffItem createStaff(AdminStaffCreateRequest request) {
+        var email = request.userEmail().trim().toLowerCase();
+        var nickname = request.userNicknm().trim();
+        var role = normalizeManageableRole(request.userRole());
+        if (userMstrRepository.existsByUserEmail(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다.");
+        }
+        if (userMstrRepository.existsByUserNicknm(nickname)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다.");
+        }
+        var staff = UserMstr.builder()
+                .userEmail(email)
+                .userPwd(passwordEncoder.encode(request.userPwd()))
+                .userNicknm(nickname)
+                .snsProvider("LOCAL")
+                .userRole(role)
+                .userStatCd("ACTIVE")
+                .delYn("N")
+                .build();
+        return AdminStaffListResponse.StaffItem.from(userMstrRepository.save(staff));
     }
 
     @Transactional

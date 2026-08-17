@@ -5,6 +5,7 @@ import { hasPermission } from '../../features/admin/permissions';
 import { useAuth } from '../../hooks/useAuth';
 
 type StaffRole = 'ADMIN' | 'MASTER' | 'SENIOR' | 'JUNIOR';
+type ManageableStaffRole = Exclude<StaffRole, 'ADMIN'>;
 type StaffStatus = 'ACTIVE' | 'SUSPENDED';
 
 type Staff = {
@@ -53,6 +54,9 @@ export const AdminStaff = () => {
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newStaff, setNewStaff] = useState({ userEmail: '', userPwd: '', userNicknm: '', userRole: 'JUNIOR' as ManageableStaffRole });
 
   useEffect(() => {
     if (user && !hasPermission(user, 'STAFF_VIEW')) navigate('/admin', { replace: true });
@@ -91,6 +95,23 @@ export const AdminStaff = () => {
     }
   };
 
+  const createStaff = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!canManage) return;
+    setCreating(true);
+    setError(null);
+    try {
+      await axios.post('/api/admin/staff', newStaff);
+      setNewStaff({ userEmail: '', userPwd: '', userNicknm: '', userRole: 'JUNIOR' });
+      setShowCreateForm(false);
+      setRefreshKey((value) => value + 1);
+    } catch (createError) {
+      setError(axios.isAxiosError(createError) ? createError.response?.data?.detail || '직원 계정을 등록하지 못했습니다.' : '직원 계정을 등록하지 못했습니다.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const updateStatus = async (staff: Staff) => {
     if (!canManage) return;
     const nextStatus: StaffStatus = staff.userStatCd === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
@@ -116,8 +137,10 @@ export const AdminStaff = () => {
     <>
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div><p className="text-xs font-bold tracking-[0.2em] text-indigo-300">STAFF MANAGEMENT</p><h1 className="mt-2 text-3xl font-extrabold text-white">직원 관리</h1><p className="mt-2 text-sm text-slate-500">운영 직원의 권한과 계정 상태를 회원과 별도로 관리합니다.</p></div>
-        <button type="button" onClick={() => setRefreshKey((value) => value + 1)} disabled={loading} className="self-start rounded-xl bg-indigo-500 px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50 sm:self-auto"><i className={`fa-solid fa-rotate-right mr-2 ${loading ? 'fa-spin' : ''}`} />새로고침</button>
+        <div className="flex gap-2 self-start sm:self-auto">{canManage ? <button type="button" onClick={() => setShowCreateForm((value) => !value)} className="rounded-xl border border-indigo-400/20 bg-indigo-500/10 px-4 py-2.5 text-xs font-bold text-indigo-200"><i className="fa-solid fa-user-plus mr-2" />직원 등록</button> : null}<button type="button" onClick={() => setRefreshKey((value) => value + 1)} disabled={loading} className="rounded-xl bg-indigo-500 px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50"><i className={`fa-solid fa-rotate-right mr-2 ${loading ? 'fa-spin' : ''}`} />새로고침</button></div>
       </header>
+
+      {showCreateForm && canManage ? <section className="mt-6 rounded-[24px] border border-indigo-400/15 bg-indigo-500/[0.045] p-5"><div className="mb-4"><h2 className="text-sm font-bold text-white">새 직원 계정 등록</h2><p className="mt-1 text-xs text-slate-500">최초 비밀번호는 8자 이상이며, ADMIN 외 운영 권한을 지정할 수 있습니다.</p></div><form onSubmit={(event) => void createStaff(event)} className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_160px_auto]"><input type="email" required value={newStaff.userEmail} onChange={(event) => setNewStaff((value) => ({ ...value, userEmail: event.target.value }))} placeholder="직원 이메일" className="h-12 rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-sm text-white outline-none" /><input required maxLength={50} value={newStaff.userNicknm} onChange={(event) => setNewStaff((value) => ({ ...value, userNicknm: event.target.value }))} placeholder="직원 이름/닉네임" className="h-12 rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-sm text-white outline-none" /><input type="password" required minLength={8} value={newStaff.userPwd} onChange={(event) => setNewStaff((value) => ({ ...value, userPwd: event.target.value }))} placeholder="최초 비밀번호" className="h-12 rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-sm text-white outline-none" /><select value={newStaff.userRole} onChange={(event) => setNewStaff((value) => ({ ...value, userRole: event.target.value as ManageableStaffRole }))} className="h-12 rounded-2xl border border-white/10 bg-slate-900 px-4 text-sm text-slate-300"><option value="MASTER">MASTER</option><option value="SENIOR">SENIOR</option><option value="JUNIOR">JUNIOR</option></select><button type="submit" disabled={creating} className="h-12 rounded-2xl bg-indigo-500 px-5 text-sm font-bold text-white disabled:opacity-50">{creating ? <i className="fa-solid fa-spinner fa-spin" /> : '등록'}</button></form></section> : null}
 
       {data ? <section className="mt-8 grid gap-4 sm:grid-cols-3"><article className="rounded-[22px] border border-white/10 bg-white/[0.035] p-5"><p className="text-xs text-slate-500">전체 직원</p><p className="mt-2 text-3xl font-extrabold text-white">{data.summary.totalStaff.toLocaleString('ko-KR')}</p></article><article className="rounded-[22px] border border-white/10 bg-white/[0.035] p-5"><p className="text-xs text-slate-500">활성 직원</p><p className="mt-2 text-3xl font-extrabold text-emerald-300">{data.summary.activeStaff.toLocaleString('ko-KR')}</p></article><article className="rounded-[22px] border border-white/10 bg-white/[0.035] p-5"><p className="text-xs text-slate-500">정지 직원</p><p className="mt-2 text-3xl font-extrabold text-rose-300">{data.summary.suspendedStaff.toLocaleString('ko-KR')}</p></article></section> : null}
 
