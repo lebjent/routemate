@@ -70,4 +70,16 @@ public class UserMstr {
     @UpdateTimestamp // 데이터가 수정될 때 자동으로 현재 시간을 갱신합니다.
     @Column(name = "MDFY_DT", nullable = false)
     private LocalDateTime mdfyDt;
+
+    public void updateStatus(String userStatCd) {
+        this.userStatCd = userStatCd;
+    }
+
+    public void updateRole(String userRole) {
+        this.userRole = userRole;
+    }
+
+    public void updatePassword(String encodedPassword) {
+        this.userPwd = encodedPassword;
+    }
 }

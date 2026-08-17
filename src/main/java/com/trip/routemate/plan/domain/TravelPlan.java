@@ -52,6 +52,10 @@ public class TravelPlan {
     @Builder.Default
     private Integer likeCount = 0;
 
+    @Column(name = "VIEW_COUNT", nullable = false)
+    @Builder.Default
+    private Long viewCount = 0L;
+
     @Column(name = "IS_PUBLIC", nullable = false, length = 1)
     @Builder.Default
     private String isPublic = "Y";
@@ -66,5 +70,15 @@ public class TravelPlan {
 
     public void updateSpotCount(int spotCount) {
         this.spotCount = Math.max(spotCount, 0);
+    }
+
+    public void updateDetails(String title, String description, String imageUrl,
+                              LocalDate travelStartDate, LocalDate travelEndDate, String isPublic) {
+        this.title = title;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.travelStartDate = travelStartDate;
+        this.travelEndDate = travelEndDate;
+        this.isPublic = isPublic;
     }
 }

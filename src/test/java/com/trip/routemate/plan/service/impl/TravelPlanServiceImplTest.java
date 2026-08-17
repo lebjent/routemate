@@ -3,6 +3,7 @@ package com.trip.routemate.plan.service.impl;
 import com.trip.routemate.destination.repository.CountryRepository;
 import com.trip.routemate.destination.repository.RegionRepository;
 import com.trip.routemate.plan.dto.CreateTravelPlanRequest;
+import com.trip.routemate.plan.domain.TravelPlan;
 import com.trip.routemate.plan.repository.TravelDayRegionRepository;
 import com.trip.routemate.plan.repository.TravelDayRepository;
 import com.trip.routemate.plan.repository.TravelPackingItemRepository;
@@ -79,6 +80,37 @@ class TravelPlanServiceImplTest {
                 .isInstanceOfSatisfying(ResponseStatusException.class,
                         exception -> assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
 
+        verify(travelPlanDetailAssembler, never()).assemble(any());
+    }
+
+    @Test
+    void getPublicTravelPlan_incrementsViewCountBeforeLoadingDetail() {
+        var plan = TravelPlan.builder()
+                .planId(7L)
+                .userNicknm("여행자")
+                .title("공개 일정")
+                .isPublic("Y")
+                .viewCount(1L)
+                .build();
+        when(travelPlanRepository.incrementPublicViewCount(7L)).thenReturn(1);
+        when(travelPlanRepository.findByPlanIdAndIsPublic(7L, "Y")).thenReturn(Optional.of(plan));
+
+        travelPlanService.getPublicTravelPlan(7L);
+
+        verify(travelPlanRepository).incrementPublicViewCount(7L);
+        verify(travelPlanRepository).findByPlanIdAndIsPublic(7L, "Y");
+        verify(travelPlanDetailAssembler).assemble(plan);
+    }
+
+    @Test
+    void getPublicTravelPlan_doesNotExposePrivateOrMissingPlan() {
+        when(travelPlanRepository.incrementPublicViewCount(9L)).thenReturn(0);
+
+        assertThatThrownBy(() -> travelPlanService.getPublicTravelPlan(9L))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        exception -> assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
+
+        verify(travelPlanRepository, never()).findByPlanIdAndIsPublic(any(), any());
         verify(travelPlanDetailAssembler, never()).assemble(any());
     }
 

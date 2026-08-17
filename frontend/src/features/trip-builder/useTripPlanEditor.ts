@@ -102,5 +102,7 @@ export const useTripPlanEditor = (days: DayDescriptor[]) => {
     );
   };
 
-  return { dayPlans, updateRegion, addRegion, removeRegion, addSchedule, updateSchedule, removeSchedule };
+  const replaceDayPlans = (plans: DayPlan[]) => setDayPlans(plans);
+
+  return { dayPlans, updateRegion, addRegion, removeRegion, addSchedule, updateSchedule, removeSchedule, replaceDayPlans };
 };

@@ -5,11 +5,13 @@ import { useAuth } from '../hooks/useAuth';
 import { formatTravelDuration } from '../features/trip-builder/model';
 
 interface TravelPlan {
+  planId: number;
   title: string;
   description: string;
   imageUrl: string;
   userNicknm: string;
   likeCount: number;
+  viewCount: number;
   travelStartDate: string | null;
   travelEndDate: string | null;
 }
@@ -34,6 +36,8 @@ interface BannerItem {
   cta: string;
 }
 
+const PLANS_PER_SLIDE = 3;
+
 export const Home: React.FC = () => {
   const { user } = useAuth();
   const isLoggedIn = Boolean(user);
@@ -41,6 +45,7 @@ export const Home: React.FC = () => {
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
+  const [currentPopularSlide, setCurrentPopularSlide] = useState(0);
 
   const banners: BannerItem[] = [
     {
@@ -64,6 +69,10 @@ export const Home: React.FC = () => {
   ];
 
   const activeBanner = banners[currentBanner];
+  const popularSlideCount = Math.ceil(plans.length / PLANS_PER_SLIDE);
+  const popularSlides = Array.from({ length: popularSlideCount }, (_, slideIndex) =>
+    plans.slice(slideIndex * PLANS_PER_SLIDE, (slideIndex + 1) * PLANS_PER_SLIDE)
+  );
 
   const topBadgeText = isLoggedIn
     ? `${user?.userNicknm ?? '회원'}님, 오늘도 여행을 이어가볼까요?`
@@ -94,6 +103,22 @@ export const Home: React.FC = () => {
 
     return () => window.clearInterval(timer);
   }, [banners.length]);
+
+  useEffect(() => {
+    if (popularSlideCount <= 1) return;
+
+    const timer = window.setInterval(() => {
+      setCurrentPopularSlide((current) => (current + 1) % popularSlideCount);
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, [popularSlideCount]);
+
+  useEffect(() => {
+    if (currentPopularSlide >= popularSlideCount) {
+      setCurrentPopularSlide(0);
+    }
+  }, [currentPopularSlide, popularSlideCount]);
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-16 text-center flex-grow flex flex-col justify-center items-center relative z-10">
@@ -184,40 +209,84 @@ export const Home: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full text-left mb-16">
-            {plans.map((plan, i) => (
-              <div key={i} className="theme-glass-card !p-0 overflow-hidden flex flex-col group cursor-pointer">
-                <div className="relative h-56 w-full overflow-hidden bg-gray-900">
-                  {plan.imageUrl ? (
-                    <img src={plan.imageUrl} alt={plan.title} className="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-600 bg-gray-800">
-                      <i className="fa-solid fa-image text-3xl"></i>
-                    </div>
-                  )}
-                  <span className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-xs text-white px-3 py-1.5 rounded-full font-medium">
-                    <i className="fa-solid fa-user text-indigo-300 mr-1"></i>
-                    <span>{plan.userNicknm || '작성자'}</span>
-                  </span>
-                </div>
-                <div className="p-6 flex-grow flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-400 transition">{plan.title}</h3>
-                    <p className="text-sm text-gray-400 font-light leading-relaxed mb-4">{plan.description}</p>
+          <div className="w-full mb-16">
+            <div className="overflow-hidden">
+              <div
+                className="flex transition-transform duration-700 ease-in-out"
+                style={{ transform: `translateX(-${currentPopularSlide * 100}%)` }}
+              >
+                {popularSlides.map((slidePlans, slideIndex) => (
+                  <div key={slideIndex} className="grid min-w-full grid-cols-1 gap-8 text-left md:grid-cols-3">
+                    {slidePlans.map((plan, planIndex) => (
+                      <Link key={plan.planId} to={`/travel-plans/${plan.planId}`} className="theme-glass-card !p-0 overflow-hidden flex flex-col group cursor-pointer">
+                        <div className="relative h-56 w-full overflow-hidden bg-gray-900">
+                          {plan.imageUrl ? (
+                            <img src={plan.imageUrl} alt={plan.title} className="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-600 bg-gray-800">
+                              <i className="fa-solid fa-image text-3xl"></i>
+                            </div>
+                          )}
+                          <span className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-xs text-white px-3 py-1.5 rounded-full font-medium">
+                            <i className="fa-solid fa-user text-indigo-300 mr-1"></i>
+                            <span>{plan.userNicknm || '작성자'}</span>
+                          </span>
+                          <span className="absolute top-4 right-4 rounded-full bg-indigo-500/90 px-3 py-1.5 text-xs font-bold text-white shadow-lg">
+                            TOP {slideIndex * PLANS_PER_SLIDE + planIndex + 1}
+                          </span>
+                        </div>
+                        <div className="p-6 flex-grow flex flex-col justify-between">
+                          <div>
+                            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-400 transition">{plan.title}</h3>
+                            <p className="text-sm text-gray-400 font-light leading-relaxed mb-4">{plan.description}</p>
+                          </div>
+                          <div className="flex justify-between items-center text-xs text-gray-500 border-t border-gray-800/60 pt-4">
+                            <span className="flex items-center gap-1">
+                              <i className="fa-regular fa-calendar-days"></i>
+                              <span>{formatTravelDuration(plan.travelStartDate, plan.travelEndDate)}</span>
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <i className="fa-regular fa-eye text-cyan-300"></i>
+                              <span>{plan.viewCount?.toLocaleString() ?? 0}</span>
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
-                  <div className="flex justify-between items-center text-xs text-gray-500 border-t border-gray-800/60 pt-4">
-                    <span className="flex items-center gap-1">
-                      <i className="fa-regular fa-calendar-days"></i>
-                      <span>{formatTravelDuration(plan.travelStartDate, plan.travelEndDate)}</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <i className="fa-solid fa-heart text-pink-500"></i>
-                      <span>{plan.likeCount?.toLocaleString()}</span>
-                    </span>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {popularSlideCount > 1 ? (
+              <div className="mt-5 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  aria-label="이전 인기 일정"
+                  onClick={() => setCurrentPopularSlide((current) => (current - 1 + popularSlideCount) % popularSlideCount)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                >
+                  <i className="fa-solid fa-chevron-left"></i>
+                </button>
+                {popularSlides.map((_, slideIndex) => (
+                  <button
+                    key={slideIndex}
+                    type="button"
+                    aria-label={`인기 일정 ${slideIndex + 1}페이지`}
+                    onClick={() => setCurrentPopularSlide(slideIndex)}
+                    className={`h-2.5 rounded-full transition-all ${currentPopularSlide === slideIndex ? 'w-7 bg-indigo-400' : 'w-2.5 bg-white/20 hover:bg-white/40'}`}
+                  />
+                ))}
+                <button
+                  type="button"
+                  aria-label="다음 인기 일정"
+                  onClick={() => setCurrentPopularSlide((current) => (current + 1) % popularSlideCount)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                >
+                  <i className="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+            ) : null}
           </div>
 
           <div id="recommended-destinations" className="w-full text-left mb-6">

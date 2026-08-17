@@ -1,4 +1,12 @@
 package com.trip.routemate.user.dto;
 
-public record UserLoginResponse(Long userId, String userEmail, String userNicknm) {
+import java.util.List;
+
+public record UserLoginResponse(
+        Long userId,
+        String userEmail,
+        String userNicknm,
+        String userRole,
+        List<String> permissions
+) {
 }

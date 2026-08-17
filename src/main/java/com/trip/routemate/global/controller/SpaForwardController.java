@@ -8,9 +8,16 @@ public class SpaForwardController {
 
     @GetMapping(value = {
         "/login",
+        "/admin/login",
+        "/admin",
+        "/admin/users",
+        "/admin/staff",
         "/join",
         "/lotto",
-        "/my-trips"
+        "/my-trips",
+        "/my-trips/{planId}",
+        "/my-trips/{planId}/edit",
+        "/travel-plans/{planId}"
     })
     public String forward() {
         // static/index.html로 포워딩하여 리액트 라우터가 처리하게 함

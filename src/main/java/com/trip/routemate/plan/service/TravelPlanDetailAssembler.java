@@ -49,6 +49,7 @@ public class TravelPlanDetailAssembler {
                 plan.getImageUrl(),
                 plan.getUserNicknm(),
                 plan.getSpotCount(),
+                plan.getViewCount(),
                 plan.getIsPublic(),
                 plan.getTravelStartDate(),
                 plan.getTravelEndDate(),

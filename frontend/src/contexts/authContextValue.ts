@@ -4,6 +4,8 @@ export interface AuthUser {
   userId: number;
   userEmail: string;
   userNicknm: string;
+  userRole: string;
+  permissions: string[];
 }
 
 export interface AuthContextValue {

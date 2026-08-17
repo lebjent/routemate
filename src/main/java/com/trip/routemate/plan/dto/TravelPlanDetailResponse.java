@@ -11,6 +11,7 @@ public record TravelPlanDetailResponse(
         String imageUrl,
         String userNicknm,
         Integer spotCount,
+        Long viewCount,
         String isPublic,
         LocalDate travelStartDate,
         LocalDate travelEndDate,

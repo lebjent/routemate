@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CustomCalendar } from '../components/CustomCalendar';
 import { useAuth } from '../hooks/useAuth';
 import { PackingModal } from '../features/trip-builder/PackingModal';
@@ -23,16 +23,91 @@ import {
 import { useTripPlanEditor } from '../features/trip-builder/useTripPlanEditor';
 
 const inputClassName =
-  'w-full rounded-xl border border-white/10 bg-slate-950/55 px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/60';
-const selectClassName = `${inputClassName} bg-slate-950/75`;
+  'min-w-0 w-full rounded-xl border border-white/10 bg-slate-950/55 px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/60';
 const panelClassName =
   'rounded-[28px] border border-white/10 bg-white/[0.035] shadow-[0_24px_80px_rgba(0,0,0,0.2)] backdrop-blur-sm';
 const secondaryButtonClassName =
   'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/10 bg-white/[0.045] px-3.5 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-indigo-300/30 hover:bg-indigo-500/15 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400/40';
 
+type SearchOption = { value: string; label: string; hint?: string };
+
+const SearchableSelect = ({
+  value,
+  options,
+  placeholder,
+  disabled = false,
+  onChange,
+}: {
+  value: string;
+  options: SearchOption[];
+  placeholder: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}) => {
+  const selected = options.find((option) => option.value === value);
+  const [query, setQuery] = useState(selected?.label || '');
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setQuery(selected?.label || '');
+  }, [selected?.label, value]);
+
+  const filteredOptions = options.filter((option) => `${option.label} ${option.value} ${option.hint || ''}`.toLowerCase().includes(query.trim().toLowerCase()));
+
+  return (
+    <div className="relative min-w-0">
+      <input
+        value={query}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setOpen(true);
+          if (!event.target.value) onChange('');
+        }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && filteredOptions.length > 0) {
+            event.preventDefault();
+            const firstOption = filteredOptions[0];
+            setQuery(firstOption.label);
+            setOpen(false);
+            onChange(firstOption.value);
+          }
+        }}
+        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+        className={`${inputClassName} ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
+        placeholder={placeholder}
+        disabled={disabled}
+        data-searchable-select="true"
+        autoComplete="off"
+      />
+      {open && !disabled ? (
+        <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-60 overflow-y-auto rounded-xl border border-white/10 bg-slate-900 p-1 shadow-2xl">
+          {filteredOptions.length > 0 ? filteredOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                setQuery(option.label);
+                setOpen(false);
+                onChange(option.value);
+              }}
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-slate-200 hover:bg-indigo-500/20"
+            >
+              <span>{option.label}</span>
+              {option.hint ? <span className="ml-2 text-xs text-slate-500">{option.hint}</span> : null}
+            </button>
+          )) : <p className="px-3 py-3 text-sm text-slate-500">검색 결과가 없습니다.</p>}
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
 export const CreateTrip = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { planId } = useParams();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -69,7 +144,7 @@ export const CreateTrip = () => {
   }, []);
 
   const days = useMemo(() => createDays(travelStartDate, travelEndDate), [travelStartDate, travelEndDate]);
-  const { dayPlans, updateRegion, addRegion, removeRegion, addSchedule, updateSchedule, removeSchedule } = useTripPlanEditor(days);
+  const { dayPlans, updateRegion, addRegion, removeRegion, addSchedule, updateSchedule, removeSchedule, replaceDayPlans } = useTripPlanEditor(days);
 
   const loadRegions = async (countryCode: string) => {
     if (!countryCode || regionsByCountry[countryCode]) return;
@@ -86,6 +161,43 @@ export const CreateTrip = () => {
     if (field === 'countryCode') void loadRegions(value);
     updateRegion(dayIndex, regionIndex, field, value);
   };
+
+  useEffect(() => {
+    if (!planId || authLoading || !user) return;
+    const loadPlanForEdit = async () => {
+      try {
+        const response = await axios.get(`/api/my-travel-plans/${planId}`);
+        const data = response.data;
+        setTitle(data.title || '');
+        setDescription(data.description || '');
+        setImageUrl(data.imageUrl || '');
+        setTravelStartDate(data.travelStartDate || '');
+        setTravelEndDate(data.travelEndDate || '');
+        setIsPublic(data.isPublic === 'N' ? 'N' : 'Y');
+        setPackingItems((data.packingItems || []).map((item: { item: string; required: boolean }) => createPackingItem(item.item, item.required)));
+        const loadedCountries = new Set<string>();
+        replaceDayPlans((data.days || []).map((day: { dayNumber: number; planDate: string; regions: any[] }) => ({
+          day: day.dayNumber,
+          date: day.planDate,
+          regions: (day.regions || []).map((region) => {
+            loadedCountries.add(region.countryCode);
+            return {
+              id: crypto.randomUUID(), countryCode: region.countryCode, regionCode: region.regionCode, note: region.note || '',
+              schedules: (region.schedules || []).map((schedule: any) => ({
+                id: crypto.randomUUID(), time: schedule.time || '', title: schedule.title || '', location: schedule.location || '', memo: schedule.memo || '',
+                transportType: schedule.transportType || '', transportName: schedule.transportName || '', departureTime: schedule.departureTime || '', arrivalTime: schedule.arrivalTime || '', transportMemo: schedule.transportMemo || '',
+              })),
+            };
+          }),
+        })));
+        await Promise.all([...loadedCountries].map(loadRegions));
+      } catch (loadError) {
+        console.error('Failed to load travel plan for edit', loadError);
+        setError('여행 일정을 불러오지 못했습니다.');
+      }
+    };
+    void loadPlanForEdit();
+  }, [authLoading, planId, user]);
 
   const updatePackingItem = (index: number, field: 'item' | 'required', value: string | boolean) => {
     setPackingItems((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item)));
@@ -163,7 +275,7 @@ export const CreateTrip = () => {
         })),
     }));
     const hasRegion = normalizedDays.some((plan) => plan.regions.length > 0);
-    if (!hasRegion) {
+    if (false && !hasRegion) {
       setError('일정표에서 최소 한 곳의 여행지를 선택해 주세요.');
       return;
     }
@@ -171,7 +283,7 @@ export const CreateTrip = () => {
     setSubmitting(true);
     setError(null);
     try {
-      const response = await axios.post('/api/my-travel-plans', {
+      const payload = {
         title: title.trim(),
         description: description.trim() || null,
         imageUrl: imageUrl.trim() || null,
@@ -182,10 +294,20 @@ export const CreateTrip = () => {
         packingItems: packingItems
           .filter((item) => item.item.trim())
           .map((item) => ({ item: item.item.trim(), required: item.required })),
-      });
+      };
+      const response = planId
+        ? await axios.put(`/api/my-travel-plans/${planId}`, payload)
+        : await axios.post('/api/my-travel-plans', payload);
       navigate('/my-trips', { replace: true, state: { createdPlanId: response.data.planId } });
     } catch (submitError) {
       console.error('Failed to create travel plan', submitError);
+      if (axios.isAxiosError(submitError)) {
+        const serverMessage = submitError.response?.data?.message || submitError.response?.data?.detail;
+        if (serverMessage) {
+          setError(serverMessage);
+          return;
+        }
+      }
       setError('일정을 저장하지 못했습니다. 입력 내용을 확인한 뒤 다시 시도해 주세요.');
     } finally {
       setSubmitting(false);
@@ -217,12 +339,20 @@ export const CreateTrip = () => {
       <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 md:py-12">
         <header className="mb-8 max-w-3xl">
           <p className="mb-3 text-xs font-bold tracking-[0.28em] text-indigo-300">TRIP BUILDER</p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">여행 일정 만들기</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">{planId ? '여행 일정 수정' : '여행 일정 만들기'}</h1>
           <p className="mt-4 text-sm leading-7 text-slate-400 md:text-base">여행 기간을 고르면 모든 일차가 준비됩니다. 각 일차에 여행지를 넣고, 그 아래 일정표를 채워보세요.</p>
         </header>
 
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.75fr)]">
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form
+            onSubmit={handleSubmit}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !(event.target as HTMLElement).dataset.searchableSelect) {
+                event.preventDefault();
+              }
+            }}
+            className="space-y-5"
+          >
             <section className={`${panelClassName} p-5 md:p-6`}>
               <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
                 <div>
@@ -336,20 +466,26 @@ export const CreateTrip = () => {
 
                                   <div className="p-4">
                                     <div className="grid gap-3 md:grid-cols-[1fr_1fr_1.3fr]">
-                                      <select value={region.countryCode} onChange={(event) => updateDayRegion(dayIndex, regionIndex, 'countryCode', event.target.value)} className={selectClassName} disabled={loadingCountries}>
-                                        <option value="">{loadingCountries ? '국가를 불러오는 중...' : '국가 선택'}</option>
-                                        {countries.map((country) => <option key={country.countryCode} value={country.countryCode}>{country.countryName}</option>)}
-                                      </select>
-                                      <select value={region.regionCode} onChange={(event) => updateDayRegion(dayIndex, regionIndex, 'regionCode', event.target.value)} className={selectClassName} disabled={!region.countryCode}>
-                                        <option value="">{region.countryCode ? '지역 선택' : '먼저 국가 선택'}</option>
-                                        {options.map((option) => <option key={option.regionCode} value={option.regionCode}>{option.regionName}</option>)}
-                                      </select>
+                                      <SearchableSelect
+                                        value={region.countryCode}
+                                        options={countries.map((country) => ({ value: country.countryCode, label: country.countryName, hint: country.countryCode }))}
+                                        placeholder={loadingCountries ? '국가를 불러오는 중...' : '국가 검색'}
+                                        disabled={loadingCountries}
+                                        onChange={(value) => updateDayRegion(dayIndex, regionIndex, 'countryCode', value)}
+                                      />
+                                      <SearchableSelect
+                                        value={region.regionCode}
+                                        options={options.map((option) => ({ value: option.regionCode, label: option.regionName, hint: option.regionCode }))}
+                                        placeholder={region.countryCode ? '지역 검색' : '국가를 먼저 선택'}
+                                        disabled={!region.countryCode}
+                                        onChange={(value) => updateDayRegion(dayIndex, regionIndex, 'regionCode', value)}
+                                      />
                                       <input value={region.note} onChange={(event) => updateDayRegion(dayIndex, regionIndex, 'note', event.target.value)} className={inputClassName} placeholder="이동·숙소 메모 (선택)" maxLength={500} />
                                     </div>
 
-                                    <div className="mt-5 overflow-x-auto rounded-2xl border border-white/10">
-                                      <div className="min-w-[820px]">
-                                        <div className="grid grid-cols-[92px_1.1fr_1.1fr_1fr_128px_36px] gap-2 border-b border-white/10 bg-white/[0.04] px-3 py-2 text-[11px] font-bold tracking-wide text-slate-500">
+                                    <div className="mt-5 overflow-x-hidden rounded-2xl border border-white/10">
+                                      <div className="min-w-0">
+                                        <div className="hidden grid-cols-[92px_1.1fr_1.1fr_1fr_128px_36px] gap-2 border-b border-white/10 bg-white/[0.04] px-3 py-2 text-[11px] font-bold tracking-wide text-slate-500 md:grid">
                                           <span>시간</span><span>일정</span><span>장소</span><span>비고</span><span>이동수단</span><span className="sr-only">삭제</span>
                                         </div>
                                         {region.schedules.length === 0 ? (
@@ -358,18 +494,18 @@ export const CreateTrip = () => {
                                           const transport = schedule.transportType ? transportByType[schedule.transportType] : null;
                                           return (
                                             <Fragment key={schedule.id}>
-                                              <div className="grid grid-cols-[92px_1.1fr_1.1fr_1fr_128px_36px] items-center gap-2 border-b border-white/5 px-3 py-2">
+                                              <div className="grid grid-cols-1 items-center gap-2 border-b border-white/5 px-3 py-2 sm:grid-cols-2 md:grid-cols-[92px_1.1fr_1.1fr_1fr_128px_36px]">
                                                 <input value={schedule.time} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'time', formatTimeInput(event.target.value))} className={`${inputClassName} px-2.5 py-2`} inputMode="numeric" placeholder="09:00" maxLength={5} aria-label="시간" />
                                                 <input value={schedule.title} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'title', event.target.value)} className={`${inputClassName} px-2.5 py-2`} placeholder="예: 미술관 관람" maxLength={150} />
                                                 <input value={schedule.location} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'location', event.target.value)} className={`${inputClassName} px-2.5 py-2`} placeholder="예: 루브르 박물관" maxLength={150} />
                                                 <input value={schedule.memo} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'memo', event.target.value)} className={`${inputClassName} px-2.5 py-2`} placeholder="예약·주의사항" maxLength={500} />
-                                                <select value={schedule.transportType} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'transportType', event.target.value)} className={`${selectClassName} px-2.5 py-2`} aria-label="이동수단"><option value="">이동 없음</option>{transportOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
+                                                <select value={schedule.transportType} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'transportType', event.target.value)} className={`${inputClassName} px-2.5 py-2`} aria-label="이동수단"><option value="">이동 없음</option>{transportOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
                                                 <button type="button" onClick={() => removeSchedule(dayIndex, regionIndex, scheduleIndex)} aria-label="일정 삭제" className="rounded-lg p-2 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-300"><i className="fa-solid fa-xmark" /></button>
                                               </div>
                                               {transport ? (
                                                 <div className="border-b border-indigo-400/10 bg-indigo-500/[0.055] px-4 py-3">
                                                   <div className="mb-2 flex items-center gap-2 text-xs font-bold text-indigo-200"><i className={`fa-solid ${transport.icon}`} />{transport.label} 이동 정보</div>
-                                                  <div className="grid grid-cols-[1.25fr_0.7fr_0.7fr_1.3fr] gap-2">
+                                                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-[1.25fr_0.7fr_0.7fr_1.3fr]">
                                                     <input value={schedule.transportName} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'transportName', event.target.value)} className={`${inputClassName} px-2.5 py-2`} placeholder={`${transport.nameLabel}: ${transport.namePlaceholder}`} maxLength={100} aria-label={transport.nameLabel} />
                                                     <input value={schedule.departureTime} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'departureTime', formatTimeInput(event.target.value))} className={`${inputClassName} px-2.5 py-2`} inputMode="numeric" placeholder="출발 09:00" maxLength={5} aria-label="출발 시간" />
                                                     <input value={schedule.arrivalTime} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'arrivalTime', formatTimeInput(event.target.value))} className={`${inputClassName} px-2.5 py-2`} inputMode="numeric" placeholder="도착 11:30" maxLength={5} aria-label="도착 시간" />
@@ -416,7 +552,7 @@ export const CreateTrip = () => {
 
               {error ? <p className="mt-5 rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</p> : null}
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <button type="submit" disabled={submitting} className="theme-btn-primary min-w-[154px] px-6 py-3.5 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? '저장 중...' : '일정 만들기'}</button>
+                <button type="submit" disabled={submitting} className="theme-btn-primary min-w-[154px] px-6 py-3.5 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? '저장 중...' : planId ? '수정 저장' : '일정 만들기'}</button>
                 <Link to="/my-trips" className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-3.5 font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white">취소</Link>
               </div>
             </section>

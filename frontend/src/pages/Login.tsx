@@ -64,6 +64,7 @@ export const Login = () => {
 
           <div className="space-y-2">
             <div className="flex justify-between items-center">
+              <Link to="/password-reset" className="text-xs text-indigo-400 hover:text-indigo-300 transition font-light">비밀번호 재설정</Link>
               <label htmlFor="password" className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">비밀번호</label>
               <a href="#" className="text-xs text-indigo-400 hover:text-indigo-300 transition font-light">비밀번호 재설정</a>
             </div>

@@ -71,6 +71,18 @@ public class TravelPlanServiceImpl implements TravelPlanService {
 
     @Override
     @Transactional
+    public TravelPlanDetailResponse getPublicTravelPlan(Long planId) {
+        if (travelPlanRepository.incrementPublicViewCount(planId) == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "공개 여행 일정을 찾을 수 없습니다.");
+        }
+
+        var plan = travelPlanRepository.findByPlanIdAndIsPublic(planId, "Y")
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "공개 여행 일정을 찾을 수 없습니다."));
+        return travelPlanDetailAssembler.assemble(plan);
+    }
+
+    @Override
+    @Transactional
     public TravelPlanResponse createTravelPlan(String userEmail, CreateTravelPlanRequest request) {
         var user = resolveActiveUser(userEmail);
         validateDays(request);
@@ -79,6 +91,36 @@ public class TravelPlanServiceImpl implements TravelPlanService {
         var spotCount = saveDays(plan, request.days());
         savePackingItems(plan, request.packingItems());
 
+        plan.updateSpotCount(spotCount);
+        return TravelPlanResponse.from(plan);
+    }
+
+    @Override
+    @Transactional
+    public TravelPlanResponse updateTravelPlan(String userEmail, Long planId, CreateTravelPlanRequest request) {
+        var user = resolveActiveUser(userEmail);
+        validateDays(request);
+        var plan = travelPlanRepository.findByPlanIdAndUser_UserId(planId, user.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "여행 일정을 찾을 수 없습니다."));
+        plan.updateDetails(normalizeRequiredText(request.title(), "일정 제목을 입력해 주세요."), normalizeOptionalText(request.description()),
+                normalizeOptionalText(request.imageUrl()), request.travelStartDate(), request.travelEndDate(), normalizePublicFlag(request.isPublic()));
+
+        var oldDays = travelDayRepository.findByTravelPlanOrderByDayNumberAsc(plan);
+        var oldRegions = travelDayRegionRepository.findByTravelDayInOrderBySortOrderAsc(oldDays);
+        var oldSchedules = travelScheduleRepository.findByTravelDayRegionInOrderBySortOrderAsc(oldRegions);
+        travelTransportRepository.deleteAll(travelTransportRepository.findByTravelScheduleIn(oldSchedules));
+        travelTransportRepository.flush();
+        travelScheduleRepository.deleteAll(oldSchedules);
+        travelScheduleRepository.flush();
+        travelDayRegionRepository.deleteAll(oldRegions);
+        travelDayRegionRepository.flush();
+        travelDayRepository.deleteAll(oldDays);
+        travelDayRepository.flush();
+        travelPackingItemRepository.deleteAll(travelPackingItemRepository.findByTravelPlanOrderBySortOrderAsc(plan));
+        travelPackingItemRepository.flush();
+
+        var spotCount = saveDays(plan, request.days());
+        savePackingItems(plan, request.packingItems());
         plan.updateSpotCount(spotCount);
         return TravelPlanResponse.from(plan);
     }
@@ -94,13 +136,14 @@ public class TravelPlanServiceImpl implements TravelPlanService {
                 .travelEndDate(request.travelEndDate())
                 .spotCount(0)
                 .likeCount(0)
+                .viewCount(0L)
                 .isPublic(normalizePublicFlag(request.isPublic()))
                 .build());
     }
 
     private int saveDays(TravelPlan plan, List<TravelDayRequest> dayRequests) {
         var spotCount = 0;
-        for (var dayRequest : dayRequests) {
+        for (var dayRequest : dayRequests == null ? List.<TravelDayRequest>of() : dayRequests) {
             spotCount += saveDay(plan, dayRequest);
         }
         return spotCount;
@@ -198,13 +241,9 @@ public class TravelPlanServiceImpl implements TravelPlanService {
         var expectedDays = request.travelStartDate().datesUntil(request.travelEndDate().plusDays(1)).toList();
         var days = request.days() == null ? List.<TravelDayRequest>of() : new ArrayList<>(request.days());
         days.sort(Comparator.comparing(TravelDayRequest::dayNumber));
-        if (days.size() != expectedDays.size()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "여행 기간의 모든 일차를 작성해 주세요.");
-        }
-
-        for (var index = 0; index < expectedDays.size(); index++) {
-            var day = days.get(index);
-            if (day.dayNumber() != index + 1 || !expectedDays.get(index).equals(day.planDate())) {
+        for (var day : days) {
+            if (day.dayNumber() < 1 || day.dayNumber() > expectedDays.size()
+                    || !expectedDays.contains(day.planDate())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "일차와 날짜 정보가 올바르지 않습니다.");
             }
             if (day.regions() == null) {
@@ -212,9 +251,6 @@ public class TravelPlanServiceImpl implements TravelPlanService {
             }
         }
 
-        if (days.stream().allMatch(day -> day.regions().isEmpty())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "최소 한 곳의 여행지를 추가해 주세요.");
-        }
     }
 
     private boolean hasScheduleContent(TravelScheduleRequest request) {

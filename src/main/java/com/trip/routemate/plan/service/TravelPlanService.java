@@ -11,5 +11,10 @@ public interface TravelPlanService {
 
     TravelPlanDetailResponse getTravelPlan(String userEmail, Long planId);
 
+    TravelPlanDetailResponse getPublicTravelPlan(Long planId);
+
     TravelPlanResponse createTravelPlan(String userEmail, CreateTravelPlanRequest request);
+
+    TravelPlanResponse updateTravelPlan(String userEmail, Long planId, CreateTravelPlanRequest request);
+
 }

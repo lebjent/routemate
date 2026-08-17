@@ -11,6 +11,7 @@ spring:
   flyway:
     enabled: true
     clean-disabled: true
+    table: FLYWAY_SCHEMA_HISTORY
     locations: classpath:db/migration/common,classpath:db/migration/oracle
 
   datasource:
