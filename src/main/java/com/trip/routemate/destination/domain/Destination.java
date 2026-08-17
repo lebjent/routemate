@@ -2,6 +2,7 @@ package com.trip.routemate.destination.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.Length;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -22,7 +23,7 @@ public class Destination {
     @Column(name = "DEST_NAME", nullable = false, length = 100)
     private String destName;
 
-    @Column(name = "DEST_DESC", columnDefinition = "LONGTEXT")
+    @Column(name = "DEST_DESC", length = Length.LONG32)
     private String destDesc;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
