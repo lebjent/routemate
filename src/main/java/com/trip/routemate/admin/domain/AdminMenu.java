@@ -22,6 +22,6 @@ public class AdminMenu {
     private String menuPath;
     @Column(name = "SORT_ORDER", nullable = false)
     private Integer sortOrder;
-    @Column(name = "USE_YN", nullable = false, length = 1)
+    @Column(name = "USE_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     private String useYn;
 }

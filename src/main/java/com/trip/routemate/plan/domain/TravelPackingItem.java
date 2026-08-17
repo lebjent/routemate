@@ -23,7 +23,7 @@ public class TravelPackingItem {
     @Column(name = "ITEM_NAME", nullable = false, length = 100)
     private String itemName;
 
-    @Column(name = "REQUIRED_YN", nullable = false, length = 1)
+    @Column(name = "REQUIRED_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     private String requiredYn;
 
     @Column(name = "SORT_ORDER", nullable = false)

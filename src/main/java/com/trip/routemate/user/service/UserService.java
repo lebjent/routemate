@@ -34,6 +34,7 @@ public class UserService {
      * 회원가입 비즈니스 로직
      */
     @Transactional // 데이터 변경이 일어나므로 가입 메서드에는 별도로 @Transactional을 붙여줍니다.
+    @SuppressWarnings("null")
     public Long join(UserJoinDto dto) {
 
         // 1. 이메일 중복 검증 (실무에선 필수 중의 필수!)

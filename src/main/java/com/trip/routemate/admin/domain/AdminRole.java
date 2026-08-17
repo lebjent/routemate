@@ -20,6 +20,6 @@ public class AdminRole {
     private Integer roleLevel;
     @Column(name = "DEPT_ID")
     private Long deptId;
-    @Column(name = "USE_YN", nullable = false, length = 1)
+    @Column(name = "USE_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     private String useYn;
 }

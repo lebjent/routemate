@@ -16,6 +16,6 @@ public class AdminUserRole {
     private Long userId;
     @Column(name = "ROLE_ID", nullable = false)
     private Long roleId;
-    @Column(name = "PRIMARY_YN", nullable = false, length = 1)
+    @Column(name = "PRIMARY_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     private String primaryYn;
 }

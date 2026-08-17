@@ -46,7 +46,10 @@ public final class AdminRolePolicy {
     }
 
     public static List<String> permissionNamesFor(String role) {
-        return permissionsFor(role).stream().map(Enum::name).sorted().toList();
+        return permissionsFor(role).stream()
+                .map(permission -> permission.name())
+                .sorted()
+                .toList();
     }
 
     public static List<GrantedAuthority> authoritiesFor(String role) {

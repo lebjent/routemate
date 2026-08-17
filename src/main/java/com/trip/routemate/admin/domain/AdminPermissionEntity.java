@@ -16,6 +16,6 @@ public class AdminPermissionEntity {
     private String permissionCode;
     @Column(name = "PERMISSION_NAME", nullable = false, length = 100)
     private String permissionName;
-    @Column(name = "USE_YN", nullable = false, length = 1)
+    @Column(name = "USE_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     private String useYn;
 }

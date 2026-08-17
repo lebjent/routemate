@@ -22,8 +22,7 @@ public class Destination {
     @Column(name = "DEST_NAME", nullable = false, length = 100)
     private String destName;
 
-    @Lob
-    @Column(name = "DEST_DESC")
+    @Column(name = "DEST_DESC", columnDefinition = "LONGTEXT")
     private String destDesc;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

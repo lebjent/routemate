@@ -16,6 +16,6 @@ public class AdminDepartment {
     private String deptCode;
     @Column(name = "DEPT_NAME", nullable = false, length = 100)
     private String deptName;
-    @Column(name = "USE_YN", nullable = false, length = 1)
+    @Column(name = "USE_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     private String useYn;
 }

@@ -104,7 +104,7 @@ public class LottoHistoryFrequencyService {
             var draws = requestDrawPage(drawNumber);
             if (!draws.isEmpty()) {
                 var latestDrawNumber = draws.stream()
-                        .mapToInt(OfficialLottoDraw::drawNumber)
+                        .mapToInt(draw -> draw.drawNumber())
                         .max()
                         .orElseThrow();
                 return new LatestDrawPage(latestDrawNumber, draws);

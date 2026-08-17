@@ -34,7 +34,7 @@ public class DestinationRecommendation {
     @Builder.Default
     private Integer sortOrder = 1;
 
-    @Column(name = "USE_YN", nullable = false, length = 1)
+    @Column(name = "USE_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     @Builder.Default
     private String useYn = "Y";
 

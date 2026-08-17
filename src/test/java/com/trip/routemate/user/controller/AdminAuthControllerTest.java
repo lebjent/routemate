@@ -59,13 +59,14 @@ class AdminAuthControllerTest {
                 .thenReturn(AdminRolePolicy.permissionNamesFor(admin.getUserRole()));
 
         var result = adminAuthController.login(dto, request, response);
+        var body = result.getBody();
 
-        assertThat(result.getBody()).isNotNull();
-        assertThat(result.getBody().userRole()).isEqualTo("ADMIN");
+        assertThat(body).isNotNull();
+        assertThat(body.userRole()).isEqualTo("ADMIN");
         assertThat(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
                 .extracting("authority")
                 .contains("ROLE_ADMIN", "DASHBOARD_VIEW", "MEMBER_VIEW", "STAFF_MANAGE");
-        assertThat(result.getBody().permissions()).contains("DASHBOARD_VIEW", "STAFF_MANAGE");
+        assertThat(body.permissions()).contains("DASHBOARD_VIEW", "STAFF_MANAGE");
         verify(securityContextRepository).saveContext(any(SecurityContext.class), any(), any());
     }
 
@@ -97,9 +98,10 @@ class AdminAuthControllerTest {
                 .thenReturn(AdminRolePolicy.permissionNamesFor(senior.getUserRole()));
 
         var result = adminAuthController.login(dto, request, response);
+        var body = result.getBody();
 
-        assertThat(result.getBody()).isNotNull();
-        assertThat(result.getBody().permissions())
+        assertThat(body).isNotNull();
+        assertThat(body.permissions())
                 .containsExactlyInAnyOrder("DASHBOARD_VIEW", "MEMBER_VIEW", "PLAN_MANAGE");
         assertThat(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
                 .extracting("authority")

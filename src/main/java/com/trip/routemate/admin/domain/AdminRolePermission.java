@@ -16,6 +16,6 @@ public class AdminRolePermission {
     private Long roleId;
     @Column(name = "PERMISSION_ID", nullable = false)
     private Long permissionId;
-    @Column(name = "ALLOW_YN", nullable = false, length = 1)
+    @Column(name = "ALLOW_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     private String allowYn;
 }

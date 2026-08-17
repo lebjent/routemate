@@ -18,6 +18,6 @@ public class AdminRoleMenu {
     private Long menuId;
     @Column(name = "PERMISSION_ID")
     private Long permissionId;
-    @Column(name = "ALLOW_YN", nullable = false, length = 1)
+    @Column(name = "ALLOW_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     private String allowYn;
 }

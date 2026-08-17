@@ -44,7 +44,7 @@ public class UserMstr {
     @Builder.Default
     private String userStatCd = "ACTIVE";
 
-    @Column(name = "DEL_YN", nullable = false, length = 1)
+    @Column(name = "DEL_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     @Builder.Default
     private String delYn = "N";
 

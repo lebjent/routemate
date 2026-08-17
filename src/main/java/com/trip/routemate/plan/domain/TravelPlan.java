@@ -56,7 +56,7 @@ public class TravelPlan {
     @Builder.Default
     private Long viewCount = 0L;
 
-    @Column(name = "IS_PUBLIC", nullable = false, length = 1)
+    @Column(name = "IS_PUBLIC", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     @Builder.Default
     private String isPublic = "Y";
 
