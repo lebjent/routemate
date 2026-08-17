@@ -31,7 +31,7 @@ const secondaryButtonClassName =
 
 type SearchOption = { value: string; label: string; hint?: string };
 
-const SearchableSelect = ({
+export const SearchableSelect = ({
   value,
   options,
   placeholder,

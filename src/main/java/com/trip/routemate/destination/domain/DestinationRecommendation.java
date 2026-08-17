@@ -21,6 +21,9 @@ public class DestinationRecommendation {
     @JoinColumn(name = "DEST_ID", nullable = false)
     private Destination destination;
 
+    @Column(name = "IMAGE_URL", length = 500)
+    private String imageUrl;
+
     @Column(name = "DISPLAY_START_DT", nullable = false)
     private LocalDateTime displayStartDt;
 
@@ -35,8 +38,9 @@ public class DestinationRecommendation {
     @Builder.Default
     private String useYn = "Y";
 
-    public void update(Destination destination, LocalDateTime displayStartDt, LocalDateTime displayEndDt, Integer sortOrder, String useYn) {
+    public void update(Destination destination, String imageUrl, LocalDateTime displayStartDt, LocalDateTime displayEndDt, Integer sortOrder, String useYn) {
         this.destination = destination;
+        this.imageUrl = imageUrl;
         this.displayStartDt = displayStartDt;
         this.displayEndDt = displayEndDt;
         this.sortOrder = sortOrder;

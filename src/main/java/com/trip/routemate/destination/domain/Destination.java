@@ -53,4 +53,15 @@ public class Destination {
     @CreationTimestamp
     @Column(name = "CREATE_DT", nullable = false, updatable = false)
     private LocalDateTime createDt;
+
+    public void update(String destName, String destDesc, Country country, Region region, String category, String imageUrl, Double mapLat, Double mapLng) {
+        this.destName = destName;
+        this.destDesc = destDesc;
+        this.country = country;
+        this.region = region;
+        this.category = category;
+        this.imageUrl = imageUrl;
+        this.mapLat = mapLat;
+        this.mapLng = mapLng;
+    }
 }

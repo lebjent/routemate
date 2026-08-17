@@ -5,7 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public record AdminRecommendationRequest(
-        @NotNull Long destinationId,
+        @NotNull Long countryId,
+        @NotNull Long regionId,
+        String imageUrl,
         @NotNull LocalDateTime displayStartDt,
         @NotNull LocalDateTime displayEndDt,
         Integer sortOrder,

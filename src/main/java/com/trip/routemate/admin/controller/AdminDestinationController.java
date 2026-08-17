@@ -3,6 +3,8 @@ package com.trip.routemate.admin.controller;
 import com.trip.routemate.admin.dto.AdminCountryRequest;
 import com.trip.routemate.admin.dto.AdminDestinationResponse;
 import com.trip.routemate.admin.dto.AdminRegionRequest;
+import com.trip.routemate.admin.dto.AdminDestinationPlaceRequest;
+import com.trip.routemate.admin.dto.AdminDestinationPlaceResponse;
 import com.trip.routemate.admin.service.AdminDestinationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,4 +29,13 @@ public class AdminDestinationController {
     public ResponseEntity<AdminDestinationResponse.RegionItem> createRegion(@PathVariable Long countryId, @Valid @RequestBody AdminRegionRequest request) { return ResponseEntity.status(201).body(adminDestinationService.createRegion(countryId, request)); }
     @PatchMapping("/countries/{countryId}/regions/{regionId}")
     public ResponseEntity<AdminDestinationResponse.RegionItem> updateRegion(@PathVariable Long countryId, @PathVariable Long regionId, @Valid @RequestBody AdminRegionRequest request) { return ResponseEntity.ok(adminDestinationService.updateRegion(countryId, regionId, request)); }
+
+    @GetMapping("/places")
+    public ResponseEntity<AdminDestinationPlaceResponse> getPlaces(@RequestParam(required = false) Long countryId, @RequestParam(required = false) Long regionId) { return ResponseEntity.ok(adminDestinationService.getPlaces(countryId, regionId)); }
+
+    @PostMapping("/places")
+    public ResponseEntity<AdminDestinationPlaceResponse.PlaceItem> createPlace(@Valid @RequestBody AdminDestinationPlaceRequest request) { return ResponseEntity.status(201).body(adminDestinationService.createPlace(request)); }
+
+    @PatchMapping("/places/{destinationId}")
+    public ResponseEntity<AdminDestinationPlaceResponse.PlaceItem> updatePlace(@PathVariable Long destinationId, @Valid @RequestBody AdminDestinationPlaceRequest request) { return ResponseEntity.ok(adminDestinationService.updatePlace(destinationId, request)); }
 }
