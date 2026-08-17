@@ -6,6 +6,7 @@ export interface AuthUser {
   userNicknm: string;
   userRole: string;
   permissions: string[];
+  menuCodes: string[];
 }
 
 export interface AuthContextValue {

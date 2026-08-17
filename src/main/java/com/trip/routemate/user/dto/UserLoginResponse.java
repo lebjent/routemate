@@ -7,6 +7,7 @@ public record UserLoginResponse(
         String userEmail,
         String userNicknm,
         String userRole,
-        List<String> permissions
+        List<String> permissions,
+        List<String> menuCodes
 ) {
 }

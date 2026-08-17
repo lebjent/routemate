@@ -1,6 +1,7 @@
 package com.trip.routemate.global.controller;
 
 import com.trip.routemate.destination.repository.DestinationRepository;
+import com.trip.routemate.destination.repository.DestinationRecommendationRepository;
 import com.trip.routemate.plan.dto.TravelPlanResponse;
 import com.trip.routemate.plan.repository.TravelPlanRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.time.LocalDateTime;
+import org.springframework.data.domain.PageRequest;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,6 +20,7 @@ public class HomeController {
 
     private final DestinationRepository destinationRepository;
     private final TravelPlanRepository travelPlanRepository;
+    private final DestinationRecommendationRepository destinationRecommendationRepository;
 
     /**
      * 메인 화면 데이터 조회 API
@@ -25,7 +29,10 @@ public class HomeController {
     @GetMapping("/api/home/data")
     public ResponseEntity<Map<String, Object>> getHomeData() {
         Map<String, Object> data = new HashMap<>();
-        data.put("destinations", destinationRepository.findTop3ByOrderByLikeCountDesc());
+        var recommendedDestinations = destinationRecommendationRepository.findActiveDestinations(LocalDateTime.now(), PageRequest.of(0, 5));
+        data.put("destinations", recommendedDestinations.isEmpty()
+                ? destinationRepository.findTop5ByOrderByLikeCountDesc()
+                : recommendedDestinations);
         data.put("plans", travelPlanRepository.findTop5ByIsPublicOrderByViewCountDescPlanIdDesc("Y")
                 .stream()
                 .map(TravelPlanResponse::from)

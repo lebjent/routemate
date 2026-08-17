@@ -1,7 +1,9 @@
 package com.trip.routemate.admin.service;
 
-import com.trip.routemate.admin.security.AdminRolePolicy;
 import com.trip.routemate.admin.dto.AdminStaffCreateRequest;
+import com.trip.routemate.admin.domain.AdminRole;
+import com.trip.routemate.admin.repository.AdminRoleRepository;
+import com.trip.routemate.admin.repository.AdminUserRoleRepository;
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.repository.UserMstrRepository;
 import org.junit.jupiter.api.Test;
@@ -26,14 +28,15 @@ class AdminStaffServiceTest {
 
     @Mock private UserMstrRepository userMstrRepository;
     @Mock private PasswordEncoder passwordEncoder;
+    @Mock private AdminRoleRepository adminRoleRepository;
+    @Mock private AdminUserRoleRepository adminUserRoleRepository;
     @InjectMocks private AdminStaffService adminStaffService;
 
     @Test
     void getStaff_returnsRoleSummaryAndStaffOnly() {
-        var roles = AdminRolePolicy.staffRoles();
-        when(userMstrRepository.countByUserRoleInAndDelYn(roles, "N")).thenReturn(4L);
-        when(userMstrRepository.countByUserRoleInAndUserStatCdAndDelYn(roles, "ACTIVE", "N")).thenReturn(3L);
-        when(userMstrRepository.countByUserRoleInAndUserStatCdAndDelYn(roles, "SUSPENDED", "N")).thenReturn(1L);
+        when(userMstrRepository.countStaffByDelYn("N")).thenReturn(4L);
+        when(userMstrRepository.countStaffByStatusAndDelYn("ACTIVE", "N")).thenReturn(3L);
+        when(userMstrRepository.countStaffByStatusAndDelYn("SUSPENDED", "N")).thenReturn(1L);
         when(userMstrRepository.countByUserRoleAndDelYn("ADMIN", "N")).thenReturn(1L);
         when(userMstrRepository.countByUserRoleAndDelYn("MASTER", "N")).thenReturn(1L);
         when(userMstrRepository.countByUserRoleAndDelYn("SENIOR", "N")).thenReturn(1L);
@@ -51,8 +54,10 @@ class AdminStaffServiceTest {
     @Test
     void updateRole_changesManageableStaffRole() {
         var junior = staff(2L, "JUNIOR");
-        when(userMstrRepository.findByUserIdAndUserRoleInAndDelYn(2L, AdminRolePolicy.staffRoles(), "N"))
+        when(userMstrRepository.findStaffByUserIdAndDelYn(2L, "N"))
                 .thenReturn(Optional.of(junior));
+        when(adminRoleRepository.findByRoleCodeAndUseYn("SENIOR", "Y"))
+                .thenReturn(Optional.of(AdminRole.builder().roleId(3L).roleCode("SENIOR").roleName("시니어").roleLevel(60).useYn("Y").build()));
 
         var result = adminStaffService.updateRole("admin@routemate.com", 2L, "SENIOR");
 
@@ -64,6 +69,8 @@ class AdminStaffServiceTest {
     void createStaff_createsActiveLocalStaffAccount() {
         var request = new AdminStaffCreateRequest(" Staff@RouteMate.com ", "password123", "신입 운영자", "JUNIOR");
         when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
+        when(adminRoleRepository.findByRoleCodeAndUseYn("JUNIOR", "Y"))
+                .thenReturn(Optional.of(AdminRole.builder().roleId(4L).roleCode("JUNIOR").roleName("주니어").roleLevel(40).useYn("Y").build()));
         when(userMstrRepository.save(any(UserMstr.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         var result = adminStaffService.createStaff(request);
@@ -75,7 +82,7 @@ class AdminStaffServiceTest {
 
     @Test
     void updateStatus_protectsAdminAccount() {
-        when(userMstrRepository.findByUserIdAndUserRoleInAndDelYn(1L, AdminRolePolicy.staffRoles(), "N"))
+        when(userMstrRepository.findStaffByUserIdAndDelYn(1L, "N"))
                 .thenReturn(Optional.of(staff(1L, "ADMIN")));
 
         assertThatThrownBy(() -> adminStaffService.updateStatus("other@routemate.com", 1L, "SUSPENDED"))

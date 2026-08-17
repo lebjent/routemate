@@ -1,6 +1,7 @@
 package com.trip.routemate.user.controller;
 
 import com.trip.routemate.admin.security.AdminRolePolicy;
+import com.trip.routemate.admin.service.AdminAuthorizationService;
 
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.dto.UserLoginDto;
@@ -34,6 +35,7 @@ public class AuthController {
     private final UserMstrRepository userMstrRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;
+    private final AdminAuthorizationService adminAuthorizationService;
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> login(
@@ -53,7 +55,7 @@ public class AuthController {
         securityContext.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
                 user.getUserEmail(),
                 null,
-                AdminRolePolicy.authoritiesFor(user.getUserRole())
+                adminAuthorizationService.authoritiesFor(user.getUserId(), user.getUserRole())
         ));
         SecurityContextHolder.setContext(securityContext);
         securityContextRepository.saveContext(securityContext, request, response);
@@ -90,7 +92,8 @@ public class AuthController {
                 user.getUserEmail(),
                 user.getUserNicknm(),
                 user.getUserRole(),
-                AdminRolePolicy.permissionNamesFor(user.getUserRole())
+                adminAuthorizationService.permissionNamesFor(user.getUserId(), user.getUserRole()),
+                adminAuthorizationService.menuCodesFor(user.getUserId(), user.getUserRole())
         );
     }
 

@@ -16,3 +16,6 @@ export const isStaffUser = (user: AuthUser | null) =>
 
 export const hasPermission = (user: AuthUser | null, permission: AdminPermission) =>
   Boolean(user?.permissions?.includes(permission));
+
+export const hasMenu = (user: AuthUser | null, menuCode: string) =>
+  Boolean(user?.menuCodes?.includes(menuCode));

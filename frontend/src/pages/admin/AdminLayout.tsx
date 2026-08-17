@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { hasPermission, isStaffUser, type AdminPermission } from '../../features/admin/permissions';
+import { hasMenu, hasPermission, isStaffUser, type AdminPermission } from '../../features/admin/permissions';
 import { useAuth } from '../../hooks/useAuth';
 
 type NavigationItem = {
@@ -10,14 +10,16 @@ type NavigationItem = {
   permission: AdminPermission;
   end?: boolean;
   ready?: boolean;
+  menuCode: string;
 };
 
 const navigation: NavigationItem[] = [
-  { to: '/admin', label: '대시보드', icon: 'fa-chart-pie', permission: 'DASHBOARD_VIEW', end: true, ready: true },
-  { to: '/admin/users', label: '회원 관리', icon: 'fa-user-gear', permission: 'MEMBER_VIEW', ready: true },
-  { to: '/admin/staff', label: '직원 관리', icon: 'fa-users-gear', permission: 'STAFF_VIEW', ready: true },
-  { label: '여행 일정 관리', icon: 'fa-map', permission: 'PLAN_MANAGE' },
-  { label: '추천 여행지 관리', icon: 'fa-location-dot', permission: 'DESTINATION_MANAGE' },
+  { to: '/admin', label: '대시보드', icon: 'fa-chart-pie', permission: 'DASHBOARD_VIEW', menuCode: 'DASHBOARD', end: true, ready: true },
+  { to: '/admin/users', label: '회원 관리', icon: 'fa-user-gear', permission: 'MEMBER_VIEW', menuCode: 'MEMBERS', ready: true },
+  { to: '/admin/staff', label: '직원 관리', icon: 'fa-users-gear', permission: 'STAFF_VIEW', menuCode: 'STAFF', ready: true },
+  { label: '여행 일정 관리', icon: 'fa-map', permission: 'PLAN_MANAGE', menuCode: 'PLANS' },
+  { to: '/admin/destinations', label: '국가·지역 관리', icon: 'fa-globe-asia', permission: 'DESTINATION_MANAGE', menuCode: 'DESTINATIONS', ready: true },
+  { to: '/admin/recommendations', label: '추천 여행지 관리', icon: 'fa-star', permission: 'DESTINATION_MANAGE', menuCode: 'RECOMMENDATIONS', ready: true },
 ];
 
 const roleColors: Record<string, string> = {
@@ -46,7 +48,7 @@ export const AdminLayout = () => {
     return <main className="flex min-h-screen items-center justify-center text-sm text-slate-500">관리자 권한을 확인하고 있습니다...</main>;
   }
 
-  const visibleNavigation = navigation.filter((item) => hasPermission(user, item.permission));
+  const visibleNavigation = navigation.filter((item) => hasPermission(user, item.permission) && hasMenu(user, item.menuCode));
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 lg:flex">

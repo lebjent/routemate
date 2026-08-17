@@ -1,6 +1,7 @@
 package com.trip.routemate.user.controller;
 
 import com.trip.routemate.admin.security.AdminRolePolicy;
+import com.trip.routemate.admin.service.AdminAuthorizationService;
 
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.dto.UserLoginDto;
@@ -30,6 +31,7 @@ public class AdminAuthController {
     private final UserMstrRepository userMstrRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;
+    private final AdminAuthorizationService adminAuthorizationService;
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> login(
@@ -49,7 +51,7 @@ public class AdminAuthController {
         securityContext.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
                 admin.getUserEmail(),
                 null,
-                AdminRolePolicy.authoritiesFor(admin.getUserRole())
+                adminAuthorizationService.authoritiesFor(admin.getUserId(), admin.getUserRole())
         ));
         SecurityContextHolder.setContext(securityContext);
         securityContextRepository.saveContext(securityContext, request, response);
@@ -59,12 +61,13 @@ public class AdminAuthController {
                 admin.getUserEmail(),
                 admin.getUserNicknm(),
                 admin.getUserRole(),
-                AdminRolePolicy.permissionNamesFor(admin.getUserRole())
+                adminAuthorizationService.permissionNamesFor(admin.getUserId(), admin.getUserRole()),
+                adminAuthorizationService.menuCodesFor(admin.getUserId(), admin.getUserRole())
         ));
     }
 
     private boolean isActiveStaff(UserMstr user) {
-        return AdminRolePolicy.isStaffRole(user.getUserRole())
+        return adminAuthorizationService.isStaffRole(user.getUserRole())
                 && "ACTIVE".equals(user.getUserStatCd())
                 && "N".equals(user.getDelYn());
     }

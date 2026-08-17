@@ -1,6 +1,8 @@
 package com.trip.routemate.user.controller;
 
 import com.trip.routemate.user.domain.UserMstr;
+import com.trip.routemate.admin.security.AdminRolePolicy;
+import com.trip.routemate.admin.service.AdminAuthorizationService;
 import com.trip.routemate.user.dto.UserLoginDto;
 import com.trip.routemate.user.repository.UserMstrRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +35,7 @@ class AdminAuthControllerTest {
     @Mock private UserMstrRepository userMstrRepository;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private SecurityContextRepository securityContextRepository;
+    @Mock private AdminAuthorizationService adminAuthorizationService;
     @Mock private HttpServletRequest request;
     @Mock private HttpServletResponse response;
 
@@ -48,7 +51,12 @@ class AdminAuthControllerTest {
         var dto = loginDto();
         var admin = user("ADMIN");
         when(userMstrRepository.findByUserEmail("admin@routemate.com")).thenReturn(Optional.of(admin));
+        when(adminAuthorizationService.isStaffRole("ADMIN")).thenReturn(true);
         when(passwordEncoder.matches("password", admin.getUserPwd())).thenReturn(true);
+        when(adminAuthorizationService.authoritiesFor(admin.getUserId(), admin.getUserRole()))
+                .thenReturn(AdminRolePolicy.authoritiesFor(admin.getUserRole()));
+        when(adminAuthorizationService.permissionNamesFor(admin.getUserId(), admin.getUserRole()))
+                .thenReturn(AdminRolePolicy.permissionNamesFor(admin.getUserRole()));
 
         var result = adminAuthController.login(dto, request, response);
 
@@ -66,6 +74,7 @@ class AdminAuthControllerTest {
         var dto = loginDto();
         when(userMstrRepository.findByUserEmail("admin@routemate.com"))
                 .thenReturn(Optional.of(user("USER")));
+        when(adminAuthorizationService.isStaffRole("USER")).thenReturn(false);
 
         assertThatThrownBy(() -> adminAuthController.login(dto, request, response))
                 .isInstanceOfSatisfying(ResponseStatusException.class,
@@ -80,7 +89,12 @@ class AdminAuthControllerTest {
         var dto = loginDto();
         var senior = user("SENIOR");
         when(userMstrRepository.findByUserEmail("admin@routemate.com")).thenReturn(Optional.of(senior));
+        when(adminAuthorizationService.isStaffRole("SENIOR")).thenReturn(true);
         when(passwordEncoder.matches("password", senior.getUserPwd())).thenReturn(true);
+        when(adminAuthorizationService.authoritiesFor(senior.getUserId(), senior.getUserRole()))
+                .thenReturn(AdminRolePolicy.authoritiesFor(senior.getUserRole()));
+        when(adminAuthorizationService.permissionNamesFor(senior.getUserId(), senior.getUserRole()))
+                .thenReturn(AdminRolePolicy.permissionNamesFor(senior.getUserRole()));
 
         var result = adminAuthController.login(dto, request, response);
 

@@ -14,6 +14,8 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminStaff } from './pages/admin/AdminStaff';
+import { AdminDestinations } from './pages/admin/AdminDestinations';
+import { AdminRecommendations } from './pages/admin/AdminRecommendations';
 import { AuthProvider } from './contexts/AuthContext';
 
 function AppRoutes() {
@@ -32,6 +34,8 @@ function AppRoutes() {
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="staff" element={<AdminStaff />} />
+          <Route path="destinations" element={<AdminDestinations />} />
+          <Route path="recommendations" element={<AdminRecommendations />} />
         </Route>
         <Route path="/join" element={<Join />} />
         <Route path="/lotto" element={<Lotto />} />

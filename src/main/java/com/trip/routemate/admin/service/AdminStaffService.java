@@ -2,6 +2,9 @@ package com.trip.routemate.admin.service;
 
 import com.trip.routemate.admin.dto.AdminStaffListResponse;
 import com.trip.routemate.admin.dto.AdminStaffCreateRequest;
+import com.trip.routemate.admin.domain.AdminUserRole;
+import com.trip.routemate.admin.repository.AdminRoleRepository;
+import com.trip.routemate.admin.repository.AdminUserRoleRepository;
 import com.trip.routemate.admin.security.AdminRolePolicy;
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.repository.UserMstrRepository;
@@ -29,17 +32,18 @@ public class AdminStaffService {
 
     private final UserMstrRepository userMstrRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AdminRoleRepository adminRoleRepository;
+    private final AdminUserRoleRepository adminUserRoleRepository;
 
     @PreAuthorize("hasAuthority('STAFF_VIEW')")
     public AdminStaffListResponse getStaff(String query, String status, String role) {
         var normalizedQuery = query == null ? "" : query.trim();
         var normalizedStatus = normalizeStatusFilter(status);
         var normalizedRole = normalizeRoleFilter(role);
-        var staffRoles = AdminRolePolicy.staffRoles();
         var summary = new AdminStaffListResponse.Summary(
-                userMstrRepository.countByUserRoleInAndDelYn(staffRoles, "N"),
-                userMstrRepository.countByUserRoleInAndUserStatCdAndDelYn(staffRoles, "ACTIVE", "N"),
-                userMstrRepository.countByUserRoleInAndUserStatCdAndDelYn(staffRoles, "SUSPENDED", "N"),
+                userMstrRepository.countStaffByDelYn("N"),
+                userMstrRepository.countStaffByStatusAndDelYn("ACTIVE", "N"),
+                userMstrRepository.countStaffByStatusAndDelYn("SUSPENDED", "N"),
                 userMstrRepository.countByUserRoleAndDelYn(AdminRolePolicy.ADMIN, "N"),
                 userMstrRepository.countByUserRoleAndDelYn(AdminRolePolicy.MASTER, "N"),
                 userMstrRepository.countByUserRoleAndDelYn(AdminRolePolicy.SENIOR, "N"),
@@ -73,7 +77,15 @@ public class AdminStaffService {
                 .userStatCd("ACTIVE")
                 .delYn("N")
                 .build();
-        return AdminStaffListResponse.StaffItem.from(userMstrRepository.save(staff));
+        var saved = userMstrRepository.save(staff);
+        adminRoleRepository.findByRoleCodeAndUseYn(role, "Y").ifPresent(adminRole ->
+                adminUserRoleRepository.save(AdminUserRole.builder()
+                        .userId(saved.getUserId())
+                        .roleId(adminRole.getRoleId())
+                        .primaryYn("Y")
+                        .build())
+        );
+        return AdminStaffListResponse.StaffItem.from(saved);
     }
 
     @Transactional
@@ -82,6 +94,7 @@ public class AdminStaffService {
         var normalizedRole = normalizeManageableRole(role);
         var staff = getManageableStaff(actorEmail, userId);
         staff.updateRole(normalizedRole);
+        syncPrimaryRole(staff.getUserId(), normalizedRole);
         return AdminStaffListResponse.StaffItem.from(staff);
     }
 
@@ -95,16 +108,23 @@ public class AdminStaffService {
     }
 
     private UserMstr getManageableStaff(String actorEmail, Long userId) {
-        var staff = userMstrRepository.findByUserIdAndUserRoleInAndDelYn(
-                        userId,
-                        AdminRolePolicy.staffRoles(),
-                        "N"
-                )
+        var staff = userMstrRepository.findStaffByUserIdAndDelYn(userId, "N")
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "직원 계정을 찾을 수 없습니다."));
         if (staff.getUserEmail().equalsIgnoreCase(actorEmail) || AdminRolePolicy.ADMIN.equals(staff.getUserRole())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "본인 또는 ADMIN 계정은 변경할 수 없습니다.");
         }
         return staff;
+    }
+
+    private void syncPrimaryRole(Long userId, String roleCode) {
+        adminRoleRepository.findByRoleCodeAndUseYn(roleCode, "Y").ifPresent(adminRole -> {
+            adminUserRoleRepository.deleteAllByUserId(userId);
+            adminUserRoleRepository.save(AdminUserRole.builder()
+                    .userId(userId)
+                    .roleId(adminRole.getRoleId())
+                    .primaryYn("Y")
+                    .build());
+        });
     }
 
     private String normalizeStatusFilter(String status) {
@@ -121,13 +141,13 @@ public class AdminStaffService {
 
     private String normalizeRoleFilter(String role) {
         var normalized = role == null ? "ALL" : role.trim().toUpperCase();
-        if ("ALL".equals(normalized) || AdminRolePolicy.isStaffRole(normalized)) return normalized;
+        if ("ALL".equals(normalized) || adminRoleRepository.findByRoleCodeAndUseYn(normalized, "Y").isPresent() || AdminRolePolicy.isStaffRole(normalized)) return normalized;
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "올바르지 않은 직원 권한입니다.");
     }
 
     private String normalizeManageableRole(String role) {
         var normalized = role == null ? "" : role.trim().toUpperCase();
-        if (MANAGEABLE_ROLES.contains(normalized)) return normalized;
+        if (MANAGEABLE_ROLES.contains(normalized) || adminRoleRepository.findByRoleCodeAndUseYn(normalized, "Y").map(adminRole -> adminRole.getRoleLevel() < 100).orElse(false)) return normalized;
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "MASTER, SENIOR, JUNIOR 권한만 지정할 수 있습니다.");
     }
 }

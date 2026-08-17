@@ -15,4 +15,8 @@ public interface RegionRepository extends JpaRepository<Region, Long> {
     List<Region> findByCountryOrderBySortOrderAscRegionNameAsc(Country country);
 
     Optional<Region> findByCountryAndRegionCode(Country country, String regionCode);
+
+    Optional<Region> findByRegionIdAndCountry(Long regionId, Country country);
+
+    long countByCountry(Country country);
 }

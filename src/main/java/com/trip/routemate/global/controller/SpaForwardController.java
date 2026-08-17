@@ -12,6 +12,8 @@ public class SpaForwardController {
         "/admin",
         "/admin/users",
         "/admin/staff",
+        "/admin/destinations",
+        "/admin/recommendations",
         "/join",
         "/lotto",
         "/my-trips",

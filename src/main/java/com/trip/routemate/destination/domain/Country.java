@@ -32,4 +32,10 @@ public class Country {
     @CreationTimestamp
     @Column(name = "CREATE_DT", nullable = false, updatable = false)
     private LocalDateTime createDt;
+
+    public void update(String countryName, String countryCode, String countryStatCd) {
+        this.countryName = countryName;
+        this.countryCode = countryCode;
+        this.countryStatCd = countryStatCd;
+    }
 }

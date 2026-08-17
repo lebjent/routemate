@@ -25,11 +25,20 @@ public interface UserMstrRepository extends JpaRepository<UserMstr, Long> {
 
     long countByUserRoleInAndUserStatCdAndDelYn(Set<String> userRoles, String userStatCd, String delYn);
 
+    @Query("select count(user) from UserMstr user where user.delYn = :delYn and user.userRole in (select role.roleCode from AdminRole role where role.useYn = 'Y')")
+    long countStaffByDelYn(@Param("delYn") String delYn);
+
+    @Query("select count(user) from UserMstr user where user.delYn = :delYn and user.userStatCd = :status and user.userRole in (select role.roleCode from AdminRole role where role.useYn = 'Y')")
+    long countStaffByStatusAndDelYn(@Param("status") String status, @Param("delYn") String delYn);
+
     Optional<UserMstr> findByUserIdAndDelYn(Long userId, String delYn);
 
     Optional<UserMstr> findByUserIdAndUserRoleAndDelYn(Long userId, String userRole, String delYn);
 
     Optional<UserMstr> findByUserIdAndUserRoleInAndDelYn(Long userId, Set<String> userRoles, String delYn);
+
+    @Query("select user from UserMstr user where user.userId = :userId and user.delYn = :delYn and user.userRole in (select role.roleCode from AdminRole role where role.useYn = 'Y')")
+    Optional<UserMstr> findStaffByUserIdAndDelYn(@Param("userId") Long userId, @Param("delYn") String delYn);
 
     @Query("""
             select user
@@ -50,7 +59,7 @@ public interface UserMstrRepository extends JpaRepository<UserMstr, Long> {
             select user
               from UserMstr user
              where user.delYn = 'N'
-               and user.userRole in ('ADMIN', 'MASTER', 'SENIOR', 'JUNIOR')
+               and user.userRole in (select role.roleCode from AdminRole role where role.useYn = 'Y')
                and (:status = 'ALL' or user.userStatCd = :status)
                and (:role = 'ALL' or user.userRole = :role)
                and (

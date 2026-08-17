@@ -40,4 +40,11 @@ public class Region {
     @CreationTimestamp
     @Column(name = "CREATE_DT", nullable = false, updatable = false)
     private LocalDateTime createDt;
+
+    public void update(String regionName, String regionCode, Integer sortOrder, String regionStatCd) {
+        this.regionName = regionName;
+        this.regionCode = regionCode;
+        this.sortOrder = sortOrder;
+        this.regionStatCd = regionStatCd;
+    }
 }
