@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 public record AdminPartnerRequest(
         @Schema(description = "파트너사 내부 식별 코드", example = "PARTNER-JP-001")
-        @NotBlank @Size(max = 30) String partnerCode,
+        @Size(max = 30) String partnerCode,
         @Schema(description = "파트너사명", example = "도쿄 트래블 컴퍼니")
         @NotBlank @Size(max = 120) String partnerName,
         @Size(max = 30) String businessNumber,
@@ -23,6 +23,9 @@ public record AdminPartnerRequest(
         LocalDate contractEndDate,
         @Schema(description = "파트너사 상태: PENDING, ACTIVE, SUSPENDED", example = "ACTIVE")
         @NotBlank String partnerStatus,
-        @Size(max = 1000) String memo
+        @Size(max = 1000) String memo,
+        @Email @Size(max = 100) String ownerLoginId,
+        @Size(min = 8, max = 100) String ownerPassword,
+        @Size(max = 50) String ownerName
 ) {
 }

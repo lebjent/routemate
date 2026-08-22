@@ -3,16 +3,22 @@ package com.trip.routemate.admin.service;
 import com.trip.routemate.admin.dto.AdminPartnerRequest;
 import com.trip.routemate.admin.dto.AdminPartnerResponse;
 import com.trip.routemate.partner.domain.PartnerCompany;
+import com.trip.routemate.partner.domain.PartnerUser;
 import com.trip.routemate.partner.repository.PartnerCompanyRepository;
+import com.trip.routemate.partner.repository.PartnerUserRepository;
 import com.trip.routemate.product.repository.TravelProductRepository;
+import com.trip.routemate.user.domain.UserMstr;
+import com.trip.routemate.user.repository.UserMstrRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Locale;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -23,6 +29,9 @@ public class AdminPartnerService {
     private static final java.util.Set<String> STATUSES = java.util.Set.of("ONBOARDING", "ACTIVE", "SUSPENDED", "TERMINATED");
     private final PartnerCompanyRepository partnerRepository;
     private final TravelProductRepository productRepository;
+    private final PartnerUserRepository partnerUserRepository;
+    private final UserMstrRepository userMstrRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
     public AdminPartnerResponse getPartners(String query, String status) {
@@ -43,16 +52,31 @@ public class AdminPartnerService {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public AdminPartnerResponse.Item create(AdminPartnerRequest request) {
         validate(request, null);
+        var businessNumber = required(request.businessNumber());
+        var representativeName = required(request.representativeName());
+        var managerName = required(request.managerName());
+        var managerEmail = required(request.managerEmail());
+        var managerPhone = required(request.managerPhone());
+        var ownerLoginId = required(request.ownerLoginId()).toLowerCase(Locale.ROOT);
+        var ownerName = required(request.ownerName());
+        var ownerPassword = required(request.ownerPassword());
+        if (ownerPassword.length() < 8) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "대표 직원 비밀번호는 8자 이상이어야 합니다.");
+        if (userMstrRepository.existsByUserEmail(ownerLoginId)) conflict("이미 사용 중인 대표 직원 ID입니다.");
+        if (userMstrRepository.existsByUserNicknm(ownerName)) conflict("이미 사용 중인 대표 직원 이름입니다.");
         var partner = partnerRepository.save(PartnerCompany.builder()
-                .partnerCode(code(request.partnerCode())).partnerName(required(request.partnerName()))
-                .businessNumber(nullable(request.businessNumber())).representativeName(nullable(request.representativeName()))
-                .managerName(nullable(request.managerName())).managerEmail(nullable(request.managerEmail()))
-                .managerPhone(nullable(request.managerPhone())).websiteUrl(nullable(request.websiteUrl()))
+                .partnerCode(generatePartnerCode()).partnerName(required(request.partnerName()))
+                .businessNumber(businessNumber).representativeName(representativeName)
+                .managerName(managerName).managerEmail(managerEmail)
+                .managerPhone(managerPhone).websiteUrl(nullable(request.websiteUrl()))
                 .commissionRate(request.commissionRate()).contractStartDate(request.contractStartDate()).contractEndDate(request.contractEndDate())
                 .partnerStatus(status(request.partnerStatus())).memo(nullable(request.memo())).build());
+        var owner = userMstrRepository.save(UserMstr.builder()
+                .userEmail(ownerLoginId).userPwd(passwordEncoder.encode(ownerPassword)).userNicknm(ownerName)
+                .snsProvider("LOCAL").userRole("PARTNER_OWNER").userStatCd("ACTIVE").delYn("N").build());
+        partnerUserRepository.save(PartnerUser.builder().partner(partner).user(owner).partnerRole("OWNER").useYn("Y").build());
         return AdminPartnerResponse.Item.from(partner, AdminPartnerResponse.ProductCount.empty());
     }
 
@@ -71,7 +95,7 @@ public class AdminPartnerService {
     }
 
     private void validate(AdminPartnerRequest request, Long currentId) {
-        partnerRepository.findByPartnerCode(code(request.partnerCode())).filter(found -> !found.getPartnerId().equals(currentId)).ifPresent(found -> conflict("이미 사용 중인 파트너 코드입니다."));
+        if (currentId != null) partnerRepository.findByPartnerCode(code(request.partnerCode())).filter(found -> !found.getPartnerId().equals(currentId)).ifPresent(found -> conflict("이미 사용 중인 파트너 코드입니다."));
         var businessNumber = nullable(request.businessNumber());
         if (businessNumber != null) partnerRepository.findByBusinessNumber(businessNumber).filter(found -> !found.getPartnerId().equals(currentId)).ifPresent(found -> conflict("이미 등록된 사업자번호입니다."));
         if (request.contractStartDate() != null && request.contractEndDate() != null && request.contractEndDate().isBefore(request.contractStartDate()))
@@ -85,4 +109,5 @@ public class AdminPartnerService {
     private String nullable(String value) { var result = normalize(value); return result.isBlank() ? null : result; }
     private String normalize(String value) { return value == null ? "" : value.trim(); }
     private boolean contains(String value, String query) { return value != null && value.toLowerCase(Locale.ROOT).contains(query); }
+    private String generatePartnerCode() { return "PARTNER-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(Locale.ROOT); }
 }

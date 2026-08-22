@@ -52,7 +52,7 @@ export const AdminPartners = () => {
     total: partners.length, active: partners.filter((item) => item.partnerStatus === 'ACTIVE').length,
     products: partners.reduce((sum, item) => sum + item.totalProducts, 0), pending: partners.reduce((sum, item) => sum + item.pendingProducts, 0),
   }), [partners]);
-  const openCreate = () => { setEditingId(null); setForm(emptyForm); setError(null); setShowForm(true); };
+  const openCreate = () => { navigate('/admin/partners/new'); };
   const openEdit = (partner: Partner) => { setEditingId(partner.partnerId); setForm({ partnerCode: partner.partnerCode, partnerName: partner.partnerName, businessNumber: partner.businessNumber ?? '', representativeName: partner.representativeName ?? '', managerName: partner.managerName ?? '', managerEmail: partner.managerEmail ?? '', managerPhone: partner.managerPhone ?? '', websiteUrl: partner.websiteUrl ?? '', commissionRate: String(partner.commissionRate), contractStartDate: partner.contractStartDate ?? '', contractEndDate: partner.contractEndDate ?? '', partnerStatus: partner.partnerStatus, memo: partner.memo ?? '' }); setError(null); setShowForm(true); };
   const update = (key: keyof Form, value: string) => setForm((current) => ({ ...current, [key]: value }));
   const save = async (event: React.FormEvent) => {

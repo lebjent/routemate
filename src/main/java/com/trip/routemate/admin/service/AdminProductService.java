@@ -107,8 +107,12 @@ public class AdminProductService {
 
     private PartnerCompany getPartner(Long partnerId) {
         if (partnerId == null) return null;
-        return partnerRepository.findById(partnerId)
+        var partner = partnerRepository.findById(partnerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "파트너사를 찾을 수 없습니다."));
+        if (!"ACTIVE".equals(partner.getPartnerStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "활성 상태인 파트너사에만 옵션상품을 연결할 수 있습니다.");
+        }
+        return partner;
     }
 
     private String normalize(String value) { return value == null ? "" : value.trim(); }

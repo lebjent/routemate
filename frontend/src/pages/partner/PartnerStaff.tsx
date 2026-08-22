@@ -1,0 +1,36 @@
+import { useCallback, useEffect, useState } from 'react';
+import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+
+type Staff = { partnerUserId: number; loginId: string; name: string; partnerRole: 'OWNER' | 'STAFF'; status: 'ACTIVE' | 'SUSPENDED'; joinedAt: string };
+type StaffResponse = { partnerId: number; partnerName: string; staff: Staff[] };
+
+export const PartnerStaff = () => {
+  const { user, loading, logout } = useAuth();
+  const navigate = useNavigate();
+  const [data, setData] = useState<StaffResponse | null>(null);
+  const [form, setForm] = useState({ loginId: '', password: '', name: '' });
+  const [error, setError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  const load = useCallback(async () => {
+    try { setData((await axios.get<StaffResponse>('/api/partner/staff')).data); }
+    catch (loadError) { setError(axios.isAxiosError(loadError) ? loadError.response?.data?.detail ?? '직원 정보를 불러오지 못했습니다.' : '직원 정보를 불러오지 못했습니다.'); }
+  }, []);
+  useEffect(() => { if (!loading && user?.userRole !== 'PARTNER_OWNER') navigate('/partner/login', { replace: true }); }, [loading, navigate, user]);
+  useEffect(() => { if (user?.userRole === 'PARTNER_OWNER') void load(); }, [load, user]);
+
+  const create = async (event: React.FormEvent) => {
+    event.preventDefault(); setCreating(true); setError(null);
+    try { await axios.post('/api/partner/staff', form); setForm({ loginId: '', password: '', name: '' }); await load(); }
+    catch (saveError) { setError(axios.isAxiosError(saveError) ? saveError.response?.data?.detail ?? '직원 등록에 실패했습니다.' : '직원 등록에 실패했습니다.'); }
+    finally { setCreating(false); }
+  };
+  const changeStatus = async (staff: Staff) => {
+    try { await axios.patch(`/api/partner/staff/${staff.partnerUserId}/status`, { status: staff.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE' }); await load(); }
+    catch (saveError) { setError(axios.isAxiosError(saveError) ? saveError.response?.data?.detail ?? '직원 상태 변경에 실패했습니다.' : '직원 상태 변경에 실패했습니다.'); }
+  };
+
+  return <main className="min-h-screen flex-grow bg-slate-950 px-4 py-8 text-white sm:px-6"><div className="mx-auto max-w-5xl"><header className="flex items-start justify-between gap-4 border-b border-white/10 pb-6"><div><Link to="/" className="text-sm font-bold text-indigo-300">RouteMate Partner</Link><h1 className="mt-3 text-3xl font-extrabold">{data?.partnerName ?? '파트너사'} 직원 관리</h1><p className="mt-2 text-sm text-slate-500">대표 직원만 소속 직원 계정을 등록하고 상태를 관리할 수 있습니다.</p></div><button type="button" onClick={() => void logout().then(() => navigate('/partner/login'))} className="rounded-xl border border-white/10 px-3 py-2 text-xs font-bold text-slate-300">로그아웃</button></header>{error ? <p className="mt-5 rounded-xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</p> : null}<div className="mt-7 grid gap-6 lg:grid-cols-[1fr_1.5fr]"><section className="rounded-2xl border border-white/10 bg-white/[.03] p-5"><h2 className="font-bold">직원 계정 등록</h2><form onSubmit={(event) => void create(event)} className="mt-5 grid gap-4"><label className="grid gap-2 text-xs text-slate-400">직원 ID<input type="email" required value={form.loginId} onChange={(event) => setForm({ ...form, loginId: event.target.value })} className="h-11 rounded-xl border border-white/10 bg-slate-950 px-3 text-sm text-white" /></label><label className="grid gap-2 text-xs text-slate-400">직원 이름<input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} className="h-11 rounded-xl border border-white/10 bg-slate-950 px-3 text-sm text-white" /></label><label className="grid gap-2 text-xs text-slate-400">초기 비밀번호<input type="password" required minLength={8} value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} className="h-11 rounded-xl border border-white/10 bg-slate-950 px-3 text-sm text-white" /></label><button disabled={creating} className="h-11 rounded-xl bg-indigo-500 text-sm font-bold disabled:opacity-50">{creating ? '등록 중...' : '직원 등록'}</button></form></section><section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[.03]"><table className="w-full text-left text-sm"><thead className="border-b border-white/10 text-xs text-slate-500"><tr><th className="px-5 py-4">직원</th><th className="px-4 py-4">역할</th><th className="px-4 py-4">상태</th><th className="px-5 py-4 text-right">관리</th></tr></thead><tbody className="divide-y divide-white/5">{data?.staff.map((staff) => <tr key={staff.partnerUserId}><td className="px-5 py-4"><p className="font-bold">{staff.name}</p><p className="mt-1 text-xs text-slate-500">{staff.loginId}</p></td><td className="px-4 py-4 text-xs">{staff.partnerRole === 'OWNER' ? '대표 직원' : '직원'}</td><td className="px-4 py-4 text-xs"><span className={staff.status === 'ACTIVE' ? 'text-emerald-300' : 'text-rose-300'}>{staff.status === 'ACTIVE' ? '활성' : '정지'}</span></td><td className="px-5 py-4 text-right">{staff.partnerRole === 'STAFF' ? <button type="button" onClick={() => void changeStatus(staff)} className="text-xs font-bold text-indigo-300">{staff.status === 'ACTIVE' ? '정지' : '활성화'}</button> : <span className="text-xs text-slate-600">보호 계정</span>}</td></tr>)}</tbody></table></section></div></div></main>;
+};

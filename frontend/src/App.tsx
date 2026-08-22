@@ -21,20 +21,26 @@ import { AdminDestinations } from './pages/admin/AdminDestinations';
 import { AdminRecommendations } from './pages/admin/AdminRecommendations';
 import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminPartners } from './pages/admin/AdminPartners';
+import { AdminPartnerOnboarding } from './pages/admin/AdminPartnerOnboarding';
+import { PartnerLogin } from './pages/partner/PartnerLogin';
+import { PartnerStaff } from './pages/partner/PartnerStaff';
 import { AuthProvider } from './contexts/AuthContext';
 
 function AppRoutes() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isPartnerRoute = location.pathname.startsWith('/partner');
 
   return (
-    <div className={`min-h-screen flex flex-col justify-between text-gray-100 relative overflow-x-hidden ${isAdminRoute ? 'bg-slate-950' : 'bg-brand-base'}`}>
-      {!isAdminRoute ? <Navbar /> : null}
+    <div className={`min-h-screen flex flex-col justify-between text-gray-100 relative overflow-x-hidden ${isAdminRoute || isPartnerRoute ? 'bg-slate-950' : 'bg-brand-base'}`}>
+      {!isAdminRoute && !isPartnerRoute ? <Navbar /> : null}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/password-reset" element={<PasswordReset />} />
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/partner/login" element={<PartnerLogin />} />
+        <Route path="/partner" element={<PartnerStaff />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsers />} />
@@ -43,6 +49,7 @@ function AppRoutes() {
           <Route path="recommendations" element={<AdminRecommendations />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="partners" element={<AdminPartners />} />
+          <Route path="partners/new" element={<AdminPartnerOnboarding />} />
         </Route>
         <Route path="/join" element={<Join />} />
         <Route path="/lotto" element={<Lotto />} />
@@ -55,7 +62,7 @@ function AppRoutes() {
         <Route path="/my-trips/:planId" element={<TripDetail />} />
         <Route path="/travel-plans/:planId" element={<TripDetail publicView />} />
       </Routes>
-      {!isAdminRoute ? <Footer /> : null}
+      {!isAdminRoute && !isPartnerRoute ? <Footer /> : null}
     </div>
   );
 }
