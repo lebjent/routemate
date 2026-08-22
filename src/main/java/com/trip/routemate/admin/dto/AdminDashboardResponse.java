@@ -1,12 +1,17 @@
 package com.trip.routemate.admin.dto;
 
 import com.trip.routemate.plan.domain.TravelPlan;
+import com.trip.routemate.product.domain.ProductOrder;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public record AdminDashboardResponse(
         Summary summary,
+        List<ProductTypeItem> productTypes,
+        List<OrderItem> recentOrders,
         List<PlanItem> popularPlans,
         List<PlanItem> recentPlans
 ) {
@@ -16,8 +21,42 @@ public record AdminDashboardResponse(
             long totalPlans,
             long publicPlans,
             long totalDestinations,
-            long totalViews
+            long totalViews,
+            long totalProducts,
+            long activeProducts,
+            long totalOptions,
+            long activeOptions,
+            long totalOrders,
+            long paidOrders,
+            long pendingPayments,
+            BigDecimal paidRevenue
     ) {
+    }
+
+    public record ProductTypeItem(String productType, long totalCount, long activeCount) {
+    }
+
+    public record OrderItem(
+            Long orderId,
+            String orderNo,
+            String productName,
+            String optionName,
+            String destinationName,
+            int quantity,
+            BigDecimal totalPrice,
+            String currency,
+            LocalDate useDate,
+            String orderStatus,
+            String paymentStatus,
+            LocalDateTime createDt
+    ) {
+        public static OrderItem from(ProductOrder order) {
+            return new OrderItem(
+                    order.getOrderId(), order.getOrderNo(), order.getProductName(), order.getOptionName(),
+                    order.getDestinationName(), order.getQuantity(), order.getTotalPrice(), order.getCurrency(),
+                    order.getUseDate(), order.getOrderStatus(), order.getPaymentStatus(), order.getCreateDt()
+            );
+        }
     }
 
     public record PlanItem(

@@ -34,8 +34,9 @@ public class Destination {
     @JoinColumn(name = "REGION_ID", nullable = false)
     private Region region;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "CATEGORY", nullable = false, length = 30)
-    private String category;
+    private PlaceCategory category;
 
     @Column(name = "IMAGE_URL", length = 500)
     private String imageUrl;
@@ -54,7 +55,7 @@ public class Destination {
     @Column(name = "CREATE_DT", nullable = false, updatable = false)
     private LocalDateTime createDt;
 
-    public void update(String destName, String destDesc, Country country, Region region, String category, String imageUrl, Double mapLat, Double mapLng) {
+    public void update(String destName, String destDesc, Country country, Region region, PlaceCategory category, String imageUrl, Double mapLat, Double mapLng) {
         this.destName = destName;
         this.destDesc = destDesc;
         this.country = country;

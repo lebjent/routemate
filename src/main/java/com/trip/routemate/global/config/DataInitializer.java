@@ -3,6 +3,7 @@ package com.trip.routemate.global.config;
 import com.trip.routemate.destination.domain.Destination;
 import com.trip.routemate.destination.domain.Country;
 import com.trip.routemate.destination.domain.Region;
+import com.trip.routemate.destination.domain.PlaceCategory;
 import com.trip.routemate.destination.repository.DestinationRepository;
 import com.trip.routemate.destination.repository.CountryRepository;
 import com.trip.routemate.destination.repository.RegionRepository;
@@ -69,7 +70,7 @@ public class DataInitializer implements CommandLineRunner {
                     .destDesc("프랑스 파리의 상징적인 철탑으로 전 세계 여행객이 방문하는 랜드마크입니다.")
                     .country(france)
                     .region(paris)
-                    .category("SIGHTSEEING")
+                    .category(PlaceCategory.SIGHTSEEING)
                     .imageUrl("https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80")
                     .mapLat(48.8584)
                     .mapLng(2.2945)
@@ -81,7 +82,7 @@ public class DataInitializer implements CommandLineRunner {
                     .destDesc("도쿄에서 가장 오래된 절로 전통적인 일본의 멋을 느낄 수 있는 곳입니다.")
                     .country(japan)
                     .region(tokyo)
-                    .category("CULTURE")
+                    .category(PlaceCategory.CULTURE)
                     .imageUrl("https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80")
                     .mapLat(35.7148)
                     .mapLng(139.7967)
@@ -93,7 +94,7 @@ public class DataInitializer implements CommandLineRunner {
                     .destDesc("미국 뉴욕 맨해튼의 중심부로 화려한 광고판과 문화의 용광로입니다.")
                     .country(usa)
                     .region(newYork)
-                    .category("SHOPPING")
+                    .category(PlaceCategory.SHOPPING)
                     .imageUrl("https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=600&q=80")
                     .mapLat(40.7580)
                     .mapLng(-73.9855)

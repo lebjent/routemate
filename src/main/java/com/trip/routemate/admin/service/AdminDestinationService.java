@@ -5,6 +5,7 @@ import com.trip.routemate.admin.dto.AdminDestinationResponse;
 import com.trip.routemate.admin.dto.AdminRegionRequest;
 import com.trip.routemate.admin.dto.AdminDestinationPlaceRequest;
 import com.trip.routemate.admin.dto.AdminDestinationPlaceResponse;
+import com.trip.routemate.admin.dto.AdminPlaceCategoryResponse;
 import com.trip.routemate.destination.domain.Country;
 import com.trip.routemate.destination.domain.Region;
 import com.trip.routemate.destination.repository.CountryRepository;
@@ -101,6 +102,11 @@ public class AdminDestinationService {
         return new AdminDestinationPlaceResponse(places);
     }
 
+    @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    public AdminPlaceCategoryResponse getPlaceCategories() {
+        return AdminPlaceCategoryResponse.fromCategories();
+    }
+
     @Transactional
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
     public AdminDestinationPlaceResponse.PlaceItem createPlace(AdminDestinationPlaceRequest request) {
@@ -109,7 +115,7 @@ public class AdminDestinationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "선택한 국가에 속한 지역이 아닙니다."));
         var place = destinationRepository.save(com.trip.routemate.destination.domain.Destination.builder()
                 .destName(request.destName().trim()).destDesc(request.destDesc()).country(country).region(region)
-                .category(request.category().trim().toUpperCase()).imageUrl(normalizeImageUrl(request.imageUrl()))
+                .category(request.category()).imageUrl(normalizeImageUrl(request.imageUrl()))
                 .mapLat(request.mapLat()).mapLng(request.mapLng()).likeCount(0).build());
         return AdminDestinationPlaceResponse.PlaceItem.from(place);
     }
@@ -122,7 +128,7 @@ public class AdminDestinationService {
         var country = getCountry(request.countryId());
         var region = regionRepository.findByRegionIdAndCountry(request.regionId(), country)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "선택한 국가에 속한 지역이 아닙니다."));
-        place.update(request.destName().trim(), request.destDesc(), country, region, request.category().trim().toUpperCase(), normalizeImageUrl(request.imageUrl()), request.mapLat(), request.mapLng());
+        place.update(request.destName().trim(), request.destDesc(), country, region, request.category(), normalizeImageUrl(request.imageUrl()), request.mapLat(), request.mapLng());
         return AdminDestinationPlaceResponse.PlaceItem.from(place);
     }
 

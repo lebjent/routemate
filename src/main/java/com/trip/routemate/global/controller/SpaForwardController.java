@@ -19,7 +19,10 @@ public class SpaForwardController {
         "/my-trips",
         "/my-trips/{planId}",
         "/my-trips/{planId}/edit",
-        "/travel-plans/{planId}"
+        "/travel-plans/{planId}",
+        "/products",
+        "/products/{productId}",
+        "/my-product-orders"
     })
     public String forward() {
         // static/index.html로 포워딩하여 리액트 라우터가 처리하게 함

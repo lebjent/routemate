@@ -7,6 +7,9 @@ import { PasswordReset } from './pages/PasswordReset';
 import { Join } from './pages/Join';
 import { Lotto } from './pages/Lotto';
 import { MyTrips } from './pages/MyTrips';
+import { Products } from './pages/Products';
+import { ProductDetail } from './pages/ProductDetail';
+import { MyProductOrders } from './pages/MyProductOrders';
 import { CreateTrip } from './pages/CreateTrip';
 import { TripDetail } from './pages/TripDetail';
 import { AdminLogin } from './pages/admin/AdminLogin';
@@ -16,6 +19,8 @@ import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminStaff } from './pages/admin/AdminStaff';
 import { AdminDestinations } from './pages/admin/AdminDestinations';
 import { AdminRecommendations } from './pages/admin/AdminRecommendations';
+import { AdminProducts } from './pages/admin/AdminProducts';
+import { AdminPartners } from './pages/admin/AdminPartners';
 import { AuthProvider } from './contexts/AuthContext';
 
 function AppRoutes() {
@@ -36,9 +41,14 @@ function AppRoutes() {
           <Route path="staff" element={<AdminStaff />} />
           <Route path="destinations" element={<AdminDestinations />} />
           <Route path="recommendations" element={<AdminRecommendations />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="partners" element={<AdminPartners />} />
         </Route>
         <Route path="/join" element={<Join />} />
         <Route path="/lotto" element={<Lotto />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/products/:productId" element={<ProductDetail />} />
+        <Route path="/my-product-orders" element={<MyProductOrders />} />
         <Route path="/my-trips" element={<MyTrips />} />
         <Route path="/my-trips/new" element={<CreateTrip />} />
         <Route path="/my-trips/:planId/edit" element={<CreateTrip />} />

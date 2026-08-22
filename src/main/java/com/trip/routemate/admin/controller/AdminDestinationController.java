@@ -5,6 +5,7 @@ import com.trip.routemate.admin.dto.AdminDestinationResponse;
 import com.trip.routemate.admin.dto.AdminRegionRequest;
 import com.trip.routemate.admin.dto.AdminDestinationPlaceRequest;
 import com.trip.routemate.admin.dto.AdminDestinationPlaceResponse;
+import com.trip.routemate.admin.dto.AdminPlaceCategoryResponse;
 import com.trip.routemate.admin.service.AdminDestinationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,9 @@ public class AdminDestinationController {
 
     @GetMapping("/places")
     public ResponseEntity<AdminDestinationPlaceResponse> getPlaces(@RequestParam(required = false) Long countryId, @RequestParam(required = false) Long regionId) { return ResponseEntity.ok(adminDestinationService.getPlaces(countryId, regionId)); }
+
+    @GetMapping("/place-categories")
+    public ResponseEntity<AdminPlaceCategoryResponse> getPlaceCategories() { return ResponseEntity.ok(adminDestinationService.getPlaceCategories()); }
 
     @PostMapping("/places")
     public ResponseEntity<AdminDestinationPlaceResponse.PlaceItem> createPlace(@Valid @RequestBody AdminDestinationPlaceRequest request) { return ResponseEntity.status(201).body(adminDestinationService.createPlace(request)); }

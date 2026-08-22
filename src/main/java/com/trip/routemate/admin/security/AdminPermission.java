@@ -7,5 +7,6 @@ public enum AdminPermission {
     STAFF_VIEW,
     STAFF_MANAGE,
     PLAN_MANAGE,
-    DESTINATION_MANAGE
+    DESTINATION_MANAGE,
+    PARTNER_MANAGE
 }

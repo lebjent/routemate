@@ -58,11 +58,12 @@ public class AdminAuthorizationService {
                         case "MEMBER_VIEW", "MEMBER_STATUS_UPDATE" -> "MEMBERS";
                         case "STAFF_VIEW", "STAFF_MANAGE" -> "STAFF";
                         case "PLAN_MANAGE" -> "PLANS";
+                        case "PARTNER_MANAGE" -> "PARTNERS";
                         case "DESTINATION_MANAGE" -> "DESTINATIONS";
                         default -> null;
                     })
                     .filter(java.util.Objects::nonNull)
-                    .flatMap(menu -> "DESTINATIONS".equals(menu) ? java.util.stream.Stream.of("DESTINATIONS", "RECOMMENDATIONS") : java.util.stream.Stream.of(menu))
+                    .flatMap(menu -> "DESTINATIONS".equals(menu) ? java.util.stream.Stream.of("DESTINATIONS", "RECOMMENDATIONS", "PRODUCTS") : java.util.stream.Stream.of(menu))
                     .distinct()
                     .toList();
         }

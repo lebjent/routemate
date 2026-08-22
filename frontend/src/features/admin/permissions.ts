@@ -7,7 +7,8 @@ export type AdminPermission =
   | 'STAFF_VIEW'
   | 'STAFF_MANAGE'
   | 'PLAN_MANAGE'
-  | 'DESTINATION_MANAGE';
+  | 'DESTINATION_MANAGE'
+  | 'PARTNER_MANAGE';
 
 export const staffRoles = ['ADMIN', 'MASTER', 'SENIOR', 'JUNIOR'] as const;
 

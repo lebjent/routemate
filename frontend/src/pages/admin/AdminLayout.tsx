@@ -18,8 +18,10 @@ const navigation: NavigationItem[] = [
   { to: '/admin/users', label: '회원 관리', icon: 'fa-user-gear', permission: 'MEMBER_VIEW', menuCode: 'MEMBERS', ready: true },
   { to: '/admin/staff', label: '직원 관리', icon: 'fa-users-gear', permission: 'STAFF_VIEW', menuCode: 'STAFF', ready: true },
   { label: '여행 일정 관리', icon: 'fa-map', permission: 'PLAN_MANAGE', menuCode: 'PLANS' },
+  { to: '/admin/partners', label: '파트너사 관리', icon: 'fa-handshake', permission: 'PARTNER_MANAGE', menuCode: 'PARTNERS', ready: true },
   { to: '/admin/destinations', label: '국가·지역 관리', icon: 'fa-globe-asia', permission: 'DESTINATION_MANAGE', menuCode: 'DESTINATIONS', ready: true },
   { to: '/admin/recommendations', label: '추천 여행지 관리', icon: 'fa-star', permission: 'DESTINATION_MANAGE', menuCode: 'RECOMMENDATIONS', ready: true },
+  { to: '/admin/products', label: '옵션상품 관리', icon: 'fa-ticket', permission: 'DESTINATION_MANAGE', menuCode: 'PRODUCTS', ready: true },
 ];
 
 const roleColors: Record<string, string> = {
@@ -102,7 +104,7 @@ export const AdminLayout = () => {
         </div>
       </aside>
 
-      <main className="relative min-w-0 flex-1 overflow-hidden">
+      <main className="relative min-w-0 flex-1 overflow-x-hidden lg:h-screen lg:overflow-y-auto">
         <div className="pointer-events-none absolute -right-36 -top-44 h-[520px] w-[520px] rounded-full bg-indigo-600/10 blur-[150px]" />
         <div className="relative mx-auto max-w-[1500px] px-5 py-7 sm:px-8 lg:px-10 lg:py-9">
           <Outlet />

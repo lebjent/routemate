@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import axios from 'axios';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CustomCalendar } from '../components/CustomCalendar';
+import { StyledSelect } from '../components/StyledSelect';
 import { useAuth } from '../hooks/useAuth';
 import { PackingModal } from '../features/trip-builder/PackingModal';
 import { TripPreview } from '../features/trip-builder/TripPreview';
@@ -499,7 +500,7 @@ export const CreateTrip = () => {
                                                 <input value={schedule.title} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'title', event.target.value)} className={`${inputClassName} px-2.5 py-2`} placeholder="예: 미술관 관람" maxLength={150} />
                                                 <input value={schedule.location} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'location', event.target.value)} className={`${inputClassName} px-2.5 py-2`} placeholder="예: 루브르 박물관" maxLength={150} />
                                                 <input value={schedule.memo} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'memo', event.target.value)} className={`${inputClassName} px-2.5 py-2`} placeholder="예약·주의사항" maxLength={500} />
-                                                <select value={schedule.transportType} onChange={(event) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'transportType', event.target.value)} className={`${inputClassName} px-2.5 py-2`} aria-label="이동수단"><option value="">이동 없음</option>{transportOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
+                                                <StyledSelect value={schedule.transportType} onChange={(value) => updateSchedule(dayIndex, regionIndex, scheduleIndex, 'transportType', value)} ariaLabel="이동수단" options={[{ value: '', label: '이동 없음', icon: 'fa-ban' }, ...transportOptions.map((option) => ({ value: option.value, label: option.label, icon: option.icon }))]} className={`${inputClassName} px-2.5 py-2`} />
                                                 <button type="button" onClick={() => removeSchedule(dayIndex, regionIndex, scheduleIndex)} aria-label="일정 삭제" className="rounded-lg p-2 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-300"><i className="fa-solid fa-xmark" /></button>
                                               </div>
                                               {transport ? (

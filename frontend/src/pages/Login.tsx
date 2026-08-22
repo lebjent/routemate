@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import type { AuthUser } from '../contexts/authContextValue';
 import { useAuth } from '../hooks/useAuth';
@@ -10,6 +10,7 @@ export const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,7 +24,8 @@ export const Login = () => {
         userPwd: password,
       });
       login(response.data);
-      navigate('/');
+      const requestedPath = (location.state as { from?: string } | null)?.from;
+      navigate(requestedPath?.startsWith('/') ? requestedPath : '/');
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.detail || '로그인에 실패했습니다. 다시 시도해 주세요.');

@@ -24,7 +24,8 @@ public final class AdminRolePolicy {
                     AdminPermission.MEMBER_STATUS_UPDATE,
                     AdminPermission.STAFF_VIEW,
                     AdminPermission.PLAN_MANAGE,
-                    AdminPermission.DESTINATION_MANAGE
+                    AdminPermission.DESTINATION_MANAGE,
+                    AdminPermission.PARTNER_MANAGE
             ),
             SENIOR, EnumSet.of(
                     AdminPermission.DASHBOARD_VIEW,
