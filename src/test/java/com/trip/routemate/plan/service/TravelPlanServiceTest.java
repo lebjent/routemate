@@ -1,4 +1,4 @@
-package com.trip.routemate.plan.service.impl;
+package com.trip.routemate.plan.service;
 
 import com.trip.routemate.destination.repository.CountryRepository;
 import com.trip.routemate.destination.repository.RegionRepository;
@@ -10,7 +10,6 @@ import com.trip.routemate.plan.repository.TravelPackingItemRepository;
 import com.trip.routemate.plan.repository.TravelPlanRepository;
 import com.trip.routemate.plan.repository.TravelScheduleRepository;
 import com.trip.routemate.plan.repository.TravelTransportRepository;
-import com.trip.routemate.plan.service.TravelPlanDetailAssembler;
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.repository.UserMstrRepository;
 import org.junit.jupiter.api.Test;
@@ -33,7 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TravelPlanServiceImplTest {
+class TravelPlanServiceTest {
 
     private static final String USER_EMAIL = "traveler@example.com";
 
@@ -48,7 +47,7 @@ class TravelPlanServiceImplTest {
     @Mock private UserMstrRepository userMstrRepository;
     @Mock private TravelPlanDetailAssembler travelPlanDetailAssembler;
 
-    @InjectMocks private TravelPlanServiceImpl travelPlanService;
+    @InjectMocks private TravelPlanService travelPlanService;
 
     @Test
     void createTravelPlan_rejectsEndDateBeforeStartDateBeforeSaving() {
