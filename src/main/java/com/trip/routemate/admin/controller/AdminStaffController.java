@@ -5,6 +5,8 @@ import com.trip.routemate.admin.dto.AdminStaffCreateRequest;
 import com.trip.routemate.admin.dto.AdminStaffRoleUpdateRequest;
 import com.trip.routemate.admin.dto.AdminUserStatusUpdateRequest;
 import com.trip.routemate.admin.service.AdminStaffService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin/staff")
+@Tag(name = "Admin Staff", description = "관리자 직원 계정과 역할·상태 관리 API")
 public class AdminStaffController {
 
     private final AdminStaffService adminStaffService;
 
     @GetMapping
+    @Operation(summary = "직원 목록 조회")
     public ResponseEntity<AdminStaffListResponse> getStaff(
             @RequestParam(defaultValue = "") String query,
             @RequestParam(defaultValue = "ALL") String status,
@@ -35,6 +39,7 @@ public class AdminStaffController {
     }
 
     @PostMapping
+    @Operation(summary = "직원 계정 등록")
     public ResponseEntity<AdminStaffListResponse.StaffItem> createStaff(
             @Valid @RequestBody AdminStaffCreateRequest request
     ) {
@@ -42,6 +47,7 @@ public class AdminStaffController {
     }
 
     @PatchMapping("/{userId}/role")
+    @Operation(summary = "직원 역할 변경")
     public ResponseEntity<AdminStaffListResponse.StaffItem> updateRole(
             Authentication authentication,
             @PathVariable("userId") Long userId,
@@ -51,6 +57,7 @@ public class AdminStaffController {
     }
 
     @PatchMapping("/{userId}/status")
+    @Operation(summary = "직원 상태 변경")
     public ResponseEntity<AdminStaffListResponse.StaffItem> updateStatus(
             Authentication authentication,
             @PathVariable("userId") Long userId,

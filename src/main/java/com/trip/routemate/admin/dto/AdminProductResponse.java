@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@io.swagger.v3.oas.annotations.media.Schema(description = "관리자 상품 목록과 상품별 옵션을 담는 응답 DTO")
 public record AdminProductResponse(List<Item> products) {
     public record Item(Long productId, Long destinationId, String destinationName, String countryName, String regionName,
                        Long partnerId, String partnerCode, String partnerName, String productName, String productSummary, String productType, String providerName, String productDesc,

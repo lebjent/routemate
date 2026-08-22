@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 
+@io.swagger.v3.oas.annotations.media.Schema(description = "공개 상품 카드에 표시되는 요약 정보 DTO")
 public record ProductSummaryResponse(
         Long productId,
         String productName,

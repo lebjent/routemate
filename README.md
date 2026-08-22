@@ -204,6 +204,22 @@ npm run build
 | `/api/admin/partners` | 파트너사 관리 |
 | `/api/lotto` | 로또 번호·빈도 |
 
+## API 문서 및 런타임 매핑
+
+Springdoc OpenAPI와 Spring Boot Actuator를 함께 사용합니다.
+
+| 경로 | 용도 | 접근 정책 |
+| --- | --- | --- |
+| `/swagger-ui/index.html` | 브라우저용 API 문서·실행 화면 | 공개 |
+| `/v3/api-docs` | 전체 OpenAPI JSON | 공개 |
+| `/v3/api-docs.yaml` | OpenAPI YAML | 공개 |
+| `/v3/api-docs/{group}` | `public`, `user`, `admin` 그룹별 명세 | 공개 |
+| `/actuator/health` | 애플리케이션 상태 확인 | 공개 |
+| `/actuator/info` | 애플리케이션 정보 | 공개 |
+| `/actuator/mappings` | 실제 등록된 Spring request mapping 전체 | 로그인 필요 |
+
+Swagger 문서는 `Public API`, `User API`, `Admin API` 그룹으로 나뉘며, 세션 인증은 `JSESSIONID` 쿠키를 사용합니다. `/actuator/mappings`는 내부 Controller 구조가 노출될 수 있으므로 인증된 사용자만 접근할 수 있습니다.
+
 ## 데이터베이스·Flyway 규칙
 
 Migration의 단일 기준은 Flyway입니다.

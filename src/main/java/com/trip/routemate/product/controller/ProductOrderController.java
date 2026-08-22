@@ -3,6 +3,8 @@ package com.trip.routemate.product.controller;
 import com.trip.routemate.product.dto.ProductOrderRequest;
 import com.trip.routemate.product.dto.ProductOrderResponse;
 import com.trip.routemate.product.service.ProductOrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,16 +17,19 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/product-orders")
+@Tag(name = "Product Orders", description = "로그인 사용자의 여행 옵션상품 주문 API")
 public class ProductOrderController {
     private final ProductOrderService productOrderService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "옵션상품 주문 생성", description = "선택한 상품 옵션과 이용일, 구매자 정보를 저장합니다. 로그인 세션이 필요합니다.")
     public ProductOrderResponse createOrder(Authentication authentication, @Valid @RequestBody ProductOrderRequest request) {
         return productOrderService.createOrder(resolveUserEmail(authentication), request);
     }
 
     @GetMapping("/my")
+    @Operation(summary = "내 상품 주문 목록 조회", description = "현재 로그인한 사용자의 주문 내역을 최신순으로 조회합니다.")
     public List<ProductOrderResponse> getMyOrders(Authentication authentication) {
         return productOrderService.getMyOrders(resolveUserEmail(authentication));
     }

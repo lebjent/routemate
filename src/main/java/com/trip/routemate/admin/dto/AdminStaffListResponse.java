@@ -5,6 +5,7 @@ import com.trip.routemate.user.domain.UserMstr;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@io.swagger.v3.oas.annotations.media.Schema(description = "관리자 직원 목록과 역할·상태별 집계 응답 DTO")
 public record AdminStaffListResponse(Summary summary, List<StaffItem> staff) {
 
     public record Summary(

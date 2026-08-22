@@ -5,6 +5,7 @@ import com.trip.routemate.user.domain.UserMstr;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@io.swagger.v3.oas.annotations.media.Schema(description = "관리자 회원 목록과 상태별 집계 응답 DTO")
 public record AdminUserListResponse(
         Summary summary,
         List<UserItem> users

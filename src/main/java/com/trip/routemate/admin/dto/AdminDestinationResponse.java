@@ -5,6 +5,7 @@ import com.trip.routemate.destination.domain.Region;
 
 import java.util.List;
 
+@io.swagger.v3.oas.annotations.media.Schema(description = "국가 목록과 국가별 등록·활성 요약을 담는 관리자 응답 DTO")
 public record AdminDestinationResponse(Summary summary, List<CountryItem> countries) {
     public record Summary(long totalCountries, long activeCountries, long inactiveCountries, long totalRegions) {}
 

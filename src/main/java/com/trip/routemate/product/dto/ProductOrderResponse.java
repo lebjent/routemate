@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@io.swagger.v3.oas.annotations.media.Schema(description = "상품 주문 번호, 구매 상품, 이용일과 주문 상태를 담는 응답 DTO")
 public record ProductOrderResponse(
         Long orderId,
         String orderNo,

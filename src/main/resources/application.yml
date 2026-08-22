@@ -19,3 +19,20 @@ app:
       source-url: ${LOTTO_HISTORY_SOURCE_URL:https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do}
       refresh-interval: ${LOTTO_HISTORY_REFRESH_INTERVAL:12h}
       top-number-count: ${LOTTO_HISTORY_TOP_NUMBER_COUNT:15}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+    persist-authorization: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings
+  endpoint:
+    health:
+      show-details: never

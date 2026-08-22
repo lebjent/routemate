@@ -5,6 +5,7 @@ import com.trip.routemate.plan.domain.TravelPlan;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 
+@io.swagger.v3.oas.annotations.media.Schema(description = "여행 계획 목록 또는 생성·수정 결과의 요약 응답 DTO")
 public record TravelPlanResponse(
         Long planId,
         String title,

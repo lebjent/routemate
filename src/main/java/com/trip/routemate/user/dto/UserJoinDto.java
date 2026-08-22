@@ -7,6 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@io.swagger.v3.oas.annotations.media.Schema(description = "신규 회원가입에 필요한 계정·연락처·주소 정보 DTO")
 public class UserJoinDto {
     private String userEmail;
     private String userPwd;

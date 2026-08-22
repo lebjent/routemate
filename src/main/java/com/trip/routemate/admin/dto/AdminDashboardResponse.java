@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@io.swagger.v3.oas.annotations.media.Schema(description = "관리자 대시보드의 회원·여행지·상품·주문 요약 지표 DTO")
 public record AdminDashboardResponse(
         Summary summary,
         List<ProductTypeItem> productTypes,

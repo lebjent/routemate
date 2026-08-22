@@ -6,6 +6,7 @@ import com.trip.routemate.product.domain.TravelProductOption;
 import java.math.BigDecimal;
 import java.util.List;
 
+@io.swagger.v3.oas.annotations.media.Schema(description = "상품 상세 설명·이용 안내·판매 옵션을 포함하는 응답 DTO")
 public record ProductDetailResponse(
         Long productId,
         String productName,

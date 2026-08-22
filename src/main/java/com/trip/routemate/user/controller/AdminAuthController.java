@@ -7,6 +7,8 @@ import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.dto.UserLoginDto;
 import com.trip.routemate.user.dto.UserLoginResponse;
 import com.trip.routemate.user.repository.UserMstrRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -26,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/api/admin/auth")
 @RequiredArgsConstructor
+@Tag(name = "Admin Authentication", description = "관리자 세션 로그인 API")
 public class AdminAuthController {
 
     private final UserMstrRepository userMstrRepository;
@@ -34,6 +37,7 @@ public class AdminAuthController {
     private final AdminAuthorizationService adminAuthorizationService;
 
     @PostMapping("/login")
+    @Operation(summary = "관리자 로그인", description = "관리자 계정을 검증하고 관리자 권한이 포함된 JSESSIONID 세션을 생성합니다.")
     public ResponseEntity<UserLoginResponse> login(
             @Valid @RequestBody UserLoginDto dto,
             HttpServletRequest request,

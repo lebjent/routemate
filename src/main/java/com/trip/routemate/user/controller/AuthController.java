@@ -8,6 +8,8 @@ import com.trip.routemate.user.dto.UserLoginDto;
 import com.trip.routemate.user.dto.UserLoginResponse;
 import com.trip.routemate.user.dto.PasswordResetRequest;
 import com.trip.routemate.user.repository.UserMstrRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -30,6 +32,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "사용자 세션 로그인·현재 사용자·비밀번호 API")
 public class AuthController {
 
     private final UserMstrRepository userMstrRepository;
@@ -38,6 +41,7 @@ public class AuthController {
     private final AdminAuthorizationService adminAuthorizationService;
 
     @PostMapping("/login")
+    @Operation(summary = "사용자 로그인", description = "이메일과 비밀번호를 검증하고 JSESSIONID 세션을 생성합니다.")
     public ResponseEntity<UserLoginResponse> login(
             @Valid @RequestBody UserLoginDto dto,
             HttpServletRequest request,
@@ -64,6 +68,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
+    @Operation(summary = "현재 로그인 사용자 조회", description = "로그인 세션이 있으면 사용자와 관리자 권한 정보를 반환하고, 없으면 빈 응답을 반환합니다.")
     public ResponseEntity<UserLoginResponse> getCurrentUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             return ResponseEntity.ok().build();
@@ -77,6 +82,7 @@ public class AuthController {
 
     /** 개발용 임시 재설정 API입니다. 이메일 인증 도입 후 반드시 교체해야 합니다. */
     @PostMapping("/password-reset")
+    @Operation(summary = "비밀번호 재설정", description = "현재 개발용으로 제공되는 이메일 기반 비밀번호 변경 API입니다. 운영에서는 이메일 인증 절차로 교체해야 합니다.")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody PasswordResetRequest request) {
         UserMstr user = userMstrRepository.findByUserEmail(request.userEmail().trim())
                 .filter(this::isActiveUser)

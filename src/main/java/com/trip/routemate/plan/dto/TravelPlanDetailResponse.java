@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@io.swagger.v3.oas.annotations.media.Schema(description = "여행 계획의 전체 일정과 상세 구성 응답 DTO")
 public record TravelPlanDetailResponse(
         Long planId,
         String title,
