@@ -30,9 +30,10 @@ public class HomeController {
     public ResponseEntity<Map<String, Object>> getHomeData() {
         Map<String, Object> data = new HashMap<>();
         var recommendedDestinations = destinationRecommendationRepository.findActiveDestinations(LocalDateTime.now(), PageRequest.of(0, 5));
-        data.put("destinations", recommendedDestinations.isEmpty()
+        var destinations = recommendedDestinations.isEmpty()
                 ? destinationRepository.findTop5ByOrderByLikeCountDesc()
-                : recommendedDestinations);
+                : recommendedDestinations;
+        data.put("destinations", destinations.stream().map(HomeDestinationResponse::from).toList());
         data.put("plans", travelPlanRepository.findTop5ByIsPublicOrderByViewCountDescPlanIdDesc("Y")
                 .stream()
                 .map(TravelPlanResponse::from)
@@ -40,5 +41,27 @@ public class HomeController {
         return ResponseEntity.ok(data);
     }
 
+    private record HomeDestinationResponse(
+            Long destId,
+            String destName,
+            String destDesc,
+            String imageUrl,
+            String country,
+            String city,
+            String category,
+            Integer likeCount
+    ) {
+        private static HomeDestinationResponse from(com.trip.routemate.destination.domain.Destination destination) {
+            return new HomeDestinationResponse(
+                    destination.getDestId(),
+                    destination.getDestName(),
+                    destination.getDestDesc(),
+                    destination.getImageUrl(),
+                    destination.getCountry().getCountryName(),
+                    destination.getRegion().getRegionName(),
+                    destination.getCategory().getLabel(),
+                    destination.getLikeCount()
+            );
+        }
+    }
 }
-

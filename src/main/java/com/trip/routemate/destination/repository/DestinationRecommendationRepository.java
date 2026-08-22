@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DestinationRecommendationRepository extends JpaRepository<DestinationRecommendation, Long> {
+    @EntityGraph(attributePaths = {"destination", "destination.country", "destination.region"})
     @Query("""
             select recommendation.destination
               from DestinationRecommendation recommendation
