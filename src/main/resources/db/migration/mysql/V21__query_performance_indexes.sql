@@ -14,10 +14,16 @@ CREATE INDEX IX_USER_ADMIN_FILTER
 CREATE INDEX IX_DEST_NAME
     ON TB_DESTINATION (DEST_NAME);
 
--- Replace the shorter order-history index with one that also resolves deterministic ordering.
+-- The existing index also supports FK_ORDER_USER, so recreate that foreign key
+-- while extending the index for deterministic order-history sorting. MySQL must
+-- perform the drop and re-add in separate statements when the name is unchanged.
+ALTER TABLE TB_PRODUCT_ORDER DROP FOREIGN KEY FK_ORDER_USER;
 DROP INDEX IX_PRODUCT_ORDER_USER_DT ON TB_PRODUCT_ORDER;
 CREATE INDEX IX_PRODUCT_ORDER_USER_DT
     ON TB_PRODUCT_ORDER (USER_ID, CREATE_DT DESC, ORDER_ID DESC);
+ALTER TABLE TB_PRODUCT_ORDER
+    ADD CONSTRAINT FK_ORDER_USER FOREIGN KEY (USER_ID)
+        REFERENCES TB_USER_MSTR (USER_ID);
 
 -- Order operation dashboards and payment/status filters.
 CREATE INDEX IX_PRODUCT_ORDER_STATUS_DT

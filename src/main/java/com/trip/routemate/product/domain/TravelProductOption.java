@@ -42,7 +42,7 @@ public class TravelProductOption {
     @Column(name = "CONFIRMATION_TYPE", nullable = false, length = 20)
     private String confirmationType;
 
-    @Column(name = "USE_YN", nullable = false, length = 1)
+    @Column(name = "USE_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     private String useYn;
 
     @Column(name = "SORT_ORDER", nullable = false)

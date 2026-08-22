@@ -98,7 +98,7 @@ public class TravelProduct {
     @Builder.Default
     private String currency = "KRW";
 
-    @Column(name = "USE_YN", nullable = false, length = 1)
+    @Column(name = "USE_YN", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     @Builder.Default
     private String useYn = "Y";
 
