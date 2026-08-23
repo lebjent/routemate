@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/structured-console-appender.xml"/>
+
+    <!-- API·애플리케이션 로그는 Logstash JSON 한 줄 형식을 유지합니다. -->
+    <!-- SQL만 개발 중 빠르게 읽을 수 있도록 별도 멀티라인 콘솔 출력으로 분리합니다. -->
+    <appender name="PRETTY_SQL" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [traceId=%X{traceId}] %logger{36}%n%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="PRETTY_HTTP" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.hibernate.SQL" additivity="false">
+        <appender-ref ref="PRETTY_SQL"/>
+    </logger>
+    <logger name="org.hibernate.orm.jdbc.bind" additivity="false">
+        <appender-ref ref="PRETTY_SQL"/>
+    </logger>
+    <logger name="http.exchange" level="INFO" additivity="false">
+        <appender-ref ref="PRETTY_HTTP"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

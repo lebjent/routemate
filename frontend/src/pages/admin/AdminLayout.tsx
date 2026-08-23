@@ -19,9 +19,9 @@ const navigation: NavigationItem[] = [
   { to: '/admin/staff', label: '직원 관리', icon: 'fa-users-gear', permission: 'STAFF_VIEW', menuCode: 'STAFF', ready: true },
   { label: '여행 일정 관리', icon: 'fa-map', permission: 'PLAN_MANAGE', menuCode: 'PLANS' },
   { to: '/admin/partners', label: '파트너사 관리', icon: 'fa-handshake', permission: 'PARTNER_MANAGE', menuCode: 'PARTNERS', ready: true },
+  { to: '/admin/product-approvals', label: '상품 승인 관리', icon: 'fa-clipboard-check', permission: 'PARTNER_MANAGE', menuCode: 'PRODUCT_APPROVALS', ready: true },
   { to: '/admin/destinations', label: '국가·지역 관리', icon: 'fa-globe-asia', permission: 'DESTINATION_MANAGE', menuCode: 'DESTINATIONS', ready: true },
   { to: '/admin/recommendations', label: '추천 여행지 관리', icon: 'fa-star', permission: 'DESTINATION_MANAGE', menuCode: 'RECOMMENDATIONS', ready: true },
-  { to: '/admin/products', label: '옵션상품 관리', icon: 'fa-ticket', permission: 'DESTINATION_MANAGE', menuCode: 'PRODUCTS', ready: true },
 ];
 
 const roleColors: Record<string, string> = {

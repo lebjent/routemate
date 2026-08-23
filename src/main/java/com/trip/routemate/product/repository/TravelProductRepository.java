@@ -32,6 +32,9 @@ public interface TravelProductRepository extends JpaRepository<TravelProduct, Lo
     List<TravelProduct> findAllByUseYnOrderBySortOrderAscCreateDtDesc(String useYn);
 
     @EntityGraph(attributePaths = {"destination", "destination.country", "destination.region", "partner"})
+    List<TravelProduct> findAllByPartnerOrderByCreateDtDesc(com.trip.routemate.partner.domain.PartnerCompany partner);
+
+    @EntityGraph(attributePaths = {"destination", "destination.country", "destination.region", "partner"})
     @Query("""
             select product
               from TravelProduct product

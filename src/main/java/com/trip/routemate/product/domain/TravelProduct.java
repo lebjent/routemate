@@ -139,4 +139,10 @@ public class TravelProduct {
         this.useYn = useYn;
         this.sortOrder = sortOrder;
     }
+
+    public void review(String approvalStatus, String approvalMemo, LocalDateTime approveDt) {
+        this.approvalStatus = approvalStatus;
+        this.approvalMemo = approvalMemo;
+        this.approveDt = approveDt;
+    }
 }

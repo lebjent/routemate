@@ -17,4 +17,9 @@ public interface ProductOrderRepository extends JpaRepository<ProductOrder, Long
 
     @Query("select coalesce(sum(productOrder.totalPrice), 0) from ProductOrder productOrder where productOrder.paymentStatus = 'PAID'")
     BigDecimal getPaidRevenue();
+
+    long countByProductPartner(com.trip.routemate.partner.domain.PartnerCompany partner);
+
+    @Query("select coalesce(sum(productOrder.totalPrice), 0) from ProductOrder productOrder where productOrder.product.partner = :partner and productOrder.paymentStatus = 'PAID'")
+    BigDecimal getPaidRevenueByPartner(@org.springframework.data.repository.query.Param("partner") com.trip.routemate.partner.domain.PartnerCompany partner);
 }

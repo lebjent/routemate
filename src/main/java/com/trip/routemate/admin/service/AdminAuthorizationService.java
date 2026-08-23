@@ -63,7 +63,11 @@ public class AdminAuthorizationService {
                         default -> null;
                     })
                     .filter(java.util.Objects::nonNull)
-                    .flatMap(menu -> "DESTINATIONS".equals(menu) ? java.util.stream.Stream.of("DESTINATIONS", "RECOMMENDATIONS", "PRODUCTS") : java.util.stream.Stream.of(menu))
+                    .flatMap(menu -> switch (menu) {
+                        case "DESTINATIONS" -> java.util.stream.Stream.of("DESTINATIONS", "RECOMMENDATIONS", "PRODUCTS");
+                        case "PARTNERS" -> java.util.stream.Stream.of("PARTNERS", "PRODUCT_APPROVALS");
+                        default -> java.util.stream.Stream.of(menu);
+                    })
                     .distinct()
                     .toList();
         }

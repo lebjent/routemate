@@ -137,7 +137,7 @@ export const AdminLogin = () => {
 
           <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6 text-xs text-slate-600">
             <span><i className="fa-solid fa-lock mr-1.5" />보안 접속</span>
-            <Link to="/" className="font-semibold text-slate-400 transition hover:text-white">일반 화면으로 돌아가기</Link>
+            <div className="flex items-center gap-4"><Link to="/password-reset" className="font-semibold text-indigo-300 transition hover:text-indigo-200">비밀번호 재설정</Link><Link to="/" className="font-semibold text-slate-400 transition hover:text-white">RouteMate 둘러보기</Link></div>
           </div>
         </div>
       </section>

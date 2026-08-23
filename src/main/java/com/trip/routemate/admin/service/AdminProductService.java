@@ -2,6 +2,8 @@ package com.trip.routemate.admin.service;
 
 import com.trip.routemate.admin.dto.AdminProductRequest;
 import com.trip.routemate.admin.dto.AdminProductResponse;
+import com.trip.routemate.admin.dto.AdminProductApprovalRequest;
+import com.trip.routemate.admin.dto.AdminProductApprovalHistoryResponse;
 import com.trip.routemate.destination.domain.Destination;
 import com.trip.routemate.destination.repository.DestinationRepository;
 import com.trip.routemate.product.domain.TravelProduct;
@@ -9,7 +11,10 @@ import com.trip.routemate.partner.domain.PartnerCompany;
 import com.trip.routemate.partner.repository.PartnerCompanyRepository;
 import com.trip.routemate.product.repository.TravelProductRepository;
 import com.trip.routemate.product.repository.TravelProductOptionRepository;
+import com.trip.routemate.product.repository.ProductApprovalHistoryRepository;
 import com.trip.routemate.product.domain.TravelProductOption;
+import com.trip.routemate.product.domain.ProductApprovalHistory;
+import com.trip.routemate.user.repository.UserMstrRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +30,8 @@ public class AdminProductService {
     private final DestinationRepository destinationRepository;
     private final TravelProductOptionRepository optionRepository;
     private final PartnerCompanyRepository partnerRepository;
+    private final ProductApprovalHistoryRepository approvalHistoryRepository;
+    private final UserMstrRepository userRepository;
 
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
     public AdminProductResponse getProducts(Long destinationId, String useYn) {
@@ -89,6 +96,44 @@ public class AdminProductService {
         return AdminProductResponse.Item.from(product, optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product));
     }
 
+    @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
+    public AdminProductResponse getApprovalProducts(String status) {
+        var approvalStatus = normalizeApprovalStatus(status);
+        var products = productRepository.findAllByOrderBySortOrderAscCreateDtDesc().stream()
+                .filter(product -> "ALL".equals(approvalStatus) || approvalStatus.equals(product.getApprovalStatus()))
+                .filter(product -> product.getPartner() != null)
+                .map(product -> AdminProductResponse.Item.from(product, optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product)))
+                .toList();
+        return new AdminProductResponse(products);
+    }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
+    public AdminProductResponse.Item review(Long productId, AdminProductApprovalRequest request, String approverEmail) {
+        var product = productRepository.findWithDestinationByProductId(productId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "옵션상품을 찾을 수 없습니다."));
+        if (product.getPartner() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "파트너사 등록 상품만 승인 처리할 수 있습니다.");
+        var status = normalizeDecisionStatus(request.decisionStatus());
+        var reason = normalizeNullable(request.reason());
+        if (!"APPROVED".equals(status) && reason == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "거절 또는 보류 사유를 입력하세요.");
+        }
+        var approver = userRepository.findByUserEmail(approverEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "승인 담당자 정보를 찾을 수 없습니다."));
+        product.review(status, reason, "APPROVED".equals(status) ? java.time.LocalDateTime.now() : null);
+        approvalHistoryRepository.save(ProductApprovalHistory.builder()
+                .product(product).decisionStatus(status).decisionReason(reason).approver(approver).build());
+        return AdminProductResponse.Item.from(product, optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product));
+    }
+
+    @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
+    public java.util.List<AdminProductApprovalHistoryResponse> approvalHistory(Long productId) {
+        var product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "옵션상품을 찾을 수 없습니다."));
+        return approvalHistoryRepository.findAllByProductOrderByDecisionDtDesc(product).stream()
+                .map(AdminProductApprovalHistoryResponse::from).toList();
+    }
+
     private void saveOptions(TravelProduct product, java.util.List<com.trip.routemate.admin.dto.AdminProductOptionRequest> requests) {
         optionRepository.deleteAllByProduct(product);
         if (requests == null) return;
@@ -121,4 +166,6 @@ public class AdminProductService {
     private String normalizeUseYn(String value) { return "N".equalsIgnoreCase(value) ? "N" : "Y"; }
     private int normalizeSortOrder(Integer value) { return value == null || value < 1 ? 1 : value; }
     private String normalizeStatus(String value) { var normalized = normalize(value).toUpperCase(); if ("ALL".equals(normalized) || "Y".equals(normalized) || "N".equals(normalized)) return normalized; throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "올바르지 않은 판매 상태입니다."); }
+    private String normalizeApprovalStatus(String value) { var normalized = normalize(value).toUpperCase(); if (java.util.Set.of("ALL", "PENDING", "APPROVED", "REJECTED", "HOLD").contains(normalized)) return normalized; throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "올바르지 않은 승인 상태입니다."); }
+    private String normalizeDecisionStatus(String value) { var normalized = normalize(value).toUpperCase(); if (java.util.Set.of("APPROVED", "REJECTED", "HOLD").contains(normalized)) return normalized; throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "승인, 거절, 보류 중 하나를 선택하세요."); }
 }

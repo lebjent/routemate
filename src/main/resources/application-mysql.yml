@@ -4,11 +4,11 @@ spring:
       ddl-auto: validate
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
-        highlight_sql: true
+        highlight_sql: false
 
   flyway:
     enabled: true
@@ -24,3 +24,8 @@ spring:
 
 server:
   port: 8090
+
+logging:
+  level:
+    org.hibernate.SQL: ${APP_SQL_LOG_LEVEL:DEBUG}
+    org.hibernate.orm.jdbc.bind: ${APP_SQL_BIND_LOG_LEVEL:TRACE}

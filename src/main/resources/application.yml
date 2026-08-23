@@ -7,6 +7,10 @@ spring:
 
   jpa:
     open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: false
 
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:mysql}
@@ -36,3 +40,13 @@ management:
   endpoint:
     health:
       show-details: never
+
+logging:
+  structured:
+    format:
+      console: logstash
+    json:
+      add:
+        service: ${spring.application.name}
+  level:
+    com.trip.routemate.common.logging: INFO

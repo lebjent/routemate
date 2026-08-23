@@ -2,6 +2,8 @@ package com.trip.routemate.admin.controller;
 
 import com.trip.routemate.admin.dto.AdminProductRequest;
 import com.trip.routemate.admin.dto.AdminProductResponse;
+import com.trip.routemate.admin.dto.AdminProductApprovalRequest;
+import com.trip.routemate.admin.dto.AdminProductApprovalHistoryResponse;
 import com.trip.routemate.admin.service.AdminProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,5 +39,22 @@ public class AdminProductController {
     public ResponseEntity<AdminProductResponse.Item> update(@PathVariable Long productId,
                                                              @Valid @RequestBody AdminProductRequest request) {
         return ResponseEntity.ok(productService.update(productId, request));
+    }
+
+    @GetMapping("/approvals")
+    public ResponseEntity<AdminProductResponse> getApprovalProducts(@RequestParam(defaultValue = "PENDING") String status) {
+        return ResponseEntity.ok(productService.getApprovalProducts(status));
+    }
+
+    @PatchMapping("/{productId}/approval")
+    public ResponseEntity<AdminProductResponse.Item> review(@PathVariable Long productId,
+                                                             @Valid @RequestBody AdminProductApprovalRequest request,
+                                                             org.springframework.security.core.Authentication authentication) {
+        return ResponseEntity.ok(productService.review(productId, request, authentication.getName()));
+    }
+
+    @GetMapping("/{productId}/approval-history")
+    public ResponseEntity<java.util.List<AdminProductApprovalHistoryResponse>> history(@PathVariable Long productId) {
+        return ResponseEntity.ok(productService.approvalHistory(productId));
     }
 }

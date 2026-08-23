@@ -19,11 +19,13 @@ import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminStaff } from './pages/admin/AdminStaff';
 import { AdminDestinations } from './pages/admin/AdminDestinations';
 import { AdminRecommendations } from './pages/admin/AdminRecommendations';
-import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminPartners } from './pages/admin/AdminPartners';
 import { AdminPartnerOnboarding } from './pages/admin/AdminPartnerOnboarding';
+import { AdminProductApprovals } from './pages/admin/AdminProductApprovals';
 import { PartnerLogin } from './pages/partner/PartnerLogin';
-import { PartnerStaff } from './pages/partner/PartnerStaff';
+import { PartnerStaffManagement } from './pages/partner/PartnerStaffManagement';
+import { PartnerDashboard } from './pages/partner/PartnerDashboard';
+import { PartnerProductManagement } from './pages/partner/PartnerProductManagement';
 import { AuthProvider } from './contexts/AuthContext';
 
 function AppRoutes() {
@@ -40,16 +42,18 @@ function AppRoutes() {
         <Route path="/password-reset" element={<PasswordReset />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/partner/login" element={<PartnerLogin />} />
-        <Route path="/partner" element={<PartnerStaff />} />
+        <Route path="/partner" element={<PartnerDashboard />} />
+        <Route path="/partner/products" element={<PartnerProductManagement />} />
+        <Route path="/partner/staff" element={<PartnerStaffManagement />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="staff" element={<AdminStaff />} />
           <Route path="destinations" element={<AdminDestinations />} />
           <Route path="recommendations" element={<AdminRecommendations />} />
-          <Route path="products" element={<AdminProducts />} />
           <Route path="partners" element={<AdminPartners />} />
           <Route path="partners/new" element={<AdminPartnerOnboarding />} />
+          <Route path="product-approvals" element={<AdminProductApprovals />} />
         </Route>
         <Route path="/join" element={<Join />} />
         <Route path="/lotto" element={<Lotto />} />

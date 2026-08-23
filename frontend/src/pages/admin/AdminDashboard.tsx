@@ -93,7 +93,7 @@ export const AdminDashboard = () => {
 
         <section className="mt-6 grid gap-6 xl:grid-cols-[0.8fr_1.45fr]">
           <article className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-            <div className="flex items-center justify-between"><div><h2 className="font-bold text-white">상품 포트폴리오</h2><p className="mt-1 text-xs text-slate-600">상품 유형별 등록·판매 현황</p></div><Link to="/admin/products" className="text-xs font-semibold text-indigo-300 hover:text-indigo-200">상품 관리 <i className="fa-solid fa-chevron-right ml-1" /></Link></div>
+            <div className="flex items-center justify-between"><div><h2 className="font-bold text-white">상품 포트폴리오</h2><p className="mt-1 text-xs text-slate-600">상품 유형별 등록·판매 현황</p></div><Link to="/admin/partners" className="text-xs font-semibold text-indigo-300 hover:text-indigo-200">파트너사 관리 <i className="fa-solid fa-chevron-right ml-1" /></Link></div>
             <div className="mt-6 space-y-5">
               {data.productTypes.map((item) => <div key={item.productType}>
                 <div className="mb-2 flex items-center justify-between gap-4 text-xs"><span className="flex items-center gap-2 font-semibold text-slate-300"><span className={`h-2 w-2 rounded-full ${productTypeColors[item.productType] ?? 'bg-slate-400'}`} />{productTypeLabels[item.productType] ?? item.productType}</span><span className="text-slate-600"><strong className="text-slate-300">{formatNumber(item.activeCount)}</strong> 판매 / {formatNumber(item.totalCount)}</span></div>
