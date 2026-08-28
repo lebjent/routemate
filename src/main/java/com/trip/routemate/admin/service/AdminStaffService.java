@@ -9,6 +9,7 @@ import com.trip.routemate.admin.security.AdminRolePolicy;
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.repository.UserMstrRepository;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Set;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -68,7 +70,7 @@ public class AdminStaffService {
         if (userMstrRepository.existsByUserNicknm(nickname)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다.");
         }
-        var staff = UserMstr.builder()
+        @NonNull UserMstr staff = Objects.requireNonNull(UserMstr.builder()
                 .userEmail(email)
                 .userPwd(passwordEncoder.encode(request.userPwd()))
                 .userNicknm(nickname)
@@ -76,14 +78,14 @@ public class AdminStaffService {
                 .userRole(role)
                 .userStatCd("ACTIVE")
                 .delYn("N")
-                .build();
+                .build(), "직원 계정을 생성할 수 없습니다.");
         var saved = userMstrRepository.save(staff);
         adminRoleRepository.findByRoleCodeAndUseYn(role, "Y").ifPresent(adminRole ->
-                adminUserRoleRepository.save(AdminUserRole.builder()
+                adminUserRoleRepository.save(Objects.requireNonNull(AdminUserRole.builder()
                         .userId(saved.getUserId())
                         .roleId(adminRole.getRoleId())
                         .primaryYn("Y")
-                        .build())
+                        .build()))
         );
         return AdminStaffListResponse.StaffItem.from(saved);
     }
@@ -119,11 +121,11 @@ public class AdminStaffService {
     private void syncPrimaryRole(Long userId, String roleCode) {
         adminRoleRepository.findByRoleCodeAndUseYn(roleCode, "Y").ifPresent(adminRole -> {
             adminUserRoleRepository.deleteAllByUserId(userId);
-            adminUserRoleRepository.save(AdminUserRole.builder()
+            adminUserRoleRepository.save(Objects.requireNonNull(AdminUserRole.builder()
                     .userId(userId)
                     .roleId(adminRole.getRoleId())
                     .primaryYn("Y")
-                    .build());
+                    .build()));
         });
     }
 

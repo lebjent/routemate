@@ -38,7 +38,7 @@ public class PartnerAuthController {
                 .filter(found -> passwordEncoder.matches(request.getUserPwd(), found.getUserPwd()))
                 .filter(found -> "ACTIVE".equals(found.getUserStatCd()) && "N".equals(found.getDelYn()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "파트너 직원 ID 또는 비밀번호를 확인해 주세요."));
-        var partnerUser = partnerUserRepository.findByUserUserEmailAndUseYn(user.getUserEmail(), "Y")
+        partnerUserRepository.findByUserUserEmailAndUseYn(user.getUserEmail(), "Y")
                 .filter(mapping -> "ACTIVE".equals(mapping.getPartner().getPartnerStatus()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "활성 상태의 파트너사 직원 계정이 아닙니다."));
         var context = SecurityContextHolder.createEmptyContext();

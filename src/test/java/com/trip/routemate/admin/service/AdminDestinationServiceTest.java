@@ -17,12 +17,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +34,7 @@ class AdminDestinationServiceTest {
     @InjectMocks private AdminDestinationService adminDestinationService;
 
     @Test
+    @SuppressWarnings("null") // Mockito any()는 스텁 설정 시에만 null을 반환합니다.
     void createPlace_savesCategoryAndCountryRegionRelationship() {
         var country = country(1L, "대한민국");
         var region = region(10L, country, "서울");
@@ -42,7 +43,8 @@ class AdminDestinationServiceTest {
 
         when(countryRepository.findById(1L)).thenReturn(Optional.of(country));
         when(regionRepository.findByRegionIdAndCountry(10L, country)).thenReturn(Optional.of(region));
-        when(destinationRepository.save(any(Destination.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(destinationRepository.save(any(Destination.class)))
+                .thenAnswer(invocation -> Objects.requireNonNull(invocation.<Destination>getArgument(0)));
 
         var result = adminDestinationService.createPlace(request);
 
@@ -65,7 +67,7 @@ class AdminDestinationServiceTest {
         assertThatThrownBy(() -> adminDestinationService.createPlace(request))
                 .isInstanceOfSatisfying(ResponseStatusException.class,
                         exception -> assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
-        verify(destinationRepository, never()).save(any(Destination.class));
+        verifyNoInteractions(destinationRepository);
     }
 
     @Test

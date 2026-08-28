@@ -4,13 +4,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.trip.routemate.lotto.config.LottoHistoryProperties;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
+import java.util.Objects;
 
 /** 동행복권 이력 API 호출과 재시도 정책을 전담합니다. */
 @Component
+@NullMarked
 public class LottoHistoryClient {
 
     private final RestClient restClient;
@@ -23,9 +27,8 @@ public class LottoHistoryClient {
 
     @Retry(name = "lotto-history")
     public List<LottoDraw> requestDrawPage(int drawNumber) {
-        var requestUrl = "%s?srchDir=center&srchLtEpsd=%d".formatted(properties.sourceUrl(), drawNumber);
         var response = restClient.get()
-                .uri(requestUrl)
+                .uri(requestUrl(drawNumber))
                 .retrieve()
                 .body(new ParameterizedTypeReference<OfficialLottoHistoryResponse>() {
                 });
@@ -33,6 +36,15 @@ public class LottoHistoryClient {
             return List.of();
         }
         return response.data().draws();
+    }
+
+    @NonNull
+    @SuppressWarnings("null") // JDT가 JDK String.formatted()의 non-null 반환 계약을 알지 못하는 오탐입니다.
+    private String requestUrl(int drawNumber) {
+        return "%s?srchDir=center&srchLtEpsd=%d".formatted(
+                Objects.requireNonNull(properties.sourceUrl(), "로또 이력 API 주소가 필요합니다."),
+                drawNumber
+        );
     }
 
     private record OfficialLottoHistoryResponse(OfficialLottoHistoryData data) {

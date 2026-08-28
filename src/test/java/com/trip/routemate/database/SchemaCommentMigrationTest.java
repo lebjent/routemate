@@ -6,6 +6,7 @@ import org.springframework.core.io.ClassPathResource;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -99,7 +100,8 @@ class SchemaCommentMigrationTest {
     }
 
     private String resource(String path) throws Exception {
-        return new ClassPathResource(path).getContentAsString(StandardCharsets.UTF_8);
+        return Objects.requireNonNull(new ClassPathResource(Objects.requireNonNull(path))
+                .getContentAsString(Objects.requireNonNull(StandardCharsets.UTF_8)));
     }
 
     private record Targets(Set<String> tables, Set<String> columns) {

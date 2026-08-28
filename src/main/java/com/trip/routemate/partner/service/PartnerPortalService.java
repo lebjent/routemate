@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +63,7 @@ public class PartnerPortalService {
     @Transactional
     public PartnerProductResponse create(Authentication authentication, PartnerProductRequest request) {
         var partner = partner(authentication);
-        var product = TravelProduct.builder()
+        var product = Objects.requireNonNull(TravelProduct.builder()
                 .destination(destination(request.destinationId()))
                 .partner(partner)
                 .productName(normalize(request.productName()))
@@ -89,7 +90,7 @@ public class PartnerPortalService {
                 .currency(currency(request.currency()))
                 .useYn(useYn(request.useYn()))
                 .sortOrder(sortOrder(request.sortOrder()))
-                .build();
+                .build());
         productRepository.save(product);
         saveOptions(product, request.options());
         return response(product);
@@ -116,12 +117,12 @@ public class PartnerPortalService {
     private void saveOptions(TravelProduct product, List<PartnerProductOptionRequest> requests) {
         optionRepository.deleteAllByProduct(product);
         if (requests == null) return;
-        optionRepository.saveAll(requests.stream().map(request -> TravelProductOption.builder()
+        optionRepository.saveAll(Objects.requireNonNull(requests.stream().map(request -> TravelProductOption.builder()
                 .product(product).optionName(normalize(request.optionName())).optionDesc(nullable(request.optionDesc()))
                 .price(request.price()).currency(currency(request.currency()))
                 .cancellationPolicy(nullable(request.cancellationPolicy())).validityText(nullable(request.validityText()))
                 .confirmationType(normalize(request.confirmationType()).toUpperCase())
-                .useYn(useYn(request.useYn())).sortOrder(sortOrder(request.sortOrder())).build()).toList());
+                .useYn(useYn(request.useYn())).sortOrder(sortOrder(request.sortOrder())).build()).toList()));
     }
 
     private PartnerProductResponse response(TravelProduct product) {

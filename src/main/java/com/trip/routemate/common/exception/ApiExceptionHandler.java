@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.LinkedHashMap;
+import java.util.Objects;
 
 /** API 오류 형식을 RFC 9457 Problem Details로 통일합니다. */
 @Slf4j
@@ -51,7 +52,7 @@ public class ApiExceptionHandler {
     }
 
     private ProblemDetail problem(HttpStatus status, String detail) {
-        var problem = ProblemDetail.forStatusAndDetail(status, detail);
+        var problem = ProblemDetail.forStatusAndDetail(Objects.requireNonNull(status), detail);
         addTraceId(problem);
         return problem;
     }

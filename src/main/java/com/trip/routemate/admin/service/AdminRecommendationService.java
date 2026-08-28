@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -31,14 +33,14 @@ public class AdminRecommendationService {
     public AdminRecommendationResponse.Item create(AdminRecommendationRequest request) {
         var destination = getDestination(request.countryId(), request.regionId());
         validatePeriod(request);
-        var recommendation = recommendationRepository.save(DestinationRecommendation.builder()
+        var recommendation = recommendationRepository.save(Objects.requireNonNull(DestinationRecommendation.builder()
                 .destination(destination)
                 .imageUrl(normalizeImageUrl(request.imageUrl()))
                 .displayStartDt(request.displayStartDt())
                 .displayEndDt(request.displayEndDt())
                 .sortOrder(normalizeSortOrder(request.sortOrder()))
                 .useYn(normalizeUseYn(request.useYn()))
-                .build());
+                .build()));
         return AdminRecommendationResponse.Item.from(recommendation);
     }
 

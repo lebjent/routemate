@@ -21,6 +21,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -59,9 +60,7 @@ class AdminAuthControllerTest {
                 .thenReturn(AdminRolePolicy.permissionNamesFor(admin.getUserRole()));
 
         var result = adminAuthController.login(dto, request, response);
-        var body = result.getBody();
-
-        assertThat(body).isNotNull();
+        var body = Objects.requireNonNull(result.getBody());
         assertThat(body.userRole()).isEqualTo("ADMIN");
         assertThat(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
                 .extracting("authority")
@@ -98,9 +97,7 @@ class AdminAuthControllerTest {
                 .thenReturn(AdminRolePolicy.permissionNamesFor(senior.getUserRole()));
 
         var result = adminAuthController.login(dto, request, response);
-        var body = result.getBody();
-
-        assertThat(body).isNotNull();
+        var body = Objects.requireNonNull(result.getBody());
         assertThat(body.permissions())
                 .containsExactlyInAnyOrder("DASHBOARD_VIEW", "MEMBER_VIEW", "PLAN_MANAGE");
         assertThat(SecurityContextHolder.getContext().getAuthentication().getAuthorities())

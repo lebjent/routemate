@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -59,7 +58,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, SecurityContextRepository securityContextRepository) throws Exception {
         http
                 // 비동기 Fetch 통신 및 Postman 요청을 위해 CSRF 보안 초기 해제
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(configurer -> configurer.disable())
 
                 .securityContext(context -> context
                         .securityContextRepository(securityContextRepository)
@@ -86,8 +85,8 @@ public class SecurityConfig {
                 )
 
                 // 기본 로그인창 가로채기 및 HTTP Basic 인증 해제
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(configurer -> configurer.disable())
+                .httpBasic(configurer -> configurer.disable())
 
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")

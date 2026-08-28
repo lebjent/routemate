@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -66,12 +67,14 @@ class AdminStaffServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null") // Mockito any()는 스텁 설정 시에만 null을 반환합니다.
     void createStaff_createsActiveLocalStaffAccount() {
         var request = new AdminStaffCreateRequest(" Staff@RouteMate.com ", "password123", "신입 운영자", "JUNIOR");
         when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
         when(adminRoleRepository.findByRoleCodeAndUseYn("JUNIOR", "Y"))
                 .thenReturn(Optional.of(AdminRole.builder().roleId(4L).roleCode("JUNIOR").roleName("주니어").roleLevel(40).useYn("Y").build()));
-        when(userMstrRepository.save(any(UserMstr.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userMstrRepository.save(any(UserMstr.class)))
+                .thenAnswer(invocation -> Objects.requireNonNull(invocation.<UserMstr>getArgument(0)));
 
         var result = adminStaffService.createStaff(request);
 

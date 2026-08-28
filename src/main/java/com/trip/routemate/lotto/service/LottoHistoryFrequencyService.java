@@ -139,9 +139,9 @@ public class LottoHistoryFrequencyService {
         var topNumberCount = Math.clamp(properties.topNumberCount(), LOTTO_NUMBER_COUNT, MAX_LOTTO_NUMBER);
         var topNumbers = java.util.stream.IntStream.rangeClosed(MIN_LOTTO_NUMBER, MAX_LOTTO_NUMBER)
                 .mapToObj(number -> new LottoFrequencyResponse.NumberFrequency(number, counts[number]))
-                .sorted(Comparator.comparingInt(LottoFrequencyResponse.NumberFrequency::count)
+                .sorted(Comparator.comparingInt((LottoFrequencyResponse.NumberFrequency frequency) -> frequency.count())
                         .reversed()
-                        .thenComparingInt(LottoFrequencyResponse.NumberFrequency::number))
+                        .thenComparingInt(frequency -> frequency.number()))
                 .limit(topNumberCount)
                 .toList();
         var refreshedAt = Instant.now();
@@ -174,7 +174,7 @@ public class LottoHistoryFrequencyService {
 
         private List<Integer> topNumbers() {
             return topNumberFrequencies.stream()
-                    .map(LottoFrequencyResponse.NumberFrequency::number)
+                    .map(frequency -> frequency.number())
                     .toList();
         }
     }

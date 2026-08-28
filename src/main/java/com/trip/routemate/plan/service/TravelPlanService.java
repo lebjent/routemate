@@ -33,6 +33,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -103,15 +104,15 @@ public class TravelPlanService {
         var oldDays = travelDayRepository.findByTravelPlanOrderByDayNumberAsc(plan);
         var oldRegions = travelDayRegionRepository.findByTravelDayInOrderBySortOrderAsc(oldDays);
         var oldSchedules = travelScheduleRepository.findByTravelDayRegionInOrderBySortOrderAsc(oldRegions);
-        travelTransportRepository.deleteAll(travelTransportRepository.findByTravelScheduleIn(oldSchedules));
+        travelTransportRepository.deleteAll(Objects.requireNonNull(travelTransportRepository.findByTravelScheduleIn(oldSchedules)));
         travelTransportRepository.flush();
-        travelScheduleRepository.deleteAll(oldSchedules);
+        travelScheduleRepository.deleteAll(Objects.requireNonNull(oldSchedules));
         travelScheduleRepository.flush();
-        travelDayRegionRepository.deleteAll(oldRegions);
+        travelDayRegionRepository.deleteAll(Objects.requireNonNull(oldRegions));
         travelDayRegionRepository.flush();
-        travelDayRepository.deleteAll(oldDays);
+        travelDayRepository.deleteAll(Objects.requireNonNull(oldDays));
         travelDayRepository.flush();
-        travelPackingItemRepository.deleteAll(travelPackingItemRepository.findByTravelPlanOrderBySortOrderAsc(plan));
+        travelPackingItemRepository.deleteAll(Objects.requireNonNull(travelPackingItemRepository.findByTravelPlanOrderBySortOrderAsc(plan)));
         travelPackingItemRepository.flush();
 
         var spotCount = saveDays(plan, request.days(), user);
@@ -121,7 +122,7 @@ public class TravelPlanService {
     }
 
     private TravelPlan createPlan(UserMstr user, CreateTravelPlanRequest request) {
-        return travelPlanRepository.save(TravelPlan.builder()
+        return travelPlanRepository.save(Objects.requireNonNull(TravelPlan.builder()
                 .user(user)
                 .userNicknm(user.getUserNicknm())
                 .title(normalizeRequiredText(request.title(), "일정 제목을 입력해 주세요."))
@@ -133,7 +134,7 @@ public class TravelPlanService {
                 .likeCount(0)
                 .viewCount(0L)
                 .isPublic(normalizePublicFlag(request.isPublic()))
-                .build());
+                .build()));
     }
 
     private int saveDays(TravelPlan plan, List<TravelDayRequest> dayRequests, UserMstr user) {
@@ -145,11 +146,11 @@ public class TravelPlanService {
     }
 
     private int saveDay(TravelPlan plan, TravelDayRequest dayRequest, UserMstr user) {
-        var day = travelDayRepository.save(TravelDay.builder()
+        var day = travelDayRepository.save(Objects.requireNonNull(TravelDay.builder()
                 .travelPlan(plan)
                 .dayNumber(dayRequest.dayNumber())
                 .planDate(dayRequest.planDate())
-                .build());
+                .build()));
         var spotCount = 0;
         for (var regionIndex = 0; regionIndex < dayRequest.regions().size(); regionIndex++) {
             spotCount += saveDayRegion(day, dayRequest.regions().get(regionIndex), regionIndex + 1, user);
@@ -162,13 +163,13 @@ public class TravelPlanService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "선택한 국가를 찾을 수 없습니다."));
         var region = regionRepository.findByCountryAndRegionCode(country, request.regionCode().trim())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "선택한 지역을 찾을 수 없습니다."));
-        var dayRegion = travelDayRegionRepository.save(TravelDayRegion.builder()
+        var dayRegion = travelDayRegionRepository.save(Objects.requireNonNull(TravelDayRegion.builder()
                 .travelDay(day)
                 .country(country)
                 .region(region)
                 .regionNote(normalizeOptionalText(request.note()))
                 .sortOrder(sortOrder)
-                .build());
+                .build()));
         return saveSchedules(dayRegion, request.schedules(), user);
     }
 
@@ -186,7 +187,7 @@ public class TravelPlanService {
 
     private void saveSchedule(TravelDayRegion dayRegion, TravelScheduleRequest request, int sortOrder, UserMstr user) {
         var productOrder = resolveProductOrder(request.productOrderId(), user);
-        var schedule = travelScheduleRepository.save(TravelSchedule.builder()
+        var schedule = travelScheduleRepository.save(Objects.requireNonNull(TravelSchedule.builder()
                 .travelDayRegion(dayRegion)
                 .productOrder(productOrder)
                 .scheduleTime(normalizeOptionalText(request.time()))
@@ -194,7 +195,7 @@ public class TravelPlanService {
                 .location(normalizeOptionalText(request.location()))
                 .memo(normalizeOptionalText(request.memo()))
                 .sortOrder(sortOrder)
-                .build());
+                .build()));
         saveTransport(schedule, request);
     }
 
@@ -203,14 +204,14 @@ public class TravelPlanService {
         if (transportType == null) {
             return;
         }
-        travelTransportRepository.save(TravelTransport.builder()
+        travelTransportRepository.save(Objects.requireNonNull(TravelTransport.builder()
                 .travelSchedule(schedule)
                 .transportType(transportType)
                 .transportName(normalizeOptionalText(request.transportName()))
                 .departureTime(normalizeOptionalText(request.departureTime()))
                 .arrivalTime(normalizeOptionalText(request.arrivalTime()))
                 .transportMemo(normalizeOptionalText(request.transportMemo()))
-                .build());
+                .build()));
     }
 
     private void savePackingItems(TravelPlan plan, List<PackingItemRequest> packingItems) {
@@ -221,12 +222,12 @@ public class TravelPlanService {
             if (itemName == null) {
                 continue;
             }
-            travelPackingItemRepository.save(TravelPackingItem.builder()
+            travelPackingItemRepository.save(Objects.requireNonNull(TravelPackingItem.builder()
                     .travelPlan(plan)
                     .itemName(itemName)
                     .requiredYn(Boolean.FALSE.equals(item.required()) ? "N" : "Y")
                     .sortOrder(index + 1)
-                    .build());
+                    .build()));
         }
     }
 
@@ -237,7 +238,7 @@ public class TravelPlanService {
 
         var expectedDays = request.travelStartDate().datesUntil(request.travelEndDate().plusDays(1)).toList();
         var days = request.days() == null ? List.<TravelDayRequest>of() : new ArrayList<>(request.days());
-        days.sort(Comparator.comparing(TravelDayRequest::dayNumber));
+        days.sort(Comparator.comparing((TravelDayRequest day) -> day.dayNumber()));
         for (var day : days) {
             if (day.dayNumber() < 1 || day.dayNumber() > expectedDays.size()
                     || !expectedDays.contains(day.planDate())) {
@@ -295,8 +296,9 @@ public class TravelPlanService {
     }
 
     private String normalizeTransportType(String value) {
-        return switch (value == null ? "" : value.trim()) {
-            case "TRAIN", "CAR", "FLIGHT", "CRUISE", "OTHER" -> value.trim();
+        var normalized = value == null ? "" : value.trim();
+        return switch (normalized) {
+            case "TRAIN", "CAR", "FLIGHT", "CRUISE", "OTHER" -> normalized;
             default -> null;
         };
     }

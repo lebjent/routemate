@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -49,7 +51,7 @@ public class AdminProductService {
     public AdminProductResponse.Item create(AdminProductRequest request) {
         var destination = getDestination(request.destinationId());
         var partner = getPartner(request.partnerId());
-        var product = productRepository.save(TravelProduct.builder()
+        var product = productRepository.save(Objects.requireNonNull(TravelProduct.builder()
                 .destination(destination).partner(partner)
                 .productName(normalize(request.productName()))
                 .productSummary(normalizeNullable(request.productSummary()))
@@ -73,7 +75,7 @@ public class AdminProductService {
                 .currency(normalizeCurrency(request.currency()))
                 .useYn(normalizeUseYn(request.useYn()))
                 .sortOrder(normalizeSortOrder(request.sortOrder()))
-                .build());
+                .build()));
         saveOptions(product, request.options());
         return AdminProductResponse.Item.from(product, optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product));
     }
@@ -121,14 +123,14 @@ public class AdminProductService {
         var approver = userRepository.findByUserEmail(approverEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "승인 담당자 정보를 찾을 수 없습니다."));
         product.review(status, reason, "APPROVED".equals(status) ? java.time.LocalDateTime.now() : null);
-        approvalHistoryRepository.save(ProductApprovalHistory.builder()
-                .product(product).decisionStatus(status).decisionReason(reason).approver(approver).build());
+        approvalHistoryRepository.save(Objects.requireNonNull(ProductApprovalHistory.builder()
+                .product(product).decisionStatus(status).decisionReason(reason).approver(approver).build()));
         return AdminProductResponse.Item.from(product, optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product));
     }
 
     @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
     public java.util.List<AdminProductApprovalHistoryResponse> approvalHistory(Long productId) {
-        var product = productRepository.findById(productId)
+        var product = productRepository.findById(Objects.requireNonNull(productId, "상품 ID가 필요합니다."))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "옵션상품을 찾을 수 없습니다."));
         return approvalHistoryRepository.findAllByProductOrderByDecisionDtDesc(product).stream()
                 .map(AdminProductApprovalHistoryResponse::from).toList();
@@ -142,7 +144,7 @@ public class AdminProductService {
                 .price(request.price()).currency(normalizeCurrency(request.currency())).cancellationPolicy(normalizeNullable(request.cancellationPolicy()))
                 .validityText(normalizeNullable(request.validityText())).confirmationType(normalize(request.confirmationType()).toUpperCase())
                 .useYn(normalizeUseYn(request.useYn())).sortOrder(normalizeSortOrder(request.sortOrder())).build()).toList();
-        optionRepository.saveAll(options);
+        optionRepository.saveAll(Objects.requireNonNull(options));
     }
 
     private Destination getDestination(Long destinationId) {

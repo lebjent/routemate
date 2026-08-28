@@ -19,6 +19,12 @@ spring:
     problemdetails:
       enabled: true
 
+  cache:
+    type: caffeine
+    cache-names: homeData,destinationCountries,destinationRegions
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=1m
+
 app:
   lotto:
     history:

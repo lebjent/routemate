@@ -38,6 +38,7 @@ class ProductOrderServiceTest {
     @InjectMocks ProductOrderService productOrderService;
 
     @Test
+    @SuppressWarnings("null") // Mockito matcher·ArgumentCaptor의 nullness 메타데이터 오탐을 제한합니다.
     void createOrder_usesTheCurrentServerOptionPriceAndStoresSnapshots() {
         var country = Country.builder().countryId(1L).countryName("대한민국").countryCode("KR").build();
         var region = Region.builder().regionId(2L).country(country).regionName("서울").regionCode("SEOUL").build();

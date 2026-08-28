@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -85,7 +86,10 @@ class PlaceSeedMigrationTest {
     }
 
     private void execute(Connection connection, String resourcePath) {
-        ScriptUtils.executeSqlScript(connection, new ClassPathResource(resourcePath));
+        ScriptUtils.executeSqlScript(
+                Objects.requireNonNull(connection),
+                new ClassPathResource(Objects.requireNonNull(resourcePath))
+        );
     }
 
     private long queryForLong(Connection connection, String sql) throws SQLException {

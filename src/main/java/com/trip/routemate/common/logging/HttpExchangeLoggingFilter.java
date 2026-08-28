@@ -13,8 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -33,6 +34,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@NullMarked
 public class HttpExchangeLoggingFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(HttpExchangeLoggingFilter.class);
     private static final Logger exchangeLog = LoggerFactory.getLogger("http.exchange");
@@ -45,12 +47,16 @@ public class HttpExchangeLoggingFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         return !request.getRequestURI().startsWith("/api/") || "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    )
             throws ServletException, IOException {
         var cachedRequest = new ContentCachingRequestWrapper(request, MAX_BODY_LENGTH);
         var cachedResponse = new ContentCachingResponseWrapper(response);
@@ -106,7 +112,7 @@ public class HttpExchangeLoggingFilter extends OncePerRequestFilter {
         }
     }
 
-    private @NonNull Charset resolveCharset(@Nullable String encoding) {
+    private @org.jspecify.annotations.NonNull Charset resolveCharset(@Nullable String encoding) {
         if (encoding == null || encoding.isBlank() || "ISO-8859-1".equalsIgnoreCase(encoding)) {
             return Objects.requireNonNull(StandardCharsets.UTF_8);
         }

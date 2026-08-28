@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -44,7 +45,7 @@ public class ProductOrderService {
         var destinationName = String.join(" · ", destination.getCountry().getCountryName(),
                 destination.getRegion().getRegionName(), destination.getDestName());
 
-        var order = orderRepository.save(ProductOrder.builder()
+        var order = orderRepository.save(Objects.requireNonNull(ProductOrder.builder()
                 .orderNo("RM" + UUID.randomUUID().toString().replace("-", "").toUpperCase(Locale.ROOT))
                 .user(user)
                 .product(product)
@@ -61,7 +62,7 @@ public class ProductOrderService {
                 .buyerName(request.buyerName().trim())
                 .buyerEmail(request.buyerEmail().trim().toLowerCase(Locale.ROOT))
                 .buyerPhone(normalizeNullable(request.buyerPhone()))
-                .build());
+                .build()));
         return ProductOrderResponse.from(order);
     }
 

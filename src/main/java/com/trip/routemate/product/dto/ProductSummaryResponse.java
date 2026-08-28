@@ -27,7 +27,7 @@ public record ProductSummaryResponse(
 ) {
     public static ProductSummaryResponse from(TravelProduct product, List<TravelProductOption> options) {
         var minimumOption = options.stream()
-                .min(Comparator.comparing(TravelProductOption::getPrice))
+                .min(Comparator.comparing(option -> option.getPrice()))
                 .orElseThrow();
         var destination = product.getDestination();
         return new ProductSummaryResponse(

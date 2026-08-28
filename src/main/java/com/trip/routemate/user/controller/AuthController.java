@@ -1,6 +1,5 @@
 package com.trip.routemate.user.controller;
 
-import com.trip.routemate.admin.security.AdminRolePolicy;
 import com.trip.routemate.common.security.AuthorizationService;
 
 import com.trip.routemate.user.domain.UserMstr;

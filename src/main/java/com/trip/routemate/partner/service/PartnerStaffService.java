@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Locale;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -43,11 +44,11 @@ public class PartnerStaffService {
         if (password.length() < 8) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상이어야 합니다.");
         if (userMstrRepository.existsByUserEmail(loginId)) throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용 중인 직원 ID입니다.");
         if (userMstrRepository.existsByUserNicknm(name)) throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용 중인 직원 이름입니다.");
-        var user = userMstrRepository.save(UserMstr.builder()
+        var user = userMstrRepository.save(Objects.requireNonNull(UserMstr.builder()
                 .userEmail(loginId).userPwd(passwordEncoder.encode(password)).userNicknm(name)
-                .snsProvider("LOCAL").userRole("PARTNER_STAFF").userStatCd("ACTIVE").delYn("N").build());
-        var partnerUser = partnerUserRepository.save(PartnerUser.builder()
-                .partner(owner.getPartner()).user(user).partnerRole("STAFF").useYn("Y").build());
+                .snsProvider("LOCAL").userRole("PARTNER_STAFF").userStatCd("ACTIVE").delYn("N").build()));
+        var partnerUser = partnerUserRepository.save(Objects.requireNonNull(PartnerUser.builder()
+                .partner(owner.getPartner()).user(user).partnerRole("STAFF").useYn("Y").build()));
         return PartnerStaffResponse.Item.from(partnerUser);
     }
 

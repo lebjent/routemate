@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -55,7 +57,10 @@ public class AdminDestinationService {
         var name = request.countryName().trim();
         var code = request.countryCode().trim().toUpperCase();
         if (countryRepository.findByCountryName(name).isPresent() || countryRepository.findByCountryCode(code).isPresent()) throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 등록된 국가명 또는 국가 코드입니다.");
-        var country = countryRepository.save(Country.builder().countryName(name).countryCode(code).countryStatCd(normalizeStatusForSave(request.countryStatCd())).build());
+        var country = countryRepository.save(Objects.requireNonNull(
+                Country.builder().countryName(name).countryCode(code)
+                        .countryStatCd(normalizeStatusForSave(request.countryStatCd())).build()
+        ));
         return AdminDestinationResponse.CountryItem.from(country, 0);
     }
 
@@ -77,7 +82,11 @@ public class AdminDestinationService {
         var country = getCountry(countryId);
         var code = request.regionCode().trim().toUpperCase();
         if (regionRepository.findByCountryAndRegionCode(country, code).isPresent()) throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 등록된 지역 코드입니다.");
-        var region = regionRepository.save(Region.builder().country(country).regionName(request.regionName().trim()).regionCode(code).sortOrder(request.sortOrder() == null ? 0 : request.sortOrder()).regionStatCd(normalizeStatusForSave(request.regionStatCd())).build());
+        var region = regionRepository.save(Objects.requireNonNull(
+                Region.builder().country(country).regionName(request.regionName().trim()).regionCode(code)
+                        .sortOrder(request.sortOrder() == null ? 0 : request.sortOrder())
+                        .regionStatCd(normalizeStatusForSave(request.regionStatCd())).build()
+        ));
         return AdminDestinationResponse.RegionItem.from(region);
     }
 
@@ -113,10 +122,10 @@ public class AdminDestinationService {
         var country = getCountry(request.countryId());
         var region = regionRepository.findByRegionIdAndCountry(request.regionId(), country)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "선택한 국가에 속한 지역이 아닙니다."));
-        var place = destinationRepository.save(com.trip.routemate.destination.domain.Destination.builder()
+        var place = destinationRepository.save(Objects.requireNonNull(com.trip.routemate.destination.domain.Destination.builder()
                 .destName(request.destName().trim()).destDesc(request.destDesc()).country(country).region(region)
                 .category(request.category()).imageUrl(normalizeImageUrl(request.imageUrl()))
-                .mapLat(request.mapLat()).mapLng(request.mapLng()).likeCount(0).build());
+                .mapLat(request.mapLat()).mapLng(request.mapLng()).likeCount(0).build()));
         return AdminDestinationPlaceResponse.PlaceItem.from(place);
     }
 
@@ -132,7 +141,7 @@ public class AdminDestinationService {
         return AdminDestinationPlaceResponse.PlaceItem.from(place);
     }
 
-    private Country getCountry(Long countryId) { return countryRepository.findById(countryId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "국가를 찾을 수 없습니다.")); }
+    private Country getCountry(Long countryId) { return countryRepository.findById(Objects.requireNonNull(countryId, "국가 ID가 필요합니다.")).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "국가를 찾을 수 없습니다.")); }
     private String normalizeStatus(String status) { var value = status == null ? "ALL" : status.trim().toUpperCase(); if ("ALL".equals(value) || "ACTIVE".equals(value) || "INACTIVE".equals(value)) return value; throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "올바르지 않은 상태입니다."); }
     private String normalizeStatusForSave(String status) { var value = status == null || status.isBlank() ? "ACTIVE" : status.trim().toUpperCase(); if ("ACTIVE".equals(value) || "INACTIVE".equals(value)) return value; throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "올바르지 않은 상태입니다."); }
     private String normalizeImageUrl(String imageUrl) { return imageUrl == null || imageUrl.isBlank() ? null : imageUrl.trim(); }

@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -38,7 +39,7 @@ public class AdminPartnerService {
         var normalizedQuery = normalize(query).toLowerCase(Locale.ROOT);
         var normalizedStatus = normalize(status).toUpperCase(Locale.ROOT);
         var counts = productRepository.findPartnerProductCounts().stream().collect(Collectors.toMap(
-                TravelProductRepository.PartnerProductCountView::getPartnerId,
+                item -> item.getPartnerId(),
                 item -> new AdminPartnerResponse.ProductCount(item.getTotalProducts(), item.getActiveProducts(), item.getPendingProducts())));
         Predicate<PartnerCompany> queryFilter = partner -> normalizedQuery.isBlank()
                 || contains(partner.getPartnerName(), normalizedQuery) || contains(partner.getPartnerCode(), normalizedQuery)
@@ -66,24 +67,27 @@ public class AdminPartnerService {
         if (ownerPassword.length() < 8) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "대표 직원 비밀번호는 8자 이상이어야 합니다.");
         if (userMstrRepository.existsByUserEmail(ownerLoginId)) conflict("이미 사용 중인 대표 직원 ID입니다.");
         if (userMstrRepository.existsByUserNicknm(ownerName)) conflict("이미 사용 중인 대표 직원 이름입니다.");
-        var partner = partnerRepository.save(PartnerCompany.builder()
+        var partner = partnerRepository.save(Objects.requireNonNull(PartnerCompany.builder()
                 .partnerCode(generatePartnerCode()).partnerName(required(request.partnerName()))
                 .businessNumber(businessNumber).representativeName(representativeName)
                 .managerName(managerName).managerEmail(managerEmail)
                 .managerPhone(managerPhone).websiteUrl(nullable(request.websiteUrl()))
                 .commissionRate(request.commissionRate()).contractStartDate(request.contractStartDate()).contractEndDate(request.contractEndDate())
-                .partnerStatus(status(request.partnerStatus())).memo(nullable(request.memo())).build());
-        var owner = userMstrRepository.save(UserMstr.builder()
+                .partnerStatus(status(request.partnerStatus())).memo(nullable(request.memo())).build()));
+        var owner = userMstrRepository.save(Objects.requireNonNull(UserMstr.builder()
                 .userEmail(ownerLoginId).userPwd(passwordEncoder.encode(ownerPassword)).userNicknm(ownerName)
-                .snsProvider("LOCAL").userRole("PARTNER_OWNER").userStatCd("ACTIVE").delYn("N").build());
-        partnerUserRepository.save(PartnerUser.builder().partner(partner).user(owner).partnerRole("OWNER").useYn("Y").build());
+                .snsProvider("LOCAL").userRole("PARTNER_OWNER").userStatCd("ACTIVE").delYn("N").build()));
+        partnerUserRepository.save(Objects.requireNonNull(
+                PartnerUser.builder().partner(partner).user(owner).partnerRole("OWNER").useYn("Y").build()
+        ));
         return AdminPartnerResponse.Item.from(partner, AdminPartnerResponse.ProductCount.empty());
     }
 
     @Transactional
     @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
     public AdminPartnerResponse.Item update(Long partnerId, AdminPartnerRequest request) {
-        var partner = partnerRepository.findById(partnerId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "파트너사를 찾을 수 없습니다."));
+        var partner = partnerRepository.findById(Objects.requireNonNull(partnerId, "파트너사 ID가 필요합니다."))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "파트너사를 찾을 수 없습니다."));
         validate(request, partnerId);
         partner.update(code(request.partnerCode()), required(request.partnerName()), nullable(request.businessNumber()), nullable(request.representativeName()),
                 nullable(request.managerName()), nullable(request.managerEmail()), nullable(request.managerPhone()), nullable(request.websiteUrl()),
