@@ -1,12 +1,10 @@
 package com.trip.routemate.lotto.service;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.trip.routemate.lotto.client.LottoHistoryClient;
 import com.trip.routemate.lotto.config.LottoHistoryProperties;
 import com.trip.routemate.lotto.dto.LottoFrequencyResponse;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -29,14 +27,14 @@ public class LottoHistoryFrequencyService {
     private static final LocalDate FIRST_DRAW_DATE = LocalDate.of(2002, 12, 7);
     private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
 
-    private final RestClient restClient;
+    private final LottoHistoryClient lottoHistoryClient;
     private final LottoHistoryProperties properties;
     private final SecureRandom random = new SecureRandom();
     private final Object cacheLock = new Object();
     private volatile CachedStatistics cachedStatistics;
 
-    public LottoHistoryFrequencyService(RestClient.Builder restClientBuilder, LottoHistoryProperties properties) {
-        this.restClient = restClientBuilder.build();
+    public LottoHistoryFrequencyService(LottoHistoryClient lottoHistoryClient, LottoHistoryProperties properties) {
+        this.lottoHistoryClient = lottoHistoryClient;
         this.properties = properties;
     }
 
@@ -85,7 +83,7 @@ public class LottoHistoryFrequencyService {
         }
     }
 
-    private List<OfficialLottoDraw> requestOfficialHistory() {
+    private List<LottoHistoryClient.LottoDraw> requestOfficialHistory() {
         var latestPage = findLatestDrawPage();
         var history = new ArrayList<>(latestPage.draws());
         for (var drawNumber = latestPage.latestDrawNumber() - 10; drawNumber > 0; drawNumber -= 10) {
@@ -113,20 +111,11 @@ public class LottoHistoryFrequencyService {
         throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "최신 로또 회차를 확인하지 못했습니다.");
     }
 
-    private List<OfficialLottoDraw> requestDrawPage(int drawNumber) {
-        var requestUrl = "%s?srchDir=center&srchLtEpsd=%d".formatted(properties.sourceUrl(), drawNumber);
-        var response = restClient.get()
-                .uri(requestUrl)
-                .retrieve()
-                .body(new ParameterizedTypeReference<OfficialLottoHistoryResponse>() {
-                });
-        if (response == null || response.data() == null || response.data().draws() == null) {
-            return List.of();
-        }
-        return response.data().draws();
+    private List<LottoHistoryClient.LottoDraw> requestDrawPage(int drawNumber) {
+        return lottoHistoryClient.requestDrawPage(drawNumber);
     }
 
-    private CachedStatistics summarize(List<OfficialLottoDraw> history) {
+    private CachedStatistics summarize(List<LottoHistoryClient.LottoDraw> history) {
         if (history == null || history.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "역대 로또 통계 데이터가 비어 있습니다.");
         }
@@ -159,40 +148,16 @@ public class LottoHistoryFrequencyService {
         return new CachedStatistics(topNumbers, validDrawCount, latestDrawNumber, refreshedAt, refreshedAt.plus(properties.refreshInterval()));
     }
 
-    private boolean isValidDraw(OfficialLottoDraw draw) {
+    private boolean isValidDraw(LottoHistoryClient.LottoDraw draw) {
         return draw != null
                 && draw.drawNumber() > 0
                 && draw.numbers().stream().allMatch(number -> number >= MIN_LOTTO_NUMBER && number <= MAX_LOTTO_NUMBER)
                 && draw.numbers().stream().distinct().count() == LOTTO_NUMBER_COUNT;
     }
 
-    private record OfficialLottoHistoryResponse(
-            OfficialLottoHistoryData data
-    ) {
-    }
-
-    private record OfficialLottoHistoryData(
-            @JsonProperty("list") List<OfficialLottoDraw> draws
-    ) {
-    }
-
-    private record OfficialLottoDraw(
-            @JsonProperty("ltEpsd") int drawNumber,
-            @JsonProperty("tm1WnNo") int firstNumber,
-            @JsonProperty("tm2WnNo") int secondNumber,
-            @JsonProperty("tm3WnNo") int thirdNumber,
-            @JsonProperty("tm4WnNo") int fourthNumber,
-            @JsonProperty("tm5WnNo") int fifthNumber,
-            @JsonProperty("tm6WnNo") int sixthNumber
-    ) {
-        private List<Integer> numbers() {
-            return List.of(firstNumber, secondNumber, thirdNumber, fourthNumber, fifthNumber, sixthNumber);
-        }
-    }
-
     private record LatestDrawPage(
             int latestDrawNumber,
-            List<OfficialLottoDraw> draws
+            List<LottoHistoryClient.LottoDraw> draws
     ) {
     }
 

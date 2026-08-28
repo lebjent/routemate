@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createDayRegion, createSchedule, type DayDescriptor, type DayPlan, type Schedule, type TransportType } from './model';
 
 type RegionField = 'countryCode' | 'regionCode' | 'note';
-type ScheduleField = Exclude<keyof Schedule, 'id'>;
+type ScheduleField = Exclude<keyof Schedule, 'id' | 'productOrderId' | 'productOrderNo'>;
 
 export const useTripPlanEditor = (days: DayDescriptor[]) => {
   const [dayPlans, setDayPlans] = useState<DayPlan[]>([]);
@@ -45,14 +45,16 @@ export const useTripPlanEditor = (days: DayDescriptor[]) => {
     );
   };
 
-  const addSchedule = (dayIndex: number, regionIndex: number) => {
+  const addSchedule = (dayIndex: number, regionIndex: number, initialValues: Partial<Omit<Schedule, 'id'>> = {}) => {
     setDayPlans((current) =>
       current.map((plan, currentDayIndex) =>
         currentDayIndex === dayIndex
           ? {
               ...plan,
               regions: plan.regions.map((region, currentRegionIndex) =>
-                currentRegionIndex === regionIndex ? { ...region, schedules: [...region.schedules, createSchedule()] } : region
+                currentRegionIndex === regionIndex
+                  ? { ...region, schedules: [...region.schedules, { ...createSchedule(), ...initialValues }] }
+                  : region
               ),
             }
           : plan

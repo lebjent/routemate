@@ -6,10 +6,31 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ProductOrderRepository extends JpaRepository<ProductOrder, Long> {
     List<ProductOrder> findAllByUserOrderByCreateDtDescOrderIdDesc(UserMstr user);
+
+    @Query("""
+            select productOrder from ProductOrder productOrder
+            join fetch productOrder.product product
+            join product.destination destination
+            join destination.country country
+            join destination.region region
+            where productOrder.user = :user
+              and productOrder.useDate = :useDate
+              and country.countryCode = :countryCode
+              and region.regionCode = :regionCode
+              and productOrder.orderStatus <> 'CANCELLED'
+            order by productOrder.createDt desc, productOrder.orderId desc
+            """)
+    List<ProductOrder> findScheduleCandidatesByUserAndDestination(
+            @org.springframework.data.repository.query.Param("user") UserMstr user,
+            @org.springframework.data.repository.query.Param("countryCode") String countryCode,
+            @org.springframework.data.repository.query.Param("regionCode") String regionCode,
+            @org.springframework.data.repository.query.Param("useDate") LocalDate useDate
+    );
 
     List<ProductOrder> findTop5ByOrderByCreateDtDescOrderIdDesc();
 

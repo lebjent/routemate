@@ -3,9 +3,12 @@ import type { FormEvent } from 'react';
 import axios from 'axios';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CustomCalendar } from '../components/CustomCalendar';
+import { SearchableSelect } from '../components/SearchableSelect';
 import { StyledSelect } from '../components/StyledSelect';
 import { useAuth } from '../hooks/useAuth';
 import { PackingModal } from '../features/trip-builder/PackingModal';
+import { BookedProductModal, type BookedProduct } from '../features/trip-builder/BookedProductModal';
+import { productApi } from '../features/products/api';
 import { TripPreview } from '../features/trip-builder/TripPreview';
 import {
   createDays,
@@ -30,79 +33,11 @@ const panelClassName =
 const secondaryButtonClassName =
   'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/10 bg-white/[0.045] px-3.5 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-indigo-300/30 hover:bg-indigo-500/15 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400/40';
 
-type SearchOption = { value: string; label: string; hint?: string };
-
-export const SearchableSelect = ({
-  value,
-  options,
-  placeholder,
-  disabled = false,
-  onChange,
-}: {
-  value: string;
-  options: SearchOption[];
-  placeholder: string;
-  disabled?: boolean;
-  onChange: (value: string) => void;
-}) => {
-  const selected = options.find((option) => option.value === value);
-  const [query, setQuery] = useState(selected?.label || '');
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    setQuery(selected?.label || '');
-  }, [selected?.label, value]);
-
-  const filteredOptions = options.filter((option) => `${option.label} ${option.value} ${option.hint || ''}`.toLowerCase().includes(query.trim().toLowerCase()));
-
-  return (
-    <div className="relative min-w-0">
-      <input
-        value={query}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setOpen(true);
-          if (!event.target.value) onChange('');
-        }}
-        onFocus={() => setOpen(true)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' && filteredOptions.length > 0) {
-            event.preventDefault();
-            const firstOption = filteredOptions[0];
-            setQuery(firstOption.label);
-            setOpen(false);
-            onChange(firstOption.value);
-          }
-        }}
-        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
-        className={`${inputClassName} ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
-        placeholder={placeholder}
-        disabled={disabled}
-        data-searchable-select="true"
-        autoComplete="off"
-      />
-      {open && !disabled ? (
-        <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-60 overflow-y-auto rounded-xl border border-white/10 bg-slate-900 p-1 shadow-2xl">
-          {filteredOptions.length > 0 ? filteredOptions.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => {
-                setQuery(option.label);
-                setOpen(false);
-                onChange(option.value);
-              }}
-              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-slate-200 hover:bg-indigo-500/20"
-            >
-              <span>{option.label}</span>
-              {option.hint ? <span className="ml-2 text-xs text-slate-500">{option.hint}</span> : null}
-            </button>
-          )) : <p className="px-3 py-3 text-sm text-slate-500">검색 결과가 없습니다.</p>}
-        </div>
-      ) : null}
-    </div>
-  );
+type ReservationTarget = {
+  dayIndex: number;
+  regionIndex: number;
+  dayLabel: string;
+  regionLabel: string;
 };
 
 export const CreateTrip = () => {
@@ -126,6 +61,10 @@ export const CreateTrip = () => {
   const [isPublic, setIsPublic] = useState<'Y' | 'N'>('Y');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bookedProductModalOpen, setBookedProductModalOpen] = useState(false);
+  const [bookedProducts, setBookedProducts] = useState<BookedProduct[]>([]);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [reservationTarget, setReservationTarget] = useState<ReservationTarget | null>(null);
 
   useEffect(() => {
     const loadCountries = async () => {
@@ -187,6 +126,7 @@ export const CreateTrip = () => {
               schedules: (region.schedules || []).map((schedule: any) => ({
                 id: crypto.randomUUID(), time: schedule.time || '', title: schedule.title || '', location: schedule.location || '', memo: schedule.memo || '',
                 transportType: schedule.transportType || '', transportName: schedule.transportName || '', departureTime: schedule.departureTime || '', arrivalTime: schedule.arrivalTime || '', transportMemo: schedule.transportMemo || '',
+                productOrderId: schedule.productOrderId || null, productOrderNo: schedule.productOrderNo || null,
               })),
             };
           }),
@@ -240,6 +180,42 @@ export const CreateTrip = () => {
     document.getElementById(`travel-day-${date}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const linkedOrderIds = useMemo(
+    () => new Set(dayPlans.flatMap((plan) => plan.regions.flatMap((region) => region.schedules.map((schedule) => schedule.productOrderId).filter((orderId): orderId is number => orderId !== null)))),
+    [dayPlans]
+  );
+
+  const openBookedProducts = async (dayIndex: number, regionIndex: number, regionLabel: string) => {
+    const day = dayPlans[dayIndex];
+    const region = day?.regions[regionIndex];
+    if (!day || !region?.countryCode || !region.regionCode) return;
+
+    setReservationTarget({ dayIndex, regionIndex, dayLabel: formatDate(day.date), regionLabel });
+    setBookedProductModalOpen(true);
+    setBookingLoading(true);
+    setBookedProducts([]);
+    try {
+      setBookedProducts(await productApi.getScheduleCandidates({ countryCode: region.countryCode, regionCode: region.regionCode, useDate: day.date }));
+    } catch (loadError) {
+      console.error('Failed to load booked products for schedule', loadError);
+      setError('일정에 추가할 예약 상품을 불러오지 못했습니다.');
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  const linkBookedProduct = (order: BookedProduct) => {
+    if (!reservationTarget) return;
+    addSchedule(reservationTarget.dayIndex, reservationTarget.regionIndex, {
+      title: order.productName,
+      location: order.destinationName,
+      memo: `${order.optionName} · 예약번호 ${order.orderNo} · 이용일 ${order.useDate} · 수량 ${order.quantity}개`,
+      productOrderId: order.orderId,
+      productOrderNo: order.orderNo,
+    });
+    setBookedProductModalOpen(false);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!user) {
@@ -272,6 +248,7 @@ export const CreateTrip = () => {
               departureTime: schedule.departureTime || null,
               arrivalTime: schedule.arrivalTime || null,
               transportMemo: schedule.transportMemo.trim() || null,
+              productOrderId: schedule.productOrderId,
             })),
         })),
     }));
@@ -514,12 +491,20 @@ export const CreateTrip = () => {
                                                   </div>
                                                 </div>
                                               ) : null}
+                                              {schedule.productOrderId ? (
+                                                <div className="border-b border-cyan-300/10 bg-cyan-400/[0.045] px-4 py-2 text-xs text-cyan-100">
+                                                  <i className="fa-solid fa-ticket mr-2 text-cyan-300" />예약 상품 연동됨{schedule.productOrderNo ? ` · ${schedule.productOrderNo}` : ''}
+                                                </div>
+                                              ) : null}
                                             </Fragment>
                                           );
                                         })}
                                       </div>
                                     </div>
-                                    <button type="button" onClick={() => addSchedule(dayIndex, regionIndex)} disabled={!canAddSchedule} className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-indigo-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-slate-600"><i className="fa-solid fa-plus" />일정 추가</button>
+                                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                                      <button type="button" onClick={() => addSchedule(dayIndex, regionIndex)} disabled={!canAddSchedule} className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-slate-600"><i className="fa-solid fa-plus" />일정 추가</button>
+                                      <button type="button" onClick={() => void openBookedProducts(dayIndex, regionIndex, regionLabel)} disabled={!canAddSchedule} className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-slate-600"><i className="fa-solid fa-ticket" />예약 상품 추가</button>
+                                    </div>
                                   </div>
                                 </section>
                               );
@@ -583,6 +568,16 @@ export const CreateTrip = () => {
         onItemChange={updatePackingItem}
         onItemRemove={removePackingItem}
         onItemAdd={() => setPackingItems((current) => [...current, createPackingItem()])}
+      />
+      <BookedProductModal
+        isOpen={bookedProductModalOpen}
+        orders={bookedProducts}
+        linkedOrderIds={linkedOrderIds}
+        loading={bookingLoading}
+        dayLabel={reservationTarget?.dayLabel || ''}
+        regionLabel={reservationTarget?.regionLabel || ''}
+        onClose={() => setBookedProductModalOpen(false)}
+        onLink={linkBookedProduct}
       />
     </main>
   );

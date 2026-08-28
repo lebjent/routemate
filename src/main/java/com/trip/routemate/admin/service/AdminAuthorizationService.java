@@ -5,6 +5,7 @@ import com.trip.routemate.admin.repository.AdminUserRoleRepository;
 import com.trip.routemate.admin.repository.AdminRoleMenuRepository;
 import com.trip.routemate.admin.repository.AdminRoleRepository;
 import com.trip.routemate.admin.security.AdminRolePolicy;
+import com.trip.routemate.common.security.AuthorizationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AdminAuthorizationService {
+public class AdminAuthorizationService implements AuthorizationService {
 
     private final AdminUserRoleRepository adminUserRoleRepository;
     private final AdminRolePermissionRepository adminRolePermissionRepository;

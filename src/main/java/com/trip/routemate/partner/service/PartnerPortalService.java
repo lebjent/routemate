@@ -1,12 +1,12 @@
 package com.trip.routemate.partner.service;
 
-import com.trip.routemate.admin.dto.AdminProductOptionRequest;
-import com.trip.routemate.admin.dto.AdminProductRequest;
-import com.trip.routemate.admin.dto.AdminProductResponse;
 import com.trip.routemate.destination.domain.Destination;
 import com.trip.routemate.destination.repository.DestinationRepository;
 import com.trip.routemate.partner.domain.PartnerCompany;
 import com.trip.routemate.partner.dto.PartnerDashboardResponse;
+import com.trip.routemate.partner.dto.PartnerProductOptionRequest;
+import com.trip.routemate.partner.dto.PartnerProductRequest;
+import com.trip.routemate.partner.dto.PartnerProductResponse;
 import com.trip.routemate.partner.repository.PartnerUserRepository;
 import com.trip.routemate.product.domain.TravelProduct;
 import com.trip.routemate.product.domain.TravelProductOption;
@@ -44,7 +44,7 @@ public class PartnerPortalService {
                         .toList());
     }
 
-    public List<AdminProductResponse.Item> products(Authentication authentication) {
+    public List<PartnerProductResponse> products(Authentication authentication) {
         var partner = partner(authentication);
         return productRepository.findAllByPartnerOrderByCreateDtDesc(partner).stream()
                 .map(this::response)
@@ -60,7 +60,7 @@ public class PartnerPortalService {
     }
 
     @Transactional
-    public AdminProductResponse.Item create(Authentication authentication, AdminProductRequest request) {
+    public PartnerProductResponse create(Authentication authentication, PartnerProductRequest request) {
         var partner = partner(authentication);
         var product = TravelProduct.builder()
                 .destination(destination(request.destinationId()))
@@ -96,7 +96,7 @@ public class PartnerPortalService {
     }
 
     @Transactional
-    public AdminProductResponse.Item update(Authentication authentication, Long productId, AdminProductRequest request) {
+    public PartnerProductResponse update(Authentication authentication, Long productId, PartnerProductRequest request) {
         var partner = partner(authentication);
         var product = productRepository.findWithDestinationByProductId(productId)
                 .filter(candidate -> candidate.getPartner() != null
@@ -113,7 +113,7 @@ public class PartnerPortalService {
         return response(product);
     }
 
-    private void saveOptions(TravelProduct product, List<AdminProductOptionRequest> requests) {
+    private void saveOptions(TravelProduct product, List<PartnerProductOptionRequest> requests) {
         optionRepository.deleteAllByProduct(product);
         if (requests == null) return;
         optionRepository.saveAll(requests.stream().map(request -> TravelProductOption.builder()
@@ -124,8 +124,8 @@ public class PartnerPortalService {
                 .useYn(useYn(request.useYn())).sortOrder(sortOrder(request.sortOrder())).build()).toList());
     }
 
-    private AdminProductResponse.Item response(TravelProduct product) {
-        return AdminProductResponse.Item.from(product,
+    private PartnerProductResponse response(TravelProduct product) {
+        return PartnerProductResponse.from(product,
                 optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product));
     }
 

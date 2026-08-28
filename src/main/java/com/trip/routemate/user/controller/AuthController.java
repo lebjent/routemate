@@ -1,7 +1,7 @@
 package com.trip.routemate.user.controller;
 
 import com.trip.routemate.admin.security.AdminRolePolicy;
-import com.trip.routemate.admin.service.AdminAuthorizationService;
+import com.trip.routemate.common.security.AuthorizationService;
 
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.dto.UserLoginDto;
@@ -38,7 +38,7 @@ public class AuthController {
     private final UserMstrRepository userMstrRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;
-    private final AdminAuthorizationService adminAuthorizationService;
+    private final AuthorizationService authorizationService;
 
     @PostMapping("/login")
     @Operation(summary = "사용자 로그인", description = "이메일과 비밀번호를 검증하고 JSESSIONID 세션을 생성합니다.")
@@ -59,7 +59,7 @@ public class AuthController {
         securityContext.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
                 user.getUserEmail(),
                 null,
-                adminAuthorizationService.authoritiesFor(user.getUserId(), user.getUserRole())
+                authorizationService.authoritiesFor(user.getUserId(), user.getUserRole())
         ));
         SecurityContextHolder.setContext(securityContext);
         securityContextRepository.saveContext(securityContext, request, response);
@@ -98,8 +98,8 @@ public class AuthController {
                 user.getUserEmail(),
                 user.getUserNicknm(),
                 user.getUserRole(),
-                adminAuthorizationService.permissionNamesFor(user.getUserId(), user.getUserRole()),
-                adminAuthorizationService.menuCodesFor(user.getUserId(), user.getUserRole())
+                authorizationService.permissionNamesFor(user.getUserId(), user.getUserRole()),
+                authorizationService.menuCodesFor(user.getUserId(), user.getUserRole())
         );
     }
 

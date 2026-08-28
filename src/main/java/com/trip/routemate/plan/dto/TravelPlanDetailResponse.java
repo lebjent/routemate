@@ -46,7 +46,9 @@ public record TravelPlanDetailResponse(
             String transportName,
             String departureTime,
             String arrivalTime,
-            String transportMemo
+            String transportMemo,
+            Long productOrderId,
+            String productOrderNo
         ) {
     }
 

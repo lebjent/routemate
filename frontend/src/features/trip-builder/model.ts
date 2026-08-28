@@ -25,6 +25,8 @@ export type Schedule = {
   departureTime: string;
   arrivalTime: string;
   transportMemo: string;
+  productOrderId: number | null;
+  productOrderNo: string | null;
 };
 
 export type DayRegion = {
@@ -80,6 +82,8 @@ export const createSchedule = (): Schedule => ({
   departureTime: '',
   arrivalTime: '',
   transportMemo: '',
+  productOrderId: null,
+  productOrderNo: null,
 });
 
 export const createDayRegion = (): DayRegion => ({
@@ -153,7 +157,7 @@ export const createDays = (travelStartDate: string, travelEndDate: string): DayD
 };
 
 export const hasScheduleContent = (schedule: Schedule) =>
-  Boolean(schedule.title.trim() || schedule.location.trim() || schedule.memo.trim() || schedule.transportType);
+  Boolean(schedule.title.trim() || schedule.location.trim() || schedule.memo.trim() || schedule.transportType || schedule.productOrderId);
 
 export const formatTimeInput = (value: string) => {
   const digits = value.replace(/\D/g, '').slice(0, 4);

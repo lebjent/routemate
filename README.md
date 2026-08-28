@@ -50,6 +50,8 @@ RouteMate는 여행 일정과 여행지 정보를 관리하고, 여행지 기반
 - Spring MVC, Spring Data JPA, Hibernate
 - Spring Security 세션 기반 인증 및 BCrypt 비밀번호 해시
 - Flyway 데이터베이스 마이그레이션
+- Caffeine Cache, Resilience4j 재시도, Micrometer Prometheus 운영 메트릭
+- Testcontainers 및 Spring Modulith Test (통합 테스트·모듈 경계 검증 기반)
 - Gradle
 - 테스트: JUnit 5, Spring Boot Test, Spring Security Test
 
@@ -95,6 +97,8 @@ routeMate/
 │  └─ features/             # 도메인별 프론트 모델·훅
 └─ docs/sql/                # 조회·인덱스 참고 SQL
 ```
+
+도메인 책임, 모듈 의존성 개선 순서, Oracle/MySQL migration 규칙은 [구조 문서](docs/architecture.md)를 참고합니다.
 
 ## 실행 전 준비
 

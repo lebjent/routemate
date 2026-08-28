@@ -1,6 +1,6 @@
 package com.trip.routemate.partner.controller;
 
-import com.trip.routemate.admin.service.AdminAuthorizationService;
+import com.trip.routemate.common.security.AuthorizationService;
 import com.trip.routemate.partner.repository.PartnerUserRepository;
 import com.trip.routemate.user.dto.UserLoginDto;
 import com.trip.routemate.user.dto.UserLoginResponse;
@@ -29,7 +29,7 @@ public class PartnerAuthController {
     private final PartnerUserRepository partnerUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;
-    private final AdminAuthorizationService adminAuthorizationService;
+    private final AuthorizationService authorizationService;
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> login(@Valid @RequestBody UserLoginDto request,
@@ -43,11 +43,11 @@ public class PartnerAuthController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "활성 상태의 파트너사 직원 계정이 아닙니다."));
         var context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(user.getUserEmail(), null,
-                adminAuthorizationService.authoritiesFor(user.getUserId(), user.getUserRole())));
+                authorizationService.authoritiesFor(user.getUserId(), user.getUserRole())));
         SecurityContextHolder.setContext(context);
         securityContextRepository.saveContext(context, servletRequest, response);
         return ResponseEntity.ok(new UserLoginResponse(user.getUserId(), user.getUserEmail(), user.getUserNicknm(), user.getUserRole(),
-                adminAuthorizationService.permissionNamesFor(user.getUserId(), user.getUserRole()),
-                adminAuthorizationService.menuCodesFor(user.getUserId(), user.getUserRole())));
+                authorizationService.permissionNamesFor(user.getUserId(), user.getUserRole()),
+                authorizationService.menuCodesFor(user.getUserId(), user.getUserRole())));
     }
 }

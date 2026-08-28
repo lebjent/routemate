@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -25,6 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -88,15 +91,13 @@ public class HttpExchangeLoggingFilter extends OncePerRequestFilter {
         }
     }
 
-    private JsonNode bodyNode(byte[] body, String contentType, String encoding) {
+    private JsonNode bodyNode(byte[] body, @Nullable String contentType, @Nullable String encoding) {
         if (body.length == 0) return objectMapper.nullNode();
         if (contentType == null || !contentType.toLowerCase(Locale.ROOT).contains(MediaType.APPLICATION_JSON_VALUE)) {
             return objectMapper.createObjectNode().put("omitted", "non-json body").put("length", body.length);
         }
         try {
-            Charset charset = StringUtils.hasText(encoding) && !"ISO-8859-1".equalsIgnoreCase(encoding)
-                    ? Charset.forName(encoding)
-                    : StandardCharsets.UTF_8;
+            Charset charset = resolveCharset(encoding);
             JsonNode parsed = objectMapper.readTree(new String(body, charset));
             maskSensitiveValues(parsed);
             return parsed;
@@ -105,7 +106,17 @@ public class HttpExchangeLoggingFilter extends OncePerRequestFilter {
         }
     }
 
-    private void maskSensitiveValues(JsonNode node) {
+    private @NonNull Charset resolveCharset(@Nullable String encoding) {
+        if (encoding == null || encoding.isBlank() || "ISO-8859-1".equalsIgnoreCase(encoding)) {
+            return Objects.requireNonNull(StandardCharsets.UTF_8);
+        }
+        return Objects.requireNonNull(Charset.forName(encoding));
+    }
+
+    private void maskSensitiveValues(@Nullable JsonNode node) {
+        if (node == null || node.isNull()) {
+            return;
+        }
         if (node instanceof ObjectNode objectNode) {
             Iterator<String> names = objectNode.fieldNames();
             while (names.hasNext()) {
@@ -122,7 +133,7 @@ public class HttpExchangeLoggingFilter extends OncePerRequestFilter {
         }
     }
 
-    private String nullToEmpty(String value) {
+    private String nullToEmpty(@Nullable String value) {
         return value == null ? "" : value;
     }
 

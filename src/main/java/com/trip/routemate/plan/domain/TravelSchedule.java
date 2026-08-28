@@ -1,5 +1,6 @@
 package com.trip.routemate.plan.domain;
 
+import com.trip.routemate.product.domain.ProductOrder;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,10 @@ public class TravelSchedule {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "DAY_REGION_ID", nullable = false)
     private TravelDayRegion travelDayRegion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PRODUCT_ORDER_ID")
+    private ProductOrder productOrder;
 
     @Column(name = "SCHEDULE_TIME", length = 5)
     private String scheduleTime;

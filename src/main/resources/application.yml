@@ -15,9 +15,11 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:mysql}
 
+  mvc:
+    problemdetails:
+      enabled: true
+
 app:
-  seed:
-    enabled: ${APP_SEED_ENABLED:false}
   lotto:
     history:
       source-url: ${LOTTO_HISTORY_SOURCE_URL:https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do}
@@ -36,10 +38,22 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,mappings
+        include: health,info,mappings,metrics,prometheus
   endpoint:
     health:
       show-details: never
+  observations:
+    key-values:
+      application: ${spring.application.name}
+
+resilience4j:
+  retry:
+    instances:
+      lotto-history:
+        max-attempts: 3
+        wait-duration: 300ms
+        retry-exceptions:
+          - org.springframework.web.client.RestClientException
 
 logging:
   structured:

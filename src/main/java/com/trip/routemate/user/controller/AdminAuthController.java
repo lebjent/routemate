@@ -1,7 +1,7 @@
 package com.trip.routemate.user.controller;
 
 import com.trip.routemate.admin.security.AdminRolePolicy;
-import com.trip.routemate.admin.service.AdminAuthorizationService;
+import com.trip.routemate.common.security.AuthorizationService;
 
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.dto.UserLoginDto;
@@ -34,7 +34,7 @@ public class AdminAuthController {
     private final UserMstrRepository userMstrRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;
-    private final AdminAuthorizationService adminAuthorizationService;
+    private final AuthorizationService authorizationService;
 
     @PostMapping("/login")
     @Operation(summary = "관리자 로그인", description = "관리자 계정을 검증하고 관리자 권한이 포함된 JSESSIONID 세션을 생성합니다.")
@@ -55,7 +55,7 @@ public class AdminAuthController {
         securityContext.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
                 admin.getUserEmail(),
                 null,
-                adminAuthorizationService.authoritiesFor(admin.getUserId(), admin.getUserRole())
+                authorizationService.authoritiesFor(admin.getUserId(), admin.getUserRole())
         ));
         SecurityContextHolder.setContext(securityContext);
         securityContextRepository.saveContext(securityContext, request, response);
@@ -65,13 +65,13 @@ public class AdminAuthController {
                 admin.getUserEmail(),
                 admin.getUserNicknm(),
                 admin.getUserRole(),
-                adminAuthorizationService.permissionNamesFor(admin.getUserId(), admin.getUserRole()),
-                adminAuthorizationService.menuCodesFor(admin.getUserId(), admin.getUserRole())
+                authorizationService.permissionNamesFor(admin.getUserId(), admin.getUserRole()),
+                authorizationService.menuCodesFor(admin.getUserId(), admin.getUserRole())
         ));
     }
 
     private boolean isActiveStaff(UserMstr user) {
-        return adminAuthorizationService.isStaffRole(user.getUserRole())
+        return authorizationService.isStaffRole(user.getUserRole())
                 && "ACTIVE".equals(user.getUserStatCd())
                 && "N".equals(user.getDelYn());
     }

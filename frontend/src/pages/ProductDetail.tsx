@@ -110,7 +110,7 @@ export const ProductDetail = () => {
           <p className="mt-4 text-right text-xl font-bold text-indigo-200">{formatProductPrice(order.totalPrice, order.currency)}</p>
         </div>
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
-          <Link to="/my-product-orders" className="theme-btn-primary px-6 py-3">내 구매내역 보기</Link>
+          <Link to="/my-product-orders" className="theme-btn-primary px-6 py-3">내 예약내역 보기</Link>
           {hasExternalBookingUrl(order.bookingUrl) ? <a href={order.bookingUrl!} target="_blank" rel="noreferrer" className="rounded-xl border border-white/15 bg-white/5 px-6 py-3 font-semibold text-white hover:bg-white/10">판매처 결제 페이지로 이동</a> : null}
           <Link to="/products" className="rounded-xl border border-white/15 bg-white/5 px-6 py-3 font-semibold text-white hover:bg-white/10">상품 더 보기</Link>
         </div>
@@ -165,7 +165,7 @@ export const ProductDetail = () => {
               {selectedOption ? <div className="border-t border-white/10 pt-4"><div className="flex items-end justify-between"><span className="text-sm text-slate-400">총 주문금액</span><strong className="text-2xl text-white">{formatProductPrice(totalPrice, selectedOption.currency)}</strong></div>{selectedOption.validityText ? <p className="mt-2 text-xs text-slate-500">유효기간: {selectedOption.validityText}</p> : null}</div> : null}
               {error ? <p role="alert" className="rounded-xl bg-red-500/10 px-3 py-2 text-xs leading-5 text-red-200">{error}</p> : null}
               <button type="submit" disabled={submitting || !selectedOption} className="theme-btn-primary w-full py-4 text-base disabled:cursor-not-allowed disabled:opacity-50">{submitting ? '주문 접수 중...' : user ? '구매 신청하기' : '로그인하고 구매하기'}</button>
-              <p className="text-center text-[11px] leading-5 text-slate-600">주문 접수 후 결제 상태는 구매내역에서 확인할 수 있습니다.</p>
+              <p className="text-center text-[11px] leading-5 text-slate-600">주문 접수 후 결제 상태는 예약내역에서 확인할 수 있습니다.</p>
             </form>
           )}
         </aside>

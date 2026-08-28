@@ -1,8 +1,8 @@
 package com.trip.routemate.partner.controller;
 
-import com.trip.routemate.admin.dto.AdminProductRequest;
-import com.trip.routemate.admin.dto.AdminProductResponse;
 import com.trip.routemate.partner.dto.PartnerDashboardResponse;
+import com.trip.routemate.partner.dto.PartnerProductRequest;
+import com.trip.routemate.partner.dto.PartnerProductResponse;
 import com.trip.routemate.partner.service.PartnerPortalService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class PartnerPortalController {
     }
 
     @GetMapping("/products")
-    public List<AdminProductResponse.Item> products(Authentication authentication) {
+    public List<PartnerProductResponse> products(Authentication authentication) {
         return service.products(authentication);
     }
 
@@ -35,15 +35,15 @@ public class PartnerPortalController {
 
     @PostMapping("/products")
     @ResponseStatus(HttpStatus.CREATED)
-    public AdminProductResponse.Item create(Authentication authentication,
-                                            @Valid @RequestBody AdminProductRequest request) {
+    public PartnerProductResponse create(Authentication authentication,
+                                         @Valid @RequestBody PartnerProductRequest request) {
         return service.create(authentication, request);
     }
 
     @PatchMapping("/products/{productId}")
-    public AdminProductResponse.Item update(Authentication authentication,
-                                            @PathVariable Long productId,
-                                            @Valid @RequestBody AdminProductRequest request) {
+    public PartnerProductResponse update(Authentication authentication,
+                                         @PathVariable Long productId,
+                                         @Valid @RequestBody PartnerProductRequest request) {
         return service.update(authentication, productId, request);
     }
 }

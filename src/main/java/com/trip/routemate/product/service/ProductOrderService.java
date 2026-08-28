@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -67,6 +68,16 @@ public class ProductOrderService {
     public List<ProductOrderResponse> getMyOrders(String userEmail) {
         var user = getActiveUser(userEmail);
         return orderRepository.findAllByUserOrderByCreateDtDescOrderIdDesc(user).stream()
+                .map(ProductOrderResponse::from)
+                .toList();
+    }
+
+    public List<ProductOrderResponse> getMyScheduleCandidates(String userEmail, String countryCode, String regionCode, LocalDate useDate) {
+        var user = getActiveUser(userEmail);
+        if (countryCode == null || countryCode.isBlank() || regionCode == null || regionCode.isBlank() || useDate == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "일정 날짜와 여행지 정보를 확인해 주세요.");
+        }
+        return orderRepository.findScheduleCandidatesByUserAndDestination(user, countryCode.trim(), regionCode.trim(), useDate).stream()
                 .map(ProductOrderResponse::from)
                 .toList();
     }

@@ -9,6 +9,7 @@ public record TravelScheduleRequest(
         String transportName,
         String departureTime,
         String arrivalTime,
-        String transportMemo
+        String transportMemo,
+        Long productOrderId
 ) {
 }

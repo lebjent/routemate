@@ -21,6 +21,7 @@ import com.trip.routemate.plan.repository.TravelPackingItemRepository;
 import com.trip.routemate.plan.repository.TravelPlanRepository;
 import com.trip.routemate.plan.repository.TravelScheduleRepository;
 import com.trip.routemate.plan.repository.TravelTransportRepository;
+import com.trip.routemate.product.repository.ProductOrderRepository;
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.repository.UserMstrRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,7 @@ public class TravelPlanService {
     private final CountryRepository countryRepository;
     private final RegionRepository regionRepository;
     private final UserMstrRepository userMstrRepository;
+    private final ProductOrderRepository productOrderRepository;
     private final TravelPlanDetailAssembler travelPlanDetailAssembler;
 
     public List<TravelPlanResponse> getMyTravelPlans(String userEmail) {
@@ -82,7 +84,7 @@ public class TravelPlanService {
         validateDays(request);
 
         var plan = createPlan(user, request);
-        var spotCount = saveDays(plan, request.days());
+        var spotCount = saveDays(plan, request.days(), user);
         savePackingItems(plan, request.packingItems());
 
         plan.updateSpotCount(spotCount);
@@ -112,7 +114,7 @@ public class TravelPlanService {
         travelPackingItemRepository.deleteAll(travelPackingItemRepository.findByTravelPlanOrderBySortOrderAsc(plan));
         travelPackingItemRepository.flush();
 
-        var spotCount = saveDays(plan, request.days());
+        var spotCount = saveDays(plan, request.days(), user);
         savePackingItems(plan, request.packingItems());
         plan.updateSpotCount(spotCount);
         return TravelPlanResponse.from(plan);
@@ -134,15 +136,15 @@ public class TravelPlanService {
                 .build());
     }
 
-    private int saveDays(TravelPlan plan, List<TravelDayRequest> dayRequests) {
+    private int saveDays(TravelPlan plan, List<TravelDayRequest> dayRequests, UserMstr user) {
         var spotCount = 0;
         for (var dayRequest : dayRequests == null ? List.<TravelDayRequest>of() : dayRequests) {
-            spotCount += saveDay(plan, dayRequest);
+            spotCount += saveDay(plan, dayRequest, user);
         }
         return spotCount;
     }
 
-    private int saveDay(TravelPlan plan, TravelDayRequest dayRequest) {
+    private int saveDay(TravelPlan plan, TravelDayRequest dayRequest, UserMstr user) {
         var day = travelDayRepository.save(TravelDay.builder()
                 .travelPlan(plan)
                 .dayNumber(dayRequest.dayNumber())
@@ -150,12 +152,12 @@ public class TravelPlanService {
                 .build());
         var spotCount = 0;
         for (var regionIndex = 0; regionIndex < dayRequest.regions().size(); regionIndex++) {
-            spotCount += saveDayRegion(day, dayRequest.regions().get(regionIndex), regionIndex + 1);
+            spotCount += saveDayRegion(day, dayRequest.regions().get(regionIndex), regionIndex + 1, user);
         }
         return spotCount;
     }
 
-    private int saveDayRegion(TravelDay day, TravelDayRegionRequest request, int sortOrder) {
+    private int saveDayRegion(TravelDay day, TravelDayRegionRequest request, int sortOrder, UserMstr user) {
         var country = countryRepository.findByCountryCode(request.countryCode().trim())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "선택한 국가를 찾을 수 없습니다."));
         var region = regionRepository.findByCountryAndRegionCode(country, request.regionCode().trim())
@@ -167,24 +169,26 @@ public class TravelPlanService {
                 .regionNote(normalizeOptionalText(request.note()))
                 .sortOrder(sortOrder)
                 .build());
-        return saveSchedules(dayRegion, request.schedules());
+        return saveSchedules(dayRegion, request.schedules(), user);
     }
 
-    private int saveSchedules(TravelDayRegion dayRegion, List<TravelScheduleRequest> scheduleRequests) {
+    private int saveSchedules(TravelDayRegion dayRegion, List<TravelScheduleRequest> scheduleRequests, UserMstr user) {
         var spotCount = 0;
         for (var scheduleIndex = 0; scheduleIndex < scheduleRequests.size(); scheduleIndex++) {
             var request = scheduleRequests.get(scheduleIndex);
             if (hasScheduleContent(request)) {
-                saveSchedule(dayRegion, request, scheduleIndex + 1);
+                saveSchedule(dayRegion, request, scheduleIndex + 1, user);
                 spotCount++;
             }
         }
         return spotCount;
     }
 
-    private void saveSchedule(TravelDayRegion dayRegion, TravelScheduleRequest request, int sortOrder) {
+    private void saveSchedule(TravelDayRegion dayRegion, TravelScheduleRequest request, int sortOrder, UserMstr user) {
+        var productOrder = resolveProductOrder(request.productOrderId(), user);
         var schedule = travelScheduleRepository.save(TravelSchedule.builder()
                 .travelDayRegion(dayRegion)
+                .productOrder(productOrder)
                 .scheduleTime(normalizeOptionalText(request.time()))
                 .title(normalizeOptionalText(request.title()))
                 .location(normalizeOptionalText(request.location()))
@@ -250,7 +254,17 @@ public class TravelPlanService {
         return normalizeOptionalText(request.title()) != null
                 || normalizeOptionalText(request.location()) != null
                 || normalizeOptionalText(request.memo()) != null
-                || normalizeTransportType(request.transportType()) != null;
+                || normalizeTransportType(request.transportType()) != null
+                || request.productOrderId() != null;
+    }
+
+    private com.trip.routemate.product.domain.ProductOrder resolveProductOrder(Long productOrderId, UserMstr user) {
+        if (productOrderId == null) {
+            return null;
+        }
+        return productOrderRepository.findById(productOrderId)
+                .filter(order -> order.getUser().getUserId().equals(user.getUserId()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "본인이 예약한 옵션상품만 일정에 연결할 수 있습니다."));
     }
 
     private UserMstr resolveActiveUser(String userEmail) {

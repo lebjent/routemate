@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { hasPermission } from '../../features/admin/permissions';
 import { useAuth } from '../../hooks/useAuth';
-import { SearchableSelect } from '../CreateTrip';
+import { SearchableSelect } from '../../components/SearchableSelect';
 import { CustomCalendar } from '../../components/CustomCalendar';
 import { StyledSelect } from '../../components/StyledSelect';
 

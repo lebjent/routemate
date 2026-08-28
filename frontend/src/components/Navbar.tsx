@@ -127,7 +127,7 @@ export const Navbar = () => {
         <Link to="/lotto" className="text-sm text-gray-400 hover:text-white transition hidden md:block">행운의 로또</Link>
         {!loading && (user ? (
           <>
-            <Link to="/my-product-orders" aria-label="구매내역" title="구매내역" className="text-sm text-gray-400 hover:text-white transition hidden lg:block">구매내역</Link>
+            <Link to="/my-product-orders" aria-label="예약내역" title="예약내역" className="text-sm text-gray-400 hover:text-white transition hidden lg:block">예약내역</Link>
             <span className="text-sm font-medium text-indigo-200">{user.userNicknm}님</span>
             <button
               type="button"

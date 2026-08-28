@@ -101,7 +101,9 @@ public class TravelPlanDetailAssembler {
                 transport == null ? null : transport.getTransportName(),
                 transport == null ? null : transport.getDepartureTime(),
                 transport == null ? null : transport.getArrivalTime(),
-                transport == null ? null : transport.getTransportMemo()
+                transport == null ? null : transport.getTransportMemo(),
+                schedule.getProductOrder() == null ? null : schedule.getProductOrder().getOrderId(),
+                schedule.getProductOrder() == null ? null : schedule.getProductOrder().getOrderNo()
         );
     }
 }
