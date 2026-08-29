@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+/** 여행지 마스터 및 홈·관리 화면용 조회를 담당한다. */
 public interface DestinationRepository extends JpaRepository<Destination, Long> {
 
     /**

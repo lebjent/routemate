@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/** 여행 옵션 상품의 판매 옵션을 조회하고 저장한다. */
 public interface TravelProductOptionRepository extends JpaRepository<TravelProductOption, Long> {
     long countByUseYn(String useYn);
 

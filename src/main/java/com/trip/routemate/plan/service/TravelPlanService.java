@@ -35,6 +35,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 여행 계획의 소유권 검증과 생성·수정 트랜잭션을 담당한다.
+ *
+ * 계획의 하위 구조는 일차, 지역, 세부 일정, 교통편, 준비물로 이루어진다. 수정은 요청 전체를
+ * 현재 구조로 교체하며, 연결한 예약 상품은 반드시 계획 소유자의 유효 예약이어야 한다.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -52,6 +58,7 @@ public class TravelPlanService {
     private final ProductOrderRepository productOrderRepository;
     private final TravelPlanDetailAssembler travelPlanDetailAssembler;
 
+    /** 로그인 사용자가 소유한 여행 계획 요약 목록을 조회한다. */
     public List<TravelPlanResponse> getMyTravelPlans(String userEmail) {
         var user = resolveActiveUser(userEmail);
         return travelPlanRepository.findByUser_UserIdOrderByMdfyDtDesc(user.getUserId())
@@ -60,6 +67,7 @@ public class TravelPlanService {
                 .toList();
     }
 
+    /** 사용자 소유권을 확인한 뒤 여행 계획 상세를 조합한다. */
     public TravelPlanDetailResponse getTravelPlan(String userEmail, Long planId) {
         var user = resolveActiveUser(userEmail);
         var plan = travelPlanRepository.findByPlanIdAndUser_UserId(planId, user.getUserId())
@@ -68,6 +76,7 @@ public class TravelPlanService {
         return travelPlanDetailAssembler.assemble(plan);
     }
 
+    /** 공개 상태인 여행 계획만 비로그인 사용자에게 상세로 제공하고 조회 수를 증가시킨다. */
     @Transactional
     public TravelPlanDetailResponse getPublicTravelPlan(Long planId) {
         if (travelPlanRepository.incrementPublicViewCount(planId) == 0) {
@@ -79,6 +88,13 @@ public class TravelPlanService {
         return travelPlanDetailAssembler.assemble(plan);
     }
 
+    /**
+     * 새 여행 계획과 모든 하위 일정을 한 트랜잭션으로 저장한다.
+     *
+     * @param userEmail 계획 소유자의 로그인 이메일
+     * @param request 여행 계획 전체 구조
+     * @return 생성된 여행 계획 요약
+     */
     @Transactional
     public TravelPlanResponse createTravelPlan(String userEmail, CreateTravelPlanRequest request) {
         var user = resolveActiveUser(userEmail);
@@ -92,6 +108,14 @@ public class TravelPlanService {
         return TravelPlanResponse.from(plan);
     }
 
+    /**
+     * 소유자가 요청한 여행 계획 전체 구조로 기존 데이터를 교체한다.
+     *
+     * @param userEmail 계획 소유자의 로그인 이메일
+     * @param planId 수정할 여행 계획 식별자
+     * @param request 교체할 여행 계획 전체 구조
+     * @return 수정된 여행 계획 요약
+     */
     @Transactional
     public TravelPlanResponse updateTravelPlan(String userEmail, Long planId, CreateTravelPlanRequest request) {
         var user = resolveActiveUser(userEmail);

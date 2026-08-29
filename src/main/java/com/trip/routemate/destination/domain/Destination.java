@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 여행 일정과 옵션 상품이 참조하는 여행지 엔티티다. */
 public class Destination {
 
     @Id

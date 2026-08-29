@@ -14,6 +14,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+/** 일반 회원 목록과 계정 사용 상태를 관리한다. */
 public class AdminUserService {
 
     private static final Set<String> ALLOWED_STATUSES = Set.of("ACTIVE", "SUSPENDED");
@@ -21,6 +22,7 @@ public class AdminUserService {
     private final UserMstrRepository userMstrRepository;
 
     @PreAuthorize("hasAuthority('MEMBER_VIEW')")
+    /** 검색어와 상태 조건으로 일반 회원 목록 및 집계를 조회한다. */
     public AdminUserListResponse getUsers(String query, String status) {
         var normalizedQuery = query == null ? "" : query.trim();
         var normalizedStatus = normalizeFilterStatus(status);
@@ -38,6 +40,7 @@ public class AdminUserService {
 
     @Transactional
     @PreAuthorize("hasAuthority('MEMBER_STATUS_UPDATE')")
+    /** 관리자 계정은 변경하지 못하도록 보호하며 일반 회원 상태를 변경한다. */
     public AdminUserListResponse.UserItem updateUserStatus(String adminEmail, Long userId, String status) {
         var normalizedStatus = normalizeUpdateStatus(status);
         var user = userMstrRepository.findByUserIdAndUserRoleAndDelYn(userId, "USER", "N")

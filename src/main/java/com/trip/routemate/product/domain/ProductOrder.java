@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 사용자가 구매한 옵션 상품의 예약 정보와 이용 상태를 보관하는 엔티티다. */
 public class ProductOrder {
 
     @Id

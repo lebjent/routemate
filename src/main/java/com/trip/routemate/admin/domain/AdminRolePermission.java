@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @AllArgsConstructor
+/** 관리자 역할과 세부 기능 권한을 연결하는 매핑 엔티티다. */
 public class AdminRolePermission {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "ROLE_PERMISSION_ID")
     private Long rolePermissionId;

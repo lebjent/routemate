@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
+/** 관리자·파트너·공개 카탈로그에서 사용하는 여행 옵션 상품 조회를 담당한다. */
 public interface TravelProductRepository extends JpaRepository<TravelProduct, Long> {
     interface ProductTypeStatView {
         String getProductType();

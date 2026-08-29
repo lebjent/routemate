@@ -19,6 +19,12 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * 분산 저장된 여행 일정 엔티티를 화면용 상세 응답 하나로 조합한다.
+ *
+ * 일차, 방문 지역, 세부 일정, 교통편, 준비물은 별도 테이블에 있으므로 이 클래스에 변환 규칙을
+ * 모아 서비스의 생성·수정 로직과 조회 조립 로직을 분리한다.
+ */
 @Component
 @RequiredArgsConstructor
 public class TravelPlanDetailAssembler {
@@ -29,6 +35,12 @@ public class TravelPlanDetailAssembler {
     private final TravelTransportRepository travelTransportRepository;
     private final TravelPackingItemRepository travelPackingItemRepository;
 
+    /**
+     * 여행 계획에 속한 모든 세부 데이터를 정렬 순서대로 조합한다.
+     *
+     * @param plan 상세 조회가 허용된 여행 계획 엔티티
+     * @return 일차·지역·일정·교통편·준비물을 포함한 상세 응답
+     */
     public TravelPlanDetailResponse assemble(TravelPlan plan) {
         var days = travelDayRepository.findByTravelPlanOrderByDayNumberAsc(plan);
         var dayRegions = days.isEmpty()
@@ -61,6 +73,7 @@ public class TravelPlanDetailAssembler {
         );
     }
 
+    /** 한 일차와 하위 지역·일정을 상세 응답의 일차 항목으로 변환한다. */
     private TravelPlanDetailResponse.Day toDayResponse(
             TravelDay day,
             Map<Long, List<TravelDayRegion>> regionsByDayId,
@@ -73,6 +86,7 @@ public class TravelPlanDetailAssembler {
         return new TravelPlanDetailResponse.Day(day.getDayNumber(), day.getPlanDate(), regions);
     }
 
+    /** 일차 지역과 해당 지역의 세부 일정을 응답 항목으로 변환한다. */
     private TravelPlanDetailResponse.Region toRegionResponse(
             TravelDayRegion dayRegion,
             Map<Long, List<TravelSchedule>> schedulesByRegionId,
@@ -91,6 +105,7 @@ public class TravelPlanDetailAssembler {
         );
     }
 
+    /** 세부 일정과 선택 교통편을 하나의 일정 응답으로 변환한다. */
     private TravelPlanDetailResponse.Schedule toScheduleResponse(TravelSchedule schedule, TravelTransport transport) {
         return new TravelPlanDetailResponse.Schedule(
                 schedule.getScheduleTime(),

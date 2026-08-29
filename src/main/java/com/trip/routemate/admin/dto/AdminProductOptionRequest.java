@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
+/** 관리자가 옵션 상품의 판매 조건을 입력할 때 사용하는 요청이다. */
 public record AdminProductOptionRequest(
         @NotBlank @Size(max = 150) String optionName,
         @Size(max = 500) String optionDesc,

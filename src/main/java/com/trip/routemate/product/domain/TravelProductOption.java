@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 하나의 여행 옵션 상품에서 실제로 판매되는 가격·이용 조건 단위다. */
 public class TravelProductOption {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

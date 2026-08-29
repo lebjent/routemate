@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 지역과 여행지가 소속되는 국가 마스터 엔티티다. */
 public class Country {
 
     @Id

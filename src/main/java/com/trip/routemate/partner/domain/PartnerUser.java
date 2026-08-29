@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** RouteMate 회원과 파트너사의 직원 역할을 연결하는 엔티티다. */
 public class PartnerUser {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "PARTNER_USER_ID")

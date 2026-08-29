@@ -16,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+/** 관리자 역할, 권한, 메뉴 접근 정보를 현재 사용자에게 부여한다. */
 public class AdminAuthorizationService implements AuthorizationService {
 
     private final AdminUserRoleRepository adminUserRoleRepository;
@@ -23,12 +24,14 @@ public class AdminAuthorizationService implements AuthorizationService {
     private final AdminRoleMenuRepository adminRoleMenuRepository;
     private final AdminRoleRepository adminRoleRepository;
 
+    /** 전달된 역할 코드가 관리자 직원 역할인지 확인한다. */
     public boolean isStaffRole(String roleCode) {
         return adminRoleRepository.findByRoleCodeAndUseYn(roleCode, "Y")
                 .map(role -> true)
                 .orElseGet(() -> AdminRolePolicy.isStaffRole(roleCode));
     }
 
+    /** 사용자에게 적용되는 권한명을 조회한다. 역할 매핑이 없으면 기존 역할 규칙을 사용한다. */
     public List<String> permissionNamesFor(Long userId, String legacyRole) {
         var roleCodes = adminUserRoleRepository.findPrimaryRoleCodesByUserId(userId);
         if (roleCodes.isEmpty()) {
@@ -41,6 +44,7 @@ public class AdminAuthorizationService implements AuthorizationService {
                 .toList();
     }
 
+    /** Spring Security 인증 객체에 넣을 권한 목록을 만든다. */
     public List<GrantedAuthority> authoritiesFor(Long userId, String legacyRole) {
         var authorities = new ArrayList<GrantedAuthority>();
         permissionNamesFor(userId, legacyRole).stream()
@@ -50,6 +54,7 @@ public class AdminAuthorizationService implements AuthorizationService {
         return List.copyOf(authorities);
     }
 
+    /** 로그인한 사용자가 접근할 수 있는 관리자 메뉴 코드를 조회한다. */
     public List<String> menuCodesFor(Long userId, String legacyRole) {
         var roleCodes = adminUserRoleRepository.findPrimaryRoleCodesByUserId(userId);
         if (roleCodes.isEmpty()) {

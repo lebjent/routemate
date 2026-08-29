@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 일반 회원, 관리자 직원, 파트너 직원이 공통으로 사용하는 계정 엔티티다. */
 public class UserMstr {
 
     @Id

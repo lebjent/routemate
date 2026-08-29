@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @io.swagger.v3.oas.annotations.media.Schema(description = "관리자 회원 목록과 상태별 집계 응답 DTO")
+/** 일반 회원 목록과 상태별 집계를 제공하는 관리자 응답이다. */
 public record AdminUserListResponse(
         Summary summary,
         List<UserItem> users

@@ -24,6 +24,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 로그인한 파트너사 범위에서 대시보드와 옵션 상품 관리를 처리한다.
+ *
+ * 파트너사 식별자는 인증 정보로만 찾고, 상품 식별자만으로는 수정하지 않는다. 이 규칙은
+ * 파트너 간 상품 접근을 방지하는 핵심 경계다.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,6 +40,12 @@ public class PartnerPortalService {
     private final DestinationRepository destinationRepository;
     private final TravelProductOptionRepository optionRepository;
 
+    /**
+     * 현재 파트너사의 판매·상품 상태를 대시보드 형식으로 집계한다.
+     *
+     * @param authentication 현재 파트너 사용자 인증 정보
+     * @return 상품 건수, 주문 건수, 최근 상품을 포함한 대시보드 정보
+     */
     public PartnerDashboardResponse dashboard(Authentication authentication) {
         var partner = partner(authentication);
         var products = productRepository.findAllByPartnerOrderByCreateDtDesc(partner);
@@ -45,6 +57,7 @@ public class PartnerPortalService {
                         .toList());
     }
 
+    /** 현재 파트너사가 소유한 상품과 옵션을 조회한다. */
     public List<PartnerProductResponse> products(Authentication authentication) {
         var partner = partner(authentication);
         return productRepository.findAllByPartnerOrderByCreateDtDesc(partner).stream()
@@ -52,6 +65,7 @@ public class PartnerPortalService {
                 .toList();
     }
 
+    /** 상품 등록 화면에서 사용할 여행지 선택 목록을 조회한다. */
     public List<PlaceItem> places(Authentication authentication) {
         partner(authentication);
         return destinationRepository.findAllByOrderByDestNameAsc().stream()
@@ -61,6 +75,13 @@ public class PartnerPortalService {
     }
 
     @Transactional
+    /**
+     * 파트너사 명의의 상품과 옵션을 등록하고 심사 대기 상태로 저장한다.
+     *
+     * @param authentication 현재 파트너 사용자 인증 정보
+     * @param request 상품 기본 정보와 판매 옵션
+     * @return 생성된 상품 정보
+     */
     public PartnerProductResponse create(Authentication authentication, PartnerProductRequest request) {
         var partner = partner(authentication);
         var product = Objects.requireNonNull(TravelProduct.builder()
@@ -97,6 +118,11 @@ public class PartnerPortalService {
     }
 
     @Transactional
+    /**
+     * 현재 파트너사가 소유한 상품의 정보와 옵션 구성을 수정한다.
+     *
+     * @throws ResponseStatusException 상품이 없거나 다른 파트너사 상품일 때
+     */
     public PartnerProductResponse update(Authentication authentication, Long productId, PartnerProductRequest request) {
         var partner = partner(authentication);
         var product = productRepository.findWithDestinationByProductId(productId)
@@ -114,6 +140,7 @@ public class PartnerPortalService {
         return response(product);
     }
 
+    /** 기존 옵션을 교체하고 요청 순서대로 새 옵션을 저장한다. */
     private void saveOptions(TravelProduct product, List<PartnerProductOptionRequest> requests) {
         optionRepository.deleteAllByProduct(product);
         if (requests == null) return;
@@ -125,16 +152,19 @@ public class PartnerPortalService {
                 .useYn(useYn(request.useYn())).sortOrder(sortOrder(request.sortOrder())).build()).toList()));
     }
 
+    /** 상품 엔티티와 옵션 목록을 포털 응답으로 변환한다. */
     private PartnerProductResponse response(TravelProduct product) {
         return PartnerProductResponse.from(product,
                 optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product));
     }
 
+    /** 등록 요청의 여행지 식별자가 실제 존재하는지 확인한다. */
     private Destination destination(Long destinationId) {
         return destinationRepository.findWithCountryAndRegionByDestId(destinationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "여행지를 찾을 수 없습니다."));
     }
 
+    /** 현재 인증 사용자의 활성 파트너사 소속을 조회한다. */
     private PartnerCompany partner(Authentication authentication) {
         if (authentication == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         return partnerUserRepository.findByUserUserEmailAndUseYn(authentication.getName(), "Y")
@@ -143,11 +173,22 @@ public class PartnerPortalService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "파트너 계정이 아닙니다."));
     }
 
+    /** null 문자열을 빈 문자열로 바꾸고 앞뒤 공백을 제거한다. */
     private String normalize(String value) { return value == null ? "" : value.trim(); }
+    /** 공백 문자열을 데이터베이스 null로 저장할 수 있도록 정규화한다. */
     private String nullable(String value) { var normalized = normalize(value); return normalized.isBlank() ? null : normalized; }
+    /** 통화 코드가 없으면 기본 통화인 KRW를 사용한다. */
     private String currency(String value) { var normalized = normalize(value).toUpperCase(); return normalized.isBlank() ? "KRW" : normalized; }
+    /** 명시적 미사용 값만 N으로 저장하고 나머지는 Y로 저장한다. */
     private String useYn(String value) { return "N".equalsIgnoreCase(value) ? "N" : "Y"; }
+    /** 정렬 순서가 없거나 유효하지 않으면 1로 보정한다. */
     private int sortOrder(Integer value) { return value == null || value < 1 ? 1 : value; }
 
+    /** 상품 등록 화면의 여행지 선택 항목이다.
+     * @param destinationId 여행지 식별자
+     * @param destName 여행지명
+     * @param countryName 국가명
+     * @param regionName 지역명
+     */
     public record PlaceItem(Long destinationId, String destName, String countryName, String regionName) { }
 }

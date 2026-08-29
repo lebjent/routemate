@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/** 기존 역할 코드와 관리자 권한 정책을 연결하는 호환 규칙을 제공한다. */
 public final class AdminRolePolicy {
 
     public static final String ADMIN = "ADMIN";

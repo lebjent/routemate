@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+/** 파트너사와 대표 계정 정보를 생성·수정하고 목록을 조회한다. */
 public class AdminPartnerService {
     private static final java.util.Set<String> STATUSES = java.util.Set.of("ONBOARDING", "ACTIVE", "SUSPENDED", "TERMINATED");
     private final PartnerCompanyRepository partnerRepository;
@@ -35,6 +36,7 @@ public class AdminPartnerService {
     private final PasswordEncoder passwordEncoder;
 
     @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
+    /** 이름·코드·상태 조건에 맞는 파트너사와 상품 집계를 조회한다. */
     public AdminPartnerResponse getPartners(String query, String status) {
         var normalizedQuery = normalize(query).toLowerCase(Locale.ROOT);
         var normalizedStatus = normalize(status).toUpperCase(Locale.ROOT);
@@ -54,6 +56,7 @@ public class AdminPartnerService {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
+    /** 사업자 번호와 대표 이메일의 중복을 검증하고 파트너사 및 대표 계정을 등록한다. */
     public AdminPartnerResponse.Item create(AdminPartnerRequest request) {
         validate(request, null);
         var businessNumber = required(request.businessNumber());
@@ -85,6 +88,7 @@ public class AdminPartnerService {
 
     @Transactional
     @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
+    /** 파트너사 기본 정보와 대표 계정 정보를 수정한다. */
     public AdminPartnerResponse.Item update(Long partnerId, AdminPartnerRequest request) {
         var partner = partnerRepository.findById(Objects.requireNonNull(partnerId, "파트너사 ID가 필요합니다."))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "파트너사를 찾을 수 없습니다."));

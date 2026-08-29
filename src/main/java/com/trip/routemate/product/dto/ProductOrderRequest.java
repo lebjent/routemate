@@ -5,6 +5,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 
+/**
+ * 옵션 상품 예약을 생성할 때 사용하는 요청이다.
+ *
+ * @param productId 예약할 상품 식별자
+ * @param optionId 예약할 판매 옵션 식별자
+ * @param useDate 실제 상품 이용일
+ * @param quantity 예약 수량
+ * @param buyerName 예약자 이름
+ * @param buyerEmail 예약자 이메일
+ * @param buyerPhone 예약자 연락처
+ */
 public record ProductOrderRequest(
         @Schema(description = "상품 ID", example = "1001")
         @NotNull Long productId,

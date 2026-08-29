@@ -5,6 +5,7 @@ import com.trip.routemate.destination.domain.Destination;
 import java.util.List;
 
 @io.swagger.v3.oas.annotations.media.Schema(description = "관리자 장소 목록 응답 DTO")
+/** 관리자 여행지 목록 응답이다. */
 public record AdminDestinationPlaceResponse(List<PlaceItem> places) {
     public record PlaceItem(Long destinationId, String destName, String destDesc, Long countryId, String countryName, Long regionId, String regionName, String category, String categoryLabel, String imageUrl, Double mapLat, Double mapLng, Integer likeCount) {
         public static PlaceItem from(Destination destination) {

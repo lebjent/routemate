@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
+/** 로그인, 회원가입, 권한 조회에 사용하는 공통 사용자 계정 리포지터리다. */
 public interface UserMstrRepository extends JpaRepository<UserMstr, Long> {
 
     long countByDelYn(String delYn);

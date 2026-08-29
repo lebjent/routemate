@@ -11,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 특정 여행 일차에 방문할 국가·지역과 표시 순서를 보관하는 엔티티다. */
 public class TravelDayRegion {
 
     @Id

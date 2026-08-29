@@ -12,27 +12,60 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 파트너 포털의 대시보드와 옵션 상품 관리 API를 제공한다.
+ *
+ * 모든 요청의 파트너사 범위는 URL이나 요청 본문이 아니라 로그인 인증 정보에서 결정한다.
+ * 따라서 다른 파트너사의 상품을 조회하거나 변경할 수 없다.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/partner")
 public class PartnerPortalController {
     private final PartnerPortalService service;
 
+    /**
+     * 로그인한 파트너사의 상품·판매 현황을 조회한다.
+     *
+     * @param authentication 현재 파트너 사용자 인증 정보
+     * @return 상품 상태, 판매 수량, 최근 등록 상품을 포함한 대시보드 정보
+     */
     @GetMapping("/dashboard")
     public PartnerDashboardResponse dashboard(Authentication authentication) {
         return service.dashboard(authentication);
     }
 
+    /**
+     * 로그인한 파트너사가 관리할 수 있는 옵션 상품을 조회한다.
+     *
+     * @param authentication 현재 파트너 사용자 인증 정보
+     * @return 파트너사 소유 상품과 옵션 목록
+     */
     @GetMapping("/products")
     public List<PartnerProductResponse> products(Authentication authentication) {
         return service.products(authentication);
     }
 
+    /**
+     * 상품 등록 시 선택할 수 있는 여행지 목록을 조회한다.
+     *
+     * @param authentication 현재 파트너 사용자 인증 정보
+     * @return 여행지 식별자, 이름, 국가, 지역 정보
+     */
     @GetMapping("/destinations/places")
     public List<PartnerPortalService.PlaceItem> places(Authentication authentication) {
         return service.places(authentication);
     }
 
+    /**
+     * 파트너사 명의의 옵션 상품을 등록한다.
+     *
+     * 새 상품은 운영 심사를 위해 승인 대기 상태로 저장된다.
+     *
+     * @param authentication 현재 파트너 사용자 인증 정보
+     * @param request 상품과 하위 판매 옵션 정보
+     * @return 생성된 상품 정보와 HTTP 201
+     */
     @PostMapping("/products")
     @ResponseStatus(HttpStatus.CREATED)
     public PartnerProductResponse create(Authentication authentication,
@@ -40,6 +73,14 @@ public class PartnerPortalController {
         return service.create(authentication, request);
     }
 
+    /**
+     * 로그인한 파트너사 소유 상품만 수정한다.
+     *
+     * @param authentication 현재 파트너 사용자 인증 정보
+     * @param productId 수정할 상품 식별자
+     * @param request 변경할 상품과 옵션 정보
+     * @return 수정된 상품 정보
+     */
     @PatchMapping("/products/{productId}")
     public PartnerProductResponse update(Authentication authentication,
                                          @PathVariable Long productId,

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+/** 관리자 대시보드의 운영 지표와 최근 활동을 조회한다. */
 public class AdminDashboardService {
 
     private final UserMstrRepository userMstrRepository;
@@ -25,6 +26,7 @@ public class AdminDashboardService {
     private final ProductOrderRepository productOrderRepository;
 
     @PreAuthorize("hasAuthority('DASHBOARD_VIEW')")
+    /** 회원·상품·주문·일정 지표와 최근 주문 및 일정을 대시보드 형식으로 조회한다. */
     public AdminDashboardResponse getDashboard() {
         var totalViews = travelPlanRepository.getTotalViewCount();
         var summary = new AdminDashboardResponse.Summary(

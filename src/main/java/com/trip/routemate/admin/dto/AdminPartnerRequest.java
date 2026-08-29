@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/** 파트너사와 대표 계정을 생성·수정하는 관리자 요청이다. */
 public record AdminPartnerRequest(
         @Schema(description = "파트너사 내부 식별 코드", example = "PARTNER-JP-001")
         @Size(max = 30) String partnerCode,

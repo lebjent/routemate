@@ -6,6 +6,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * 옵션 상품 예약의 상품·금액·이용일·상태 정보를 제공하는 응답이다.
+ *
+ * 일정 연결 후보 조회에도 같은 형식을 사용해 예약 식별자를 전달한다.
+ */
 @io.swagger.v3.oas.annotations.media.Schema(description = "상품 주문 번호, 구매 상품, 이용일과 주문 상태를 담는 응답 DTO")
 public record ProductOrderResponse(
         Long orderId,
@@ -29,6 +34,7 @@ public record ProductOrderResponse(
         String bookingUrl,
         LocalDateTime createDt
 ) {
+    /** 예약 엔티티를 API 응답 형식으로 변환한다. */
     public static ProductOrderResponse from(ProductOrder order) {
         var product = order.getProduct();
         var option = order.getOption();

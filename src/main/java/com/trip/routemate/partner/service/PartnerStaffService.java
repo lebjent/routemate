@@ -18,6 +18,12 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * 파트너 대표 권한으로 직원 계정을 생성·조회·상태 변경한다.
+ *
+ * 모든 대상 직원은 로그인한 대표와 동일한 파트너사에 속해야 한다. 대표가 다른 회사의
+ * 직원 계정에 접근할 수 없도록 소속 관계를 매번 검증한다.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -27,6 +33,7 @@ public class PartnerStaffService {
     private final PasswordEncoder passwordEncoder;
 
     @PreAuthorize("hasRole('PARTNER_OWNER')")
+    /** 현재 대표의 파트너사 정보와 사용 중인 직원 목록을 조회한다. */
     public PartnerStaffResponse getStaff(Authentication authentication) {
         var owner = currentOwner(authentication);
         return new PartnerStaffResponse(owner.getPartner().getPartnerId(), owner.getPartner().getPartnerName(),
@@ -36,6 +43,11 @@ public class PartnerStaffService {
 
     @Transactional
     @PreAuthorize("hasRole('PARTNER_OWNER')")
+    /**
+     * 현재 파트너사에 새 직원 로그인 계정과 소속 관계를 만든다.
+     *
+     * @throws ResponseStatusException 로그인 이메일이 이미 사용 중일 때
+     */
     public PartnerStaffResponse.Item createStaff(Authentication authentication, PartnerStaffCreateRequest request) {
         var owner = currentOwner(authentication);
         var loginId = required(request.loginId()).toLowerCase(Locale.ROOT);
@@ -54,6 +66,7 @@ public class PartnerStaffService {
 
     @Transactional
     @PreAuthorize("hasRole('PARTNER_OWNER')")
+    /** 현재 대표와 같은 파트너사에 속한 직원의 사용 상태를 변경한다. */
     public PartnerStaffResponse.Item updateStatus(Authentication authentication, Long partnerUserId, String status) {
         var owner = currentOwner(authentication);
         var staff = partnerUserRepository.findByPartnerUserIdAndPartner(partnerUserId, owner.getPartner())
@@ -67,6 +80,7 @@ public class PartnerStaffService {
         return PartnerStaffResponse.Item.from(staff);
     }
 
+    /** 현재 인증 사용자가 활성 상태의 파트너 대표인지 검증한다. */
     private PartnerUser currentOwner(Authentication authentication) {
         if (authentication == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         var owner = partnerUserRepository.findByUserUserEmailAndUseYn(authentication.getName(), "Y")
@@ -79,6 +93,7 @@ public class PartnerStaffService {
         return owner;
     }
 
+    /** 필수 문자열을 정규화하고 빈 값이면 요청 오류를 발생시킨다. */
     private String required(String value) {
         var normalized = value == null ? "" : value.trim();
         if (normalized.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "필수 항목을 입력하세요.");

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 홈 화면에 노출할 여행지의 기간과 순서를 관리하는 엔티티다. */
 public class DestinationRecommendation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

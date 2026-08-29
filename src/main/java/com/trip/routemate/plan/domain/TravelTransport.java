@@ -12,6 +12,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 세부 일정에 연결된 이동 수단과 출발·도착 정보를 보관하는 엔티티다. */
 public class TravelTransport {
 
     @Id

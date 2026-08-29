@@ -15,6 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 사용자가 작성한 여행 기간, 공개 여부, 통계 정보를 보관하는 최상위 일정 엔티티다. */
 public class TravelPlan {
 
     @Id

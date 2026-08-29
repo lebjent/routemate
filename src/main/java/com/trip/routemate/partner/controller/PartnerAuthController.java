@@ -21,6 +21,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * 파트너사 대표와 직원의 포털 인증을 처리하는 API다.
+ *
+ * 일반 회원 로그인과 달리 활성 파트너사에 사용 중인 직원으로 연결된 계정만 인증한다.
+ * 로그인에 성공하면 파트너 포털에서 필요한 권한과 메뉴 정보를 세션에 함께 저장한다.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/partner/auth")
@@ -31,6 +37,17 @@ public class PartnerAuthController {
     private final SecurityContextRepository securityContextRepository;
     private final AuthorizationService authorizationService;
 
+    /**
+     * 파트너 포털에 로그인하고 서버 세션을 만든다.
+     *
+     * 계정 비밀번호, 회원 상태, 파트너 직원 소속 및 파트너사 상태를 모두 확인한다.
+     * 어느 하나라도 충족하지 않으면 인증 실패 또는 접근 금지 응답을 반환한다.
+     *
+     * @param request 이메일과 비밀번호
+     * @param servletRequest 현재 HTTP 요청. 세션 보안 컨텍스트 저장에 사용한다.
+     * @param response 현재 HTTP 응답. 세션 식별자 전달에 사용한다.
+     * @return 로그인 사용자와 권한·메뉴 정보
+     */
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> login(@Valid @RequestBody UserLoginDto request,
                                                    HttpServletRequest servletRequest, HttpServletResponse response) {

@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @AllArgsConstructor
+/** 관리자 화면에서 노출할 메뉴의 코드, 이름, 정렬 순서를 보관한다. */
 public class AdminMenu {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "MENU_ID")
     private Long menuId;

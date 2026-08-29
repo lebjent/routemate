@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
+/** 여행지를 분류하는 고정 카테고리다. */
 public enum PlaceCategory {
     FOOD("맛집"),
     SIGHTSEEING("관광지"),

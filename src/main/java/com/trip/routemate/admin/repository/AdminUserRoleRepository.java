@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/** 사용자에게 부여된 관리자 역할을 조회하고 저장한다. */
 public interface AdminUserRoleRepository extends JpaRepository<AdminUserRole, Long> {
 
     @Modifying

@@ -10,6 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+/** 로그인 시 이메일과 비밀번호를 전달하는 DTO다. */
 public class UserLoginDto {
 
     @NotBlank(message = "이메일을 입력해 주세요.")

@@ -1,5 +1,6 @@
 package com.trip.routemate.admin.security;
 
+/** 관리자 기능 접근 제어에 사용하는 권한 코드다. */
 public enum AdminPermission {
     DASHBOARD_VIEW,
     MEMBER_VIEW,

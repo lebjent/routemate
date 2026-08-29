@@ -23,12 +23,14 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+/** 국가, 지역, 여행지 마스터 데이터를 관리한다. */
 public class AdminDestinationService {
     private final CountryRepository countryRepository;
     private final RegionRepository regionRepository;
     private final DestinationRepository destinationRepository;
 
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 검색어와 상태 조건으로 국가 목록 및 집계를 조회한다. */
     public AdminDestinationResponse getCountries(String query, String status) {
         var normalizedQuery = query == null ? "" : query.trim().toLowerCase();
         var normalizedStatus = normalizeStatus(status);
@@ -46,6 +48,7 @@ public class AdminDestinationService {
     }
 
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 지정 국가에 속한 지역 목록을 정렬 순서대로 조회한다. */
     public java.util.List<AdminDestinationResponse.RegionItem> getRegions(Long countryId) {
         var country = getCountry(countryId);
         return regionRepository.findByCountryOrderBySortOrderAscRegionNameAsc(country).stream().map(AdminDestinationResponse.RegionItem::from).toList();
@@ -53,6 +56,7 @@ public class AdminDestinationService {
 
     @Transactional
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 중복 국가 코드를 검증한 뒤 국가를 등록한다. */
     public AdminDestinationResponse.CountryItem createCountry(AdminCountryRequest request) {
         var name = request.countryName().trim();
         var code = request.countryCode().trim().toUpperCase();
@@ -66,6 +70,7 @@ public class AdminDestinationService {
 
     @Transactional
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 국가 식별자로 기존 국가 정보를 수정한다. */
     public AdminDestinationResponse.CountryItem updateCountry(Long countryId, AdminCountryRequest request) {
         var country = getCountry(countryId);
         var name = request.countryName().trim();
@@ -78,6 +83,7 @@ public class AdminDestinationService {
 
     @Transactional
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 지정 국가에 지역을 등록한다. */
     public AdminDestinationResponse.RegionItem createRegion(Long countryId, AdminRegionRequest request) {
         var country = getCountry(countryId);
         var code = request.regionCode().trim().toUpperCase();
@@ -92,6 +98,7 @@ public class AdminDestinationService {
 
     @Transactional
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 지정 국가에 속한 지역만 수정할 수 있도록 소속 관계를 검증한다. */
     public AdminDestinationResponse.RegionItem updateRegion(Long countryId, Long regionId, AdminRegionRequest request) {
         var country = getCountry(countryId);
         var region = regionRepository.findByRegionIdAndCountry(regionId, country).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "지역을 찾을 수 없습니다."));
@@ -102,6 +109,7 @@ public class AdminDestinationService {
     }
 
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 국가 또는 지역 조건에 맞는 여행지 목록을 조회한다. */
     public AdminDestinationPlaceResponse getPlaces(Long countryId, Long regionId) {
         var places = destinationRepository.findAllByOrderByDestNameAsc().stream()
                 .filter(place -> countryId == null || place.getCountry().getCountryId().equals(countryId))
@@ -112,12 +120,14 @@ public class AdminDestinationService {
     }
 
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 여행지 등록에 사용할 카테고리 목록을 제공한다. */
     public AdminPlaceCategoryResponse getPlaceCategories() {
         return AdminPlaceCategoryResponse.fromCategories();
     }
 
     @Transactional
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 국가와 지역의 소속 관계를 검증한 뒤 여행지를 등록한다. */
     public AdminDestinationPlaceResponse.PlaceItem createPlace(AdminDestinationPlaceRequest request) {
         var country = getCountry(request.countryId());
         var region = regionRepository.findByRegionIdAndCountry(request.regionId(), country)
@@ -131,6 +141,7 @@ public class AdminDestinationService {
 
     @Transactional
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 여행지 식별자로 기존 여행지 정보를 수정한다. */
     public AdminDestinationPlaceResponse.PlaceItem updatePlace(Long destinationId, AdminDestinationPlaceRequest request) {
         var place = destinationRepository.findWithCountryAndRegionByDestId(destinationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "여행지를 찾을 수 없습니다."));

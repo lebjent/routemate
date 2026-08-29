@@ -27,6 +27,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+/** 관리자 상품 목록과 상품 승인 이력을 관리한다. */
 public class AdminProductService {
     private final TravelProductRepository productRepository;
     private final DestinationRepository destinationRepository;
@@ -36,6 +37,7 @@ public class AdminProductService {
     private final UserMstrRepository userRepository;
 
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 여행지와 판매 상태 조건으로 전체 상품 목록을 조회한다. */
     public AdminProductResponse getProducts(Long destinationId, String useYn) {
         var status = normalizeStatus(useYn);
         var products = productRepository.findAllByOrderBySortOrderAscCreateDtDesc().stream()
@@ -48,6 +50,7 @@ public class AdminProductService {
 
     @Transactional
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 관리자 등록 상품을 생성하고 옵션 정보를 함께 저장한다. */
     public AdminProductResponse.Item create(AdminProductRequest request) {
         var destination = getDestination(request.destinationId());
         var partner = getPartner(request.partnerId());
@@ -82,6 +85,7 @@ public class AdminProductService {
 
     @Transactional
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
+    /** 상품 정보와 옵션 구성을 수정한다. */
     public AdminProductResponse.Item update(Long productId, AdminProductRequest request) {
         var product = productRepository.findWithDestinationByProductId(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "옵션상품을 찾을 수 없습니다."));
@@ -99,6 +103,7 @@ public class AdminProductService {
     }
 
     @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
+    /** 심사 상태별로 파트너 등록 상품을 조회한다. */
     public AdminProductResponse getApprovalProducts(String status) {
         var approvalStatus = normalizeApprovalStatus(status);
         var products = productRepository.findAllByOrderBySortOrderAscCreateDtDesc().stream()
@@ -111,6 +116,7 @@ public class AdminProductService {
 
     @Transactional
     @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
+    /** 승인·거절·보류 결과와 사유를 상품 및 승인 이력에 함께 기록한다. */
     public AdminProductResponse.Item review(Long productId, AdminProductApprovalRequest request, String approverEmail) {
         var product = productRepository.findWithDestinationByProductId(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "옵션상품을 찾을 수 없습니다."));
@@ -129,6 +135,7 @@ public class AdminProductService {
     }
 
     @PreAuthorize("hasAuthority('PARTNER_MANAGE')")
+    /** 상품의 심사 이력을 최신 결정 순으로 조회한다. */
     public java.util.List<AdminProductApprovalHistoryResponse> approvalHistory(Long productId) {
         var product = productRepository.findById(Objects.requireNonNull(productId, "상품 ID가 필요합니다."))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "옵션상품을 찾을 수 없습니다."));

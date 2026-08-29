@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 파트너사 또는 관리자가 판매하는 여행 옵션 상품의 기본 정보를 보관한다. */
 public class TravelProduct {
 
     @Id

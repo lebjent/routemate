@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @io.swagger.v3.oas.annotations.media.Schema(description = "관리자 파트너사 목록과 승인·계약 정보를 담는 응답 DTO")
+/** 파트너사 목록과 상품 운영 현황 응답이다. */
 public record AdminPartnerResponse(List<Item> partners) {
     public record Item(
             Long partnerId, String partnerCode, String partnerName, String businessNumber,

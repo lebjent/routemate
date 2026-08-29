@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 여행 계획에 속한 하루의 날짜와 일차 번호를 보관하는 엔티티다. */
 public class TravelDay {
 
     @Id

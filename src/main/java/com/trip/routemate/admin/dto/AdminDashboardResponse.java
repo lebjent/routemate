@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @io.swagger.v3.oas.annotations.media.Schema(description = "관리자 대시보드의 회원·여행지·상품·주문 요약 지표 DTO")
+/** 관리자 대시보드에 표시하는 운영 요약과 최근 활동 데이터다. */
 public record AdminDashboardResponse(
         Summary summary,
         List<ProductTypeItem> productTypes,

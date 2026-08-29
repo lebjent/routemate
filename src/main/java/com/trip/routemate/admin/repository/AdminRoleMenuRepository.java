@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/** 역할별 관리자 메뉴 매핑을 조회하고 저장한다. */
 public interface AdminRoleMenuRepository extends JpaRepository<AdminRoleMenu, Long> {
     @Query("""
             select menu.menuCode

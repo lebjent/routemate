@@ -18,6 +18,11 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * 공식 로또 이력에서 번호 빈도를 집계하고 추천 조합을 생성한다.
+ *
+ * 집계 결과는 설정된 주기 동안 메모리에 보관하며, 외부 조회 실패 시 이전 결과를 사용한다.
+ */
 @Service
 public class LottoHistoryFrequencyService {
 
@@ -38,6 +43,7 @@ public class LottoHistoryFrequencyService {
         this.properties = properties;
     }
 
+    /** 외부 이력 데이터의 상위 빈도 번호에서 여섯 개를 선택한다. */
     public LottoFrequencyResponse generateCombination() {
         var statistics = loadStatistics();
         var candidates = new ArrayList<>(statistics.topNumbers());
@@ -59,6 +65,7 @@ public class LottoHistoryFrequencyService {
         );
     }
 
+    /** 만료되지 않은 통계를 사용하거나 외부 이력으로 새 통계를 만든다. */
     private CachedStatistics loadStatistics() {
         var current = cachedStatistics;
         if (current != null && current.isFresh()) {
@@ -83,6 +90,7 @@ public class LottoHistoryFrequencyService {
         }
     }
 
+    /** 최신 회차부터 첫 회차까지의 이력을 페이지 단위로 요청한다. */
     private List<LottoHistoryClient.LottoDraw> requestOfficialHistory() {
         var latestPage = findLatestDrawPage();
         var history = new ArrayList<>(latestPage.draws());
@@ -95,6 +103,7 @@ public class LottoHistoryFrequencyService {
         return history;
     }
 
+    /** 현재 날짜를 기준으로 추정한 최근 회차 근처에서 실제 최신 회차를 찾는다. */
     private LatestDrawPage findLatestDrawPage() {
         var today = LocalDate.now(KOREA_ZONE_ID);
         var estimatedDrawNumber = (int) ChronoUnit.WEEKS.between(FIRST_DRAW_DATE, today) + 1;
@@ -111,10 +120,12 @@ public class LottoHistoryFrequencyService {
         throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "최신 로또 회차를 확인하지 못했습니다.");
     }
 
+    /** 지정 회차를 기준으로 공식 이력 페이지를 요청한다. */
     private List<LottoHistoryClient.LottoDraw> requestDrawPage(int drawNumber) {
         return lottoHistoryClient.requestDrawPage(drawNumber);
     }
 
+    /** 중복·비정상 회차를 제외하고 번호별 출현 횟수를 집계한다. */
     private CachedStatistics summarize(List<LottoHistoryClient.LottoDraw> history) {
         if (history == null || history.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "역대 로또 통계 데이터가 비어 있습니다.");
@@ -148,6 +159,7 @@ public class LottoHistoryFrequencyService {
         return new CachedStatistics(topNumbers, validDrawCount, latestDrawNumber, refreshedAt, refreshedAt.plus(properties.refreshInterval()));
     }
 
+    /** 한 회차가 로또 번호 여섯 개와 범위를 모두 충족하는지 검증한다. */
     private boolean isValidDraw(LottoHistoryClient.LottoDraw draw) {
         return draw != null
                 && draw.drawNumber() > 0
@@ -155,12 +167,14 @@ public class LottoHistoryFrequencyService {
                 && draw.numbers().stream().distinct().count() == LOTTO_NUMBER_COUNT;
     }
 
+    /** 최신 회차를 판별할 때 사용하는 이력 페이지다. */
     private record LatestDrawPage(
             int latestDrawNumber,
             List<LottoHistoryClient.LottoDraw> draws
     ) {
     }
 
+    /** 추천 생성에 재사용하는 빈도 집계 캐시다. */
     private record CachedStatistics(
             List<LottoFrequencyResponse.NumberFrequency> topNumberFrequencies,
             int analyzedDrawCount,
@@ -168,10 +182,12 @@ public class LottoHistoryFrequencyService {
             Instant refreshedAt,
             Instant expiresAt
     ) {
+        /** 현재 시각 기준으로 캐시가 만료되지 않았는지 확인한다. */
         private boolean isFresh() {
             return Instant.now().isBefore(expiresAt);
         }
 
+        /** 출현 빈도가 높은 번호만 추출한다. */
         private List<Integer> topNumbers() {
             return topNumberFrequencies.stream()
                     .map(frequency -> frequency.number())

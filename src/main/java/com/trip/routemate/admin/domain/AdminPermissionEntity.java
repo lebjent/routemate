@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @AllArgsConstructor
+/** 관리자 역할에 부여할 세부 기능 권한의 마스터 엔티티다. */
 public class AdminPermissionEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "PERMISSION_ID")
     private Long permissionId;

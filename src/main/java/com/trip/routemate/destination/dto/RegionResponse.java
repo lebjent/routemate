@@ -2,6 +2,7 @@ package com.trip.routemate.destination.dto;
 
 import com.trip.routemate.destination.domain.Region;
 
+/** 지정 국가에서 선택 가능한 지역 정보다. */
 public record RegionResponse(
         Long regionId,
         String regionName,

@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 옵션 상품을 공급하는 파트너사의 사업자 정보를 보관한다. */
 public class PartnerCompany {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "PARTNER_ID")

@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @AllArgsConstructor
+/** 회원 계정에 부여된 관리자 역할을 보관하는 매핑 엔티티다. */
 public class AdminUserRole {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "USER_ROLE_ID")
     private Long userRoleId;

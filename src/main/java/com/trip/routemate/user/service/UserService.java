@@ -8,49 +8,51 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 일반 회원의 중복 확인과 가입 처리 규칙을 담당한다.
+ *
+ * 중복 여부는 가입 시점에 다시 확인하며, 비밀번호는 저장 전에 BCrypt로 암호화한다.
+ */
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // 기본적으로 읽기 전용으로 트랜잭션을 잡아서 성능을 최적화합니다.
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserMstrRepository userMstrRepository;
-    private final BCryptPasswordEncoder passwordEncoder; // SecurityConfig에서 등록한 빈이 주입됩니다.
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    /**
-     * 닉네임 중복 확인 로직
-     */
+    /** 닉네임이 이미 가입된 회원에게 사용 중인지 확인한다. */
     public boolean checkNicknameDuplicate(String nicknm) {
         return userMstrRepository.existsByUserNicknm(nicknm);
     }
 
-    /**
-     * 이메일 중복 확인 로직
-     */
+    /** 이메일이 이미 가입된 회원에게 사용 중인지 확인한다. */
     public boolean checkEmailDuplicate(String email) {
         return userMstrRepository.existsByUserEmail(email);
     }
 
     /**
-     * 회원가입 비즈니스 로직
+     * 이메일과 닉네임 중복을 검증한 뒤 일반 회원 계정을 생성한다.
+     *
+     * @param dto 가입에 필요한 회원 정보
+     * @return 생성된 회원 식별자
+     * @throws IllegalStateException 이메일·닉네임이 중복되거나 비밀번호 확인값이 다를 때
      */
-    @Transactional // 데이터 변경이 일어나므로 가입 메서드에는 별도로 @Transactional을 붙여줍니다.
+    @Transactional
     @SuppressWarnings("null")
     public Long join(UserJoinDto dto) {
 
-        // 1. 이메일 중복 검증 (실무에선 필수 중의 필수!)
         if (userMstrRepository.existsByUserEmail(dto.getUserEmail())) {
             throw new IllegalStateException("이미 존재하는 이메일입니다.");
         }
 
-        // 2. 비밀번호와 비밀번호 확인 일치 검증
         if (!dto.getUserPwd().equals(dto.getUserPwdCheck())) {
             throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 3. 빌더 패턴을 이용해 엔티티로 변환 및 비밀번호 암호화(Encoding)
         UserMstr user = UserMstr.builder()
                 .userEmail(dto.getUserEmail())
-                .userPwd(passwordEncoder.encode(dto.getUserPwd())) // 🔥 평문 비번을 시큐리티로 암호화!
+                .userPwd(passwordEncoder.encode(dto.getUserPwd()))
                 .userNicknm(dto.getUserNicknm())
                 .userPhone(dto.getUserPhone())
                 .userZipcode(dto.getUserZipcode())
@@ -59,10 +61,8 @@ public class UserService {
                 .userBirth(dto.getUserBirth())
                 .build();
 
-        // 4. 오라클 DB에 최종 저장(Insert)
         UserMstr savedUser = userMstrRepository.save(user);
 
-        // 5. 생성된 회원 일련번호(PK) 반환
         return savedUser.getUserId();
     }
 }

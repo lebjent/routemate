@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/** 역할별 관리자 기능 권한 매핑을 조회하고 저장한다. */
 public interface AdminRolePermissionRepository extends JpaRepository<AdminRolePermission, Long> {
     @Query("""
             select permission.permissionCode

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 상품 심사에서 결정된 승인·거절·보류 결과와 사유를 보관하는 이력 엔티티다. */
 public class ProductApprovalHistory {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "APPROVAL_HISTORY_ID") private Long approvalHistoryId;

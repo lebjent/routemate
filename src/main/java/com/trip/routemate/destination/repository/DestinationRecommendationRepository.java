@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/** 여행지 추천 설정과 현재 노출 대상 조회를 담당한다. */
 public interface DestinationRecommendationRepository extends JpaRepository<DestinationRecommendation, Long> {
     @EntityGraph(attributePaths = {"destination", "destination.country", "destination.region"})
     @Query("""

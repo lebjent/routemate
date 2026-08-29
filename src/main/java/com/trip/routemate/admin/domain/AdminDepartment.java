@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @AllArgsConstructor
+/** 관리자 직원 조직을 구분하기 위한 부서 마스터 엔티티다. */
 public class AdminDepartment {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "DEPT_ID")
     private Long deptId;

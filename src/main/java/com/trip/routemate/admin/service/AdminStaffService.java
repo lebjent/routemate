@@ -23,6 +23,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+/** 관리자 직원의 생성, 역할 변경, 사용 상태 변경을 처리한다. */
 public class AdminStaffService {
 
     private static final Set<String> ALLOWED_STATUSES = Set.of("ACTIVE", "SUSPENDED");
@@ -38,6 +39,7 @@ public class AdminStaffService {
     private final AdminUserRoleRepository adminUserRoleRepository;
 
     @PreAuthorize("hasAuthority('STAFF_VIEW')")
+    /** 검색어, 계정 상태, 역할 조건으로 관리자 직원 목록을 조회한다. */
     public AdminStaffListResponse getStaff(String query, String status, String role) {
         var normalizedQuery = query == null ? "" : query.trim();
         var normalizedStatus = normalizeStatusFilter(status);
@@ -60,6 +62,7 @@ public class AdminStaffService {
 
     @Transactional
     @PreAuthorize("hasAuthority('STAFF_MANAGE')")
+    /** 이메일 중복을 검증하고 관리자 역할을 가진 직원 계정을 생성한다. */
     public AdminStaffListResponse.StaffItem createStaff(AdminStaffCreateRequest request) {
         var email = request.userEmail().trim().toLowerCase();
         var nickname = request.userNicknm().trim();
@@ -92,6 +95,7 @@ public class AdminStaffService {
 
     @Transactional
     @PreAuthorize("hasAuthority('STAFF_MANAGE')")
+    /** 현재 로그인한 관리자 자신을 제외하고 직원 역할을 변경한다. */
     public AdminStaffListResponse.StaffItem updateRole(String actorEmail, Long userId, String role) {
         var normalizedRole = normalizeManageableRole(role);
         var staff = getManageableStaff(actorEmail, userId);
@@ -102,6 +106,7 @@ public class AdminStaffService {
 
     @Transactional
     @PreAuthorize("hasAuthority('STAFF_MANAGE')")
+    /** 현재 로그인한 관리자 자신을 제외하고 직원 계정 상태를 변경한다. */
     public AdminStaffListResponse.StaffItem updateStatus(String actorEmail, Long userId, String status) {
         var normalizedStatus = normalizeStatusUpdate(status);
         var staff = getManageableStaff(actorEmail, userId);

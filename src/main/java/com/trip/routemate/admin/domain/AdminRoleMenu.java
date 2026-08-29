@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @AllArgsConstructor
+/** 관리자 역할과 접근 가능한 메뉴를 연결하는 매핑 엔티티다. */
 public class AdminRoleMenu {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "ROLE_MENU_ID")
     private Long roleMenuId;

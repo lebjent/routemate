@@ -10,6 +10,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 방문 지역 안의 시간대별 일정과 선택 예약을 보관하는 엔티티다. */
 public class TravelSchedule {
 
     @Id

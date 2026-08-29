@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @io.swagger.v3.oas.annotations.media.Schema(description = "관리자 상품 목록과 상품별 옵션을 담는 응답 DTO")
+/** 관리자 상품 관리 화면에 제공하는 상품과 옵션 목록 응답이다. */
 public record AdminProductResponse(List<Item> products) {
     public record Item(Long productId, Long destinationId, String destinationName, String countryName, String regionName,
                        Long partnerId, String partnerCode, String partnerName, String productName, String productSummary, String productType, String providerName, String productDesc,

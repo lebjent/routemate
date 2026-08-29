@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 import java.util.List;
 
+/** 관리자 역할 마스터를 조회하고 저장한다. */
 public interface AdminRoleRepository extends JpaRepository<AdminRole, Long> {
     Optional<AdminRole> findByRoleCodeAndUseYn(String roleCode, String useYn);
 

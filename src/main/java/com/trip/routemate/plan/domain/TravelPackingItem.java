@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+/** 여행 계획 전체에 필요한 준비물과 필수 여부를 보관하는 엔티티다. */
 public class TravelPackingItem {
 
     @Id

@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @io.swagger.v3.oas.annotations.media.Schema(description = "관리자 직원 목록과 역할·상태별 집계 응답 DTO")
+/** 관리자 직원 목록과 역할별 요약을 제공하는 응답이다. */
 public record AdminStaffListResponse(Summary summary, List<StaffItem> staff) {
 
     public record Summary(

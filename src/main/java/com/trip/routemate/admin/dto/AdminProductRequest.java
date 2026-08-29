@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.List;
 
+/** 관리자가 옵션 상품과 하위 옵션을 등록·수정하는 요청이다. */
 public record AdminProductRequest(
         @Schema(description = "상품이 판매되는 장소 ID", example = "101")
         @NotNull Long destinationId,

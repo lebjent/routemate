@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @AllArgsConstructor
+/** 관리자 직원에게 부여하는 역할 코드와 표시명을 보관한다. */
 public class AdminRole {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "ROLE_ID")
     private Long roleId;

@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.List;
 
 @Repository
+/** 국가 마스터 조회와 저장을 담당하는 리포지터리다. */
 public interface CountryRepository extends JpaRepository<Country, Long> {
     Optional<Country> findByCountryCode(String countryCode);
 

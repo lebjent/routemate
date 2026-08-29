@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+/** 지역 마스터 조회와 저장을 담당하는 리포지터리다. */
 public interface RegionRepository extends JpaRepository<Region, Long> {
     @EntityGraph(attributePaths = "country")
     List<Region> findByCountryOrderBySortOrderAscRegionNameAsc(Country country);
