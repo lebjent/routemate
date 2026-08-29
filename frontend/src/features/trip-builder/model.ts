@@ -1,9 +1,11 @@
+/** 여행 일정 편집기에서 선택하는 국가 기준 데이터다. */
 export type CountryOption = {
   countryId: number;
   countryName: string;
   countryCode: string;
 };
 
+/** 선택한 국가에 속한 지역 기준 데이터다. */
 export type RegionOption = {
   regionId: number;
   regionName: string;
@@ -14,6 +16,7 @@ export type RegionOption = {
 
 export type TransportType = '' | 'TRAIN' | 'CAR' | 'FLIGHT' | 'CRUISE' | 'OTHER';
 
+/** 여행 일차의 한 시간대에 기록하는 세부 일정과 선택 교통편이다. */
 export type Schedule = {
   id: string;
   time: string;
@@ -29,6 +32,7 @@ export type Schedule = {
   productOrderNo: string | null;
 };
 
+/** 특정 일차에 방문할 국가·지역과 하위 세부 일정 목록이다. */
 export type DayRegion = {
   id: string;
   countryCode: string;
@@ -37,12 +41,14 @@ export type DayRegion = {
   schedules: Schedule[];
 };
 
+/** 여행 계획 편집 상태에서 하루를 표현하는 모델이다. */
 export type DayPlan = {
   day: number;
   date: string;
   regions: DayRegion[];
 };
 
+/** 여행 계획에 추가하는 준비물과 필수 여부다. */
 export type PackingItem = {
   id: string;
   item: string;
@@ -71,6 +77,7 @@ export type TransportOption = {
 
 const makeId = () => crypto.randomUUID();
 
+/** 새 세부 일정을 추가할 때 사용할 빈 편집 상태를 만든다. */
 export const createSchedule = (): Schedule => ({
   id: makeId(),
   time: '',
@@ -86,6 +93,7 @@ export const createSchedule = (): Schedule => ({
   productOrderNo: null,
 });
 
+/** 새 방문 지역을 추가할 때 사용할 빈 편집 상태를 만든다. */
 export const createDayRegion = (): DayRegion => ({
   id: makeId(),
   countryCode: '',
@@ -94,6 +102,7 @@ export const createDayRegion = (): DayRegion => ({
   schedules: [],
 });
 
+/** 새 준비물 입력 행의 기본 상태를 만든다. */
 export const createPackingItem = (item = '', required = true): PackingItem => ({
   id: makeId(),
   item,
@@ -109,6 +118,7 @@ const toDateInputValue = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
+/** ISO 날짜 문자열을 한국어 날짜 표시용 문자열로 변환한다. */
 export const formatDate = (value: string) => {
   if (!value) return '';
   const date = parseLocalDate(value);
@@ -128,6 +138,7 @@ export const formatDateWithYear = (value: string) => {
   return `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}.`;
 };
 
+/** 시작일과 종료일을 포함한 실제 여행 일수를 계산한다. */
 export const getTravelDurationDays = (startDate?: string | null, endDate?: string | null) => {
   if (!startDate || !endDate) return 0;
   const start = parseLocalDate(startDate);
@@ -141,6 +152,7 @@ export const formatTravelDuration = (startDate?: string | null, endDate?: string
   return days > 0 ? `${days}일 여행` : '기간 미정';
 };
 
+/** 여행 기간의 모든 날짜를 일차 번호와 함께 편집기용 배열로 만든다. */
 export const createDays = (travelStartDate: string, travelEndDate: string): DayDescriptor[] => {
   if (!travelStartDate || !travelEndDate) return [];
   const start = parseLocalDate(travelStartDate);
@@ -156,6 +168,7 @@ export const createDays = (travelStartDate: string, travelEndDate: string): DayD
   return days;
 };
 
+/** 세부 일정이 저장할 만한 사용자 입력을 하나 이상 포함하는지 판별한다. */
 export const hasScheduleContent = (schedule: Schedule) =>
   Boolean(schedule.title.trim() || schedule.location.trim() || schedule.memo.trim() || schedule.transportType || schedule.productOrderId);
 

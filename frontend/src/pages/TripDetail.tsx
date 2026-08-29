@@ -1,16 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { Document, Font, Page, PDFDownloadLink, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { formatTravelDuration } from '../features/trip-builder/model';
-
-Font.register({ family: 'NotoSansKR', src: '/fonts/NotoSansKR-Regular.ttf' });
-Font.register({ family: 'NotoSansKR', src: '/fonts/NotoSansKR-Regular.ttf', fontWeight: 700 });
-Font.register({ family: 'GowunDodum', src: '/fonts/GowunDodum-Regular.ttf' });
-Font.register({ family: 'Jua', src: '/fonts/Jua-Regular.ttf' });
-Font.register({ family: 'Gaegu', src: '/fonts/Gaegu-Regular.ttf' });
-Font.register({ family: 'DoHyeon', src: '/fonts/DoHyeon-Regular.ttf' });
+import type { TripPdfData } from '../features/trip-pdf/TripPdfThemeModal';
 
 type Schedule = {
   time: string | null;
@@ -71,6 +64,10 @@ type TripDetailProps = {
   publicView?: boolean;
 };
 
+/** PDF 저장 버튼을 누른 뒤에만 PDF 모달과 렌더러를 내려받는다. */
+const TripPdfThemeModal = lazy(() => import('../features/trip-pdf/TripPdfThemeModal').then((module) => ({ default: module.TripPdfThemeModal })));
+
+/* 이전 인라인 PDF 구현. PDF 모듈 분리 이후에는 TripPdfThemeModal이 같은 책임을 가진다.
 const pdfStyles = StyleSheet.create({
   page: { padding: 42, fontFamily: 'GowunDodum', color: '#172033', fontSize: 10, backgroundColor: '#fffdfb' },
   logoBar: { flexDirection: 'row', alignItems: 'center', borderBottom: '2px solid #f08aa5', paddingBottom: 14, marginBottom: 24 },
@@ -116,14 +113,20 @@ const TripPdfDocument = ({ trip, theme }: { trip: TripDetail; theme: typeof pdfT
 
   return <Document><Page size="A4" style={commonPage}><View style={{ alignItems: 'center', marginBottom: 22 }}><Text style={{ color: theme.accent, fontSize: 17 }}>♡ RouteMate ♡</Text><Text style={{ color: '#26324a', fontSize: 27, marginTop: 18 }}>{trip.title}</Text><Text style={{ color: theme.accent, fontSize: 10, marginTop: 8, paddingHorizontal: 13, paddingVertical: 6, borderRadius: 12, backgroundColor: '#ffe8ee' }}>{trip.travelStartDate} ~ {trip.travelEndDate}</Text>{trip.description ? <Text style={{ color: '#64748b', fontSize: 9, marginTop: 10, textAlign: 'center', lineHeight: 1.5 }}>{trip.description}</Text> : null}</View>{trip.days.map((day) => <View key={day.dayNumber} wrap={false} style={{ marginTop: 13, padding: 15, borderRadius: 16, backgroundColor: theme.card, borderWidth: 1, borderColor: '#f5c9d5' }}><View style={{ flexDirection: 'row', alignItems: 'center' }}><Text style={{ width: 38, height: 38, paddingTop: 11, borderRadius: 19, textAlign: 'center', color: '#ffffff', backgroundColor: theme.accent, fontSize: 9 }}>DAY{day.dayNumber}</Text><Text style={{ color: '#7a4052', fontSize: 12, marginLeft: 10 }}>{day.planDate}</Text></View><PdfScheduleRows day={day} accent={theme.accent} mode="cards" /></View>)}<PdfPacking trip={trip} accent={theme.accent} /><PdfFooter accent={theme.accent} /></Page></Document>;
 };
+*/
 
+/**
+ * 내 여행 계획 또는 공개 여행 계획의 상세 화면이다.
+ *
+ * publicView에 따라 호출 API와 편집 가능 여부를 분리하며, PDF 내보내기에서는 화면 데이터만
+ * 사용해 여러 테마의 문서를 만든다.
+ */
 export const TripDetail = ({ publicView = false }: TripDetailProps) => {
   const { planId } = useParams();
   const { user, loading: authLoading } = useAuth();
   const [trip, setTrip] = useState<TripDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const pdfRef = useRef<HTMLElement | null>(null);
   const [pdfThemeOpen, setPdfThemeOpen] = useState(false);
   const loadedPublicPlanRef = useRef<string | null>(null);
 
@@ -190,7 +193,7 @@ export const TripDetail = ({ publicView = false }: TripDetailProps) => {
           <Link to={publicView ? '/' : '/my-trips'} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 transition hover:text-white"><i className="fa-solid fa-arrow-left" />{publicView ? '메인' : '내 여행'}</Link>
           {!publicView ? <Link to={`/my-trips/${planId}/edit`} className="theme-btn-primary inline-flex items-center gap-2 px-4 py-2.5 text-sm"><i className="fa-solid fa-pen-to-square" />수정하기</Link> : null}
         </div>
-        <section ref={pdfRef} className="mt-5 overflow-hidden rounded-[30px] border border-white/10 bg-slate-950/55 shadow-[0_28px_90px_rgba(0,0,0,0.25)]">
+        <section className="mt-5 overflow-hidden rounded-[30px] border border-white/10 bg-slate-950/55 shadow-[0_28px_90px_rgba(0,0,0,0.25)]">
           <div className="flex items-center gap-2 border-b border-white/10 bg-slate-950/80 px-5 py-4 text-indigo-200"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500 text-sm font-black text-white">R</span><span className="text-lg font-extrabold tracking-tight text-white">RouteMate</span></div>
           <div className="relative h-56 md:h-72">
             {trip.imageUrl ? <img src={trip.imageUrl} alt={trip.title} className="h-full w-full object-cover" /> : <div className="h-full bg-gradient-to-br from-indigo-950 to-slate-950" />}
@@ -253,6 +256,8 @@ export const TripDetail = ({ publicView = false }: TripDetailProps) => {
           {trip.packingItems.length > 0 ? <section className="border-t border-white/10 p-5 md:p-6"><h2 className="font-bold text-white">여행 준비물</h2><div className="mt-3 flex flex-wrap gap-2">{trip.packingItems.map((item) => <span key={item.item} className={`rounded-full border px-3 py-1.5 text-sm ${item.required ? 'border-indigo-400/20 bg-indigo-500/10 text-indigo-100' : 'border-white/10 bg-white/[0.03] text-slate-300'}`}>{item.required ? '필수' : '선택'} · {item.item}</span>)}</div></section> : null}
           <div className="print:hidden flex justify-end border-t border-white/10 p-5 md:p-6"><button type="button" onClick={() => setPdfThemeOpen(true)} className="theme-btn-primary inline-flex items-center gap-2 px-4 py-2.5 text-sm"><i className="fa-solid fa-file-pdf" />PDF 저장</button></div>
         </section>
+        {pdfThemeOpen ? <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 text-sm text-slate-300">PDF 도구를 불러오는 중입니다.</div>}><TripPdfThemeModal trip={trip as TripPdfData} onClose={() => setPdfThemeOpen(false)} /></Suspense> : null}
+        {/* 이전 인라인 모달 구현은 PDF 모듈 분리 전 코드다.
         {pdfThemeOpen ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-3 backdrop-blur-md sm:p-6">
             <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-[30px] border border-white/10 bg-slate-900/95 p-5 shadow-[0_36px_120px_rgba(0,0,0,.55)] sm:p-7">
@@ -283,6 +288,7 @@ export const TripDetail = ({ publicView = false }: TripDetailProps) => {
             </div>
           </div>
         ) : null}
+        */}
       </div>
     </main>
   );

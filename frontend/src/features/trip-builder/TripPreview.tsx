@@ -14,6 +14,7 @@ type TripPreviewProps = {
   panelClassName: string;
 };
 
+/** 현재 편집 중인 여행 계획을 저장 전 사용자에게 미리 보여 주는 읽기 전용 요약 영역이다. */
 export const TripPreview = ({
   isPublic,
   travelStartDate,

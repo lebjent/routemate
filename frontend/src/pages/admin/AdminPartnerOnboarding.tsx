@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const empty = { partnerName: '', businessNumber: '', representativeName: '', managerName: '', managerEmail: '', managerPhone: '', websiteUrl: '', commissionRate: '12', contractStartDate: '', contractEndDate: '', memo: '', ownerLoginId: '', ownerPassword: '', ownerName: '' };
 
+/** 파트너사 사업자 정보와 최초 대표 계정을 함께 등록하는 온보딩 화면이다. */
 export const AdminPartnerOnboarding = () => {
   const navigate = useNavigate(); const [form, setForm] = useState(empty); const [error, setError] = useState<string | null>(null); const [saving, setSaving] = useState(false);
   const update = (key: keyof typeof empty, value: string) => setForm((current) => ({ ...current, [key]: value }));

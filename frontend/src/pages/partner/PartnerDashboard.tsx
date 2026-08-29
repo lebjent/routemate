@@ -17,6 +17,7 @@ const formatMoney = (value: number) => new Intl.NumberFormat('ko-KR', {
   style: 'currency', currency: 'KRW', maximumFractionDigits: 0,
 }).format(value ?? 0);
 
+/** 로그인한 파트너사의 판매량, 상품 상태, 최근 등록 상품을 보여 주는 첫 화면이다. */
 export const PartnerDashboard = () => {
   const { user, loading: authLoading, logout } = useAuth();
   const navigate = useNavigate();

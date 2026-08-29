@@ -1,3 +1,4 @@
+/** 일반 사용자 화면 하단에 표시하는 브랜드와 서비스 링크 영역이다. */
 export const Footer = () => {
   return (
     <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-gray-800/60 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 z-10 relative">

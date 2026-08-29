@@ -33,6 +33,7 @@ const statusMeta: Record<PartnerStatus, { label: string; className: string }> = 
 const inputClass = 'h-11 rounded-xl border border-white/10 bg-slate-950/70 px-3 text-sm text-white outline-none transition placeholder:text-slate-700 focus:border-indigo-400/50 focus:ring-2 focus:ring-indigo-400/10';
 const nullable = (value: string) => value.trim() || null;
 
+/** 파트너사 목록을 조회하고 사업자 정보와 운영 상태를 수정하는 화면이다. */
 export const AdminPartners = () => {
   const navigate = useNavigate(); const { user } = useAuth(); const canManage = hasPermission(user, 'PARTNER_MANAGE');
   const [partners, setPartners] = useState<Partner[]>([]); const [query, setQuery] = useState(''); const [status, setStatus] = useState('ALL');

@@ -5,6 +5,7 @@ import type { AuthUser } from '../../contexts/authContextValue';
 import { useAuth } from '../../hooks/useAuth';
 import { isStaffUser } from '../../features/admin/permissions';
 
+/** 관리자 역할 계정만 `/api/admin/auth/login`으로 인증하는 전용 로그인 화면이다. */
 export const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

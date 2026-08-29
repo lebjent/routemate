@@ -10,6 +10,7 @@ type PackingModalProps = {
   onItemAdd: () => void;
 };
 
+/** 여행 계획 전체의 준비물 목록을 추가·삭제·필수 여부 변경으로 편집하는 모달이다. */
 export const PackingModal = ({
   isOpen,
   items,

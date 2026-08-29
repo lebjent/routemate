@@ -24,6 +24,7 @@ const filters = [
   { key: 'N', label: '비공개' },
 ] as const;
 
+/** 사용자가 작성한 여행 계획을 공개 여부와 기간 기준으로 탐색하는 목록 화면이다. */
 export const MyTrips = () => {
   const { user, loading: authLoading } = useAuth();
   const [plans, setPlans] = useState<MyTravelPlan[]>([]);

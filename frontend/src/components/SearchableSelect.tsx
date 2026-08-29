@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 
+/** 검색 가능한 선택 상자에 표시할 값과 레이블의 쌍이다. */
 export type SearchOption = {
   value: string;
   label: string;
   hint?: string;
 };
 
+/** 검색 가능한 선택 상자의 제어형 입력 속성이다. */
 type SearchableSelectProps = {
   value: string;
   options: SearchOption[];
@@ -15,6 +17,11 @@ type SearchableSelectProps = {
 };
 
 /** 검색 가능한 선택 입력입니다. 일정·관리자·파트너 화면에서 공통으로 사용합니다. */
+/**
+ * 옵션이 많은 국가·지역 등을 키워드로 좁혀 선택하는 제어형 입력 컴포넌트다.
+ *
+ * 실제 선택 값은 부모가 보관하고, 이 컴포넌트는 onChange로만 변경을 알린다.
+ */
 export const SearchableSelect = ({
   value,
   options,

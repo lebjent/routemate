@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+/** 개발용 임시 비밀번호 재설정 화면이다. 운영에서는 본인 인증 흐름으로 교체해야 한다. */
 export const PasswordReset = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

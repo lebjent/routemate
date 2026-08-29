@@ -15,6 +15,7 @@ type Form = { countryId: string; regionId: string; imageUrl: string; startDate: 
 const emptyForm: Form = { countryId: '', regionId: '', imageUrl: '', startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', sortOrder: 1, useYn: 'Y' };
 const formatDate = (value: string) => new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 
+/** 홈 화면에 노출할 여행지 추천의 기간, 순서, 사용 여부를 관리하는 화면이다. */
 export const AdminRecommendations = () => {
   const navigate = useNavigate(); const { user } = useAuth(); const canManage = hasPermission(user, 'DESTINATION_MANAGE');
   const [data, setData] = useState<{ recommendations: Recommendation[] } | null>(null); const [countries, setCountries] = useState<Country[]>([]); const [regions, setRegions] = useState<Region[]>([]); const [form, setForm] = useState(emptyForm); const [editingId, setEditingId] = useState<number | null>(null); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null);

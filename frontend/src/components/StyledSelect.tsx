@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+/** 스타일 선택 상자에 제공할 옵션의 값·표시명·선택 아이콘이다. */
 export type StyledSelectOption = {
   value: string;
   label: string;
@@ -7,6 +8,7 @@ export type StyledSelectOption = {
   icon?: string;
 };
 
+/** 프로젝트 공통 스타일 선택 상자의 제어형 입력 속성이다. */
 type StyledSelectProps = {
   value: string;
   options: StyledSelectOption[];
@@ -18,6 +20,9 @@ type StyledSelectProps = {
   className?: string;
 };
 
+/**
+ * 기본 select의 접근성은 유지하면서 RouteMate 스타일을 적용한 선택 컴포넌트다.
+ */
 export const StyledSelect = ({
   value,
   options,

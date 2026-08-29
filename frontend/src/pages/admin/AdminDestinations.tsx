@@ -27,6 +27,11 @@ const defaultPlaceCategories: PlaceCategoryOption[] = [
 const placeCategoryIcons: Record<string, string> = { FOOD: 'fa-utensils', SIGHTSEEING: 'fa-camera', SHOPPING: 'fa-bag-shopping', ACCOMMODATION: 'fa-bed', CAFE: 'fa-mug-hot', NATURE: 'fa-tree', CULTURE: 'fa-landmark', ACTIVITY: 'fa-person-hiking' };
 const emptyPlace = { destName: '', destDesc: '', countryId: '', regionId: '', category: 'FOOD', imageUrl: '', mapLat: '', mapLng: '' };
 
+/**
+ * 여행지 기준 데이터인 국가, 지역, 장소를 등록·수정하는 관리자 화면이다.
+ *
+ * 장소는 국가와 지역을 선택한 뒤에만 저장할 수 있도록 입력 상태를 단계적으로 관리한다.
+ */
 export const AdminDestinations = () => {
   const navigate = useNavigate();
   const { user } = useAuth();

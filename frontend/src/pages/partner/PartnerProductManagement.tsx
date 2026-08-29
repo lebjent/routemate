@@ -17,6 +17,11 @@ const emptyOption = (): ProductOption => ({ optionName: '', optionDesc: '', pric
 const emptyForm = (): Form => ({ destinationId: '', productName: '', productSummary: '', productType: 'TICKET', productDesc: '', imageUrl: '', detailImageUrl: '', courseText: '', includedText: '', excludedText: '', usageGuideText: '', noticeText: '', cancellationPolicyText: '', faqText: '', meetingTime: '', meetingPlace: '', bookingUrl: '', price: '0', currency: 'KRW', useYn: 'Y', sortOrder: '1', options: [emptyOption()] });
 const productTypes = [{ value: 'TICKET', label: '입장권·패스', icon: 'fa-ticket' }, { value: 'TOUR', label: '투어·액티비티', icon: 'fa-person-hiking' }, { value: 'TRANSFER', label: '공항·교통', icon: 'fa-car' }, { value: 'SIM', label: 'eSIM·통신', icon: 'fa-sim-card' }, { value: 'ETC', label: '기타', icon: 'fa-box' }];
 
+/**
+ * 파트너사가 자기 회사의 옵션 상품과 판매 옵션을 등록·수정하는 화면이다.
+ *
+ * 새 상품은 승인 대기 상태로 저장되며, 다른 파트너사의 상품은 API와 화면 모두에서 접근할 수 없다.
+ */
 export const PartnerProductManagement = () => {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();

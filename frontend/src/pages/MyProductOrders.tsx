@@ -9,6 +9,7 @@ import {
   type ProductOrder,
 } from '../features/products/model';
 
+/** 현재 로그인 사용자의 옵션 상품 예약 내역을 표시하는 마이페이지 화면이다. */
 export const MyProductOrders = () => {
   const [orders, setOrders] = useState<ProductOrder[]>([]);
   const [loading, setLoading] = useState(true);

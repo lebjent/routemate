@@ -1,3 +1,4 @@
+/** 일정에 연결할 수 있는 사용자 예약 상품의 최소 정보다. */
 export type BookedProduct = {
   orderId: number;
   orderNo: string;
@@ -16,6 +17,7 @@ const formatUseDate = (value: string) => {
   return Number.isNaN(date.getTime()) ? value : `${date.getMonth() + 1}월 ${date.getDate()}일 이용`;
 };
 
+/** 이용일과 여행지 조건에 맞는 예약 상품을 일정에 연결하는 선택 모달이다. */
 export const BookedProductModal = ({
   isOpen,
   orders,

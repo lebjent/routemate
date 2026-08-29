@@ -38,6 +38,11 @@ interface BannerItem {
 
 const PLANS_PER_SLIDE = 3;
 
+/**
+ * 공개 홈 화면이다.
+ *
+ * 추천 여행지와 인기 공개 일정을 병렬로 조회하고, 로딩·오류 상태를 각 콘텐츠 영역에 반영한다.
+ */
 export const Home: React.FC = () => {
   const { user } = useAuth();
   const isLoggedIn = Boolean(user);

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
 import type { ProductSummary } from '../features/products/model';
 
+/** 상품 탐색 메뉴에 노출할 국가별 바로가기 항목이다. */
 interface ProductCountryMenu {
   countryId: number;
   countryName: string;
@@ -13,6 +14,12 @@ interface ProductCountryMenu {
   }>;
 }
 
+/**
+ * 일반 사용자 영역의 전역 내비게이션이다.
+ *
+ * 로그인 상태에 따라 인증 메뉴를 바꾸고, 공개 상품 API에서 받은 국가 정보를 상품 탐색
+ * 드롭다운에 사용한다.
+ */
 export const Navbar = () => {
   const { user, loading, logout } = useAuth();
   const [productMenuOpen, setProductMenuOpen] = useState(false);

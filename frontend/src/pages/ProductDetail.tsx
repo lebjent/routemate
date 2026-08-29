@@ -22,6 +22,7 @@ const DetailSection = ({ title, icon, text }: { title: string; icon: string; tex
   return <section className="border-t border-white/10 py-7"><h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-white"><i className={`${icon} text-indigo-300`} />{title}</h2><p className="whitespace-pre-line text-sm leading-7 text-slate-300">{text}</p></section>;
 };
 
+/** 상품 상세와 판매 옵션을 보여 주고, 이용일과 수량을 선택해 예약을 시작하는 화면이다. */
 export const ProductDetail = () => {
   const { productId } = useParams();
   const navigate = useNavigate();

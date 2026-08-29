@@ -4,6 +4,7 @@ import axios from 'axios';
 import type { AuthUser } from '../contexts/authContextValue';
 import { useAuth } from '../hooks/useAuth';
 
+/** 일반 사용자 로그인 화면으로, 성공 시 인증 컨텍스트와 이전 화면 이동 경로를 갱신한다. */
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

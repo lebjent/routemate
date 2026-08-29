@@ -27,6 +27,7 @@ const formatDate = (value: string | null) => value
   ? new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(value))
   : '-';
 
+/** 일반 회원을 검색하고 ACTIVE·SUSPENDED 상태를 관리하는 화면이다. */
 export const AdminUsers = () => {
   const navigate = useNavigate();
   const { user } = useAuth();

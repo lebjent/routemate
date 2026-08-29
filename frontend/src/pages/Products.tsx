@@ -8,6 +8,7 @@ import {
   type ProductSummary,
 } from '../features/products/model';
 
+/** 승인되어 판매 중인 옵션 상품을 유형·검색어 조건으로 탐색하는 공개 목록 화면이다. */
 export const Products = () => {
   const [products, setProducts] = useState<ProductSummary[]>([]);
   const [loading, setLoading] = useState(true);

@@ -1,0 +1,1 @@
+var e=[`ADMIN`,`MASTER`,`SENIOR`,`JUNIOR`],t=t=>!!(t&&e.includes(t.userRole)),n=(e,t)=>!!e?.permissions?.includes(t),r=(e,t)=>!!e?.menuCodes?.includes(t);export{n,t as r,r as t};

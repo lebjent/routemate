@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import type { AuthUser } from '../../contexts/authContextValue';
 
+/** 활성 파트너사에 소속된 대표·직원 계정을 위한 포털 로그인 화면이다. */
 export const PartnerLogin = () => {
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');

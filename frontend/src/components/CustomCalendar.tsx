@@ -4,6 +4,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 registerLocale('ko', ko);
 
+/** 일정 선택 화면에서 사용하는 날짜 입력 컴포넌트의 속성이다. */
 interface CustomCalendarProps {
   value: string;
   onChange: (dateStr: string) => void;
@@ -12,6 +13,11 @@ interface CustomCalendarProps {
   minDate?: Date;
 }
 
+/**
+ * 브라우저 기본 날짜 입력을 프로젝트 디자인에 맞게 감싼 컴포넌트다.
+ *
+ * 최소·최대 날짜 제한은 부모가 결정하며, 이 컴포넌트는 선택한 날짜를 문자열로 전달한다.
+ */
 export const CustomCalendar = ({ value, onChange, placeholder, maxDate, minDate }: CustomCalendarProps) => {
   const selectedDate = value ? new Date(`${value}T00:00:00`) : null;
   const isWeekend = (date: Date) => date.getDay() === 0 || date.getDay() === 6;

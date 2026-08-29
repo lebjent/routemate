@@ -4,6 +4,12 @@ import { createDayRegion, createSchedule, type DayDescriptor, type DayPlan, type
 type RegionField = 'countryCode' | 'regionCode' | 'note';
 type ScheduleField = Exclude<keyof Schedule, 'id' | 'productOrderId' | 'productOrderNo'>;
 
+/**
+ * 여행 계획 편집 화면의 중첩 상태와 변경 함수를 한곳에 모은 훅이다.
+ *
+ * 일차·지역·세부 일정·준비물 추가/삭제 및 필드 변경을 불변 방식으로 처리해 CreateTrip 화면은
+ * 표현과 저장 흐름에 집중할 수 있다.
+ */
 export const useTripPlanEditor = (days: DayDescriptor[]) => {
   const [dayPlans, setDayPlans] = useState<DayPlan[]>([]);
 

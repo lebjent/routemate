@@ -31,6 +31,7 @@ const formatDrawTime = (value: Date | null) => {
   return value.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
 };
 
+/** 무작위 번호와 역대 빈도 기반 번호를 선택해 조회하는 로또 도우미 화면이다. */
 export const Lotto = () => {
   const [numbers, setNumbers] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);

@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 type Staff = { partnerUserId: number; loginId: string; name: string; partnerRole: 'OWNER' | 'STAFF'; status: 'ACTIVE' | 'SUSPENDED'; joinedAt: string };
 type StaffResponse = { partnerId: number; partnerName: string; staff: Staff[] };
 
+/** 파트너 대표가 같은 회사의 직원 계정을 생성하고 사용 상태를 관리하는 화면이다. */
 export const PartnerStaffManagement = () => {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();

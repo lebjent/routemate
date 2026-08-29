@@ -10,6 +10,7 @@ interface PwdStrength {
   score: number;
 }
 
+/** 이메일·닉네임 중복 확인과 비밀번호 검증을 포함한 일반 회원 가입 화면이다. */
 export const Join = () => {
   const navigate = useNavigate();
 

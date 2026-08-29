@@ -36,6 +36,7 @@ const paymentColors: Record<string, string> = {
   FAILED: 'bg-rose-500/10 text-rose-300', REFUNDED: 'bg-slate-500/10 text-slate-400',
 };
 
+/** 회원·상품·예약·일정 운영 지표와 최근 활동을 보여 주는 관리자 첫 화면이다. */
 export const AdminDashboard = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);

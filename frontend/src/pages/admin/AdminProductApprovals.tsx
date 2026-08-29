@@ -18,6 +18,11 @@ const statusColors: Record<string, string> = {
   REJECTED: 'bg-rose-500/10 text-rose-300', HOLD: 'bg-indigo-500/10 text-indigo-300',
 };
 
+/**
+ * 파트너사가 제출한 상품을 승인, 거절, 보류로 심사하는 화면이다.
+ *
+ * 거절·보류 사유는 상품 승인 이력에 남으므로 운영자가 사용자에게 안내할 문구를 입력한다.
+ */
 export const AdminProductApprovals = () => {
   const { user } = useAuth();
   const navigate = useNavigate();

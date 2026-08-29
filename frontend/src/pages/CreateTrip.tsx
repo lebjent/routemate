@@ -40,6 +40,12 @@ type ReservationTarget = {
   regionLabel: string;
 };
 
+/**
+ * 여행 계획을 생성하거나 기존 계획 전체를 수정하는 편집 화면이다.
+ *
+ * 일차·지역·세부 일정·교통편·준비물을 로컬 편집 상태로 관리하고, 저장 시 백엔드 요청 DTO로
+ * 변환한다. 예약 상품은 이용일과 여행지 조건이 맞는 경우에만 일정에 연결할 수 있다.
+ */
 export const CreateTrip = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();

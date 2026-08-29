@@ -48,6 +48,7 @@ const formatDate = (value: string | null) => value
   ? new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(value))
   : '-';
 
+/** 관리자 직원 계정을 생성하고 다른 직원의 역할·상태를 관리하는 화면이다. */
 export const AdminStaff = () => {
   const navigate = useNavigate();
   const { user } = useAuth();

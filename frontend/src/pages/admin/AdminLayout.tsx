@@ -31,6 +31,11 @@ const roleColors: Record<string, string> = {
   JUNIOR: 'bg-slate-500/15 text-slate-300',
 };
 
+/**
+ * 관리자 전용 화면의 사이드바, 사용자 정보, 하위 라우트 영역을 구성한다.
+ *
+ * 메뉴 노출은 로그인 사용자의 메뉴 권한을 기준으로 제한한다.
+ */
 export const AdminLayout = () => {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
