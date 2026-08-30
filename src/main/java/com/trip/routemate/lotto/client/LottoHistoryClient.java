@@ -93,7 +93,7 @@ public class LottoHistoryClient {
     }
 
     /**
-     * 동행복권 API가 제공하는 한 회차의 1등 당첨번호 데이터다.
+     * 동행복권 API가 제공하는 한 회차의 당첨번호와 등수별 당첨 정보다.
      *
      * @param drawNumber 회차 번호
      * @param firstNumber 첫 번째 당첨번호
@@ -102,6 +102,22 @@ public class LottoHistoryClient {
      * @param fourthNumber 네 번째 당첨번호
      * @param fifthNumber 다섯 번째 당첨번호
      * @param sixthNumber 여섯 번째 당첨번호
+     * @param bonusNumber 보너스 번호
+     * @param firstPrizeWinnerCount 1등 당첨자 수
+     * @param firstPrizeAmount 1등 1인당 당첨금
+     * @param firstPrizeTotalAmount 1등 총 당첨금
+     * @param secondPrizeWinnerCount 2등 당첨자 수
+     * @param secondPrizeAmount 2등 1인당 당첨금
+     * @param secondPrizeTotalAmount 2등 총 당첨금
+     * @param thirdPrizeWinnerCount 3등 당첨자 수
+     * @param thirdPrizeAmount 3등 1인당 당첨금
+     * @param thirdPrizeTotalAmount 3등 총 당첨금
+     * @param fourthPrizeWinnerCount 4등 당첨자 수
+     * @param fourthPrizeAmount 4등 1인당 당첨금
+     * @param fourthPrizeTotalAmount 4등 총 당첨금
+     * @param fifthPrizeWinnerCount 5등 당첨자 수
+     * @param fifthPrizeAmount 5등 1인당 당첨금
+     * @param fifthPrizeTotalAmount 5등 총 당첨금
      */
     public record LottoDraw(
             @JsonProperty("ltEpsd") int drawNumber,
@@ -110,7 +126,23 @@ public class LottoHistoryClient {
             @JsonProperty("tm3WnNo") int thirdNumber,
             @JsonProperty("tm4WnNo") int fourthNumber,
             @JsonProperty("tm5WnNo") int fifthNumber,
-            @JsonProperty("tm6WnNo") int sixthNumber
+            @JsonProperty("tm6WnNo") int sixthNumber,
+            @JsonProperty("bnsWnNo") int bonusNumber,
+            @JsonProperty("rnk1WnNope") long firstPrizeWinnerCount,
+            @JsonProperty("rnk1WnAmt") long firstPrizeAmount,
+            @JsonProperty("rnk1SumWnAmt") long firstPrizeTotalAmount,
+            @JsonProperty("rnk2WnNope") long secondPrizeWinnerCount,
+            @JsonProperty("rnk2WnAmt") long secondPrizeAmount,
+            @JsonProperty("rnk2SumWnAmt") long secondPrizeTotalAmount,
+            @JsonProperty("rnk3WnNope") long thirdPrizeWinnerCount,
+            @JsonProperty("rnk3WnAmt") long thirdPrizeAmount,
+            @JsonProperty("rnk3SumWnAmt") long thirdPrizeTotalAmount,
+            @JsonProperty("rnk4WnNope") long fourthPrizeWinnerCount,
+            @JsonProperty("rnk4WnAmt") long fourthPrizeAmount,
+            @JsonProperty("rnk4SumWnAmt") long fourthPrizeTotalAmount,
+            @JsonProperty("rnk5WnNope") long fifthPrizeWinnerCount,
+            @JsonProperty("rnk5WnAmt") long fifthPrizeAmount,
+            @JsonProperty("rnk5SumWnAmt") long fifthPrizeTotalAmount
     ) {
         /**
          * 번호 순서를 보존한 불변 목록으로 변환한다.
@@ -119,6 +151,21 @@ public class LottoHistoryClient {
          */
         public List<Integer> numbers() {
             return List.of(firstNumber, secondNumber, thirdNumber, fourthNumber, fifthNumber, sixthNumber);
+        }
+
+        /** 등수별 당첨자 수, 1인당 당첨금, 총 당첨금을 순서대로 반환한다. */
+        public List<Prize> prizes() {
+            return List.of(
+                    new Prize(1, firstPrizeWinnerCount, firstPrizeAmount, firstPrizeTotalAmount),
+                    new Prize(2, secondPrizeWinnerCount, secondPrizeAmount, secondPrizeTotalAmount),
+                    new Prize(3, thirdPrizeWinnerCount, thirdPrizeAmount, thirdPrizeTotalAmount),
+                    new Prize(4, fourthPrizeWinnerCount, fourthPrizeAmount, fourthPrizeTotalAmount),
+                    new Prize(5, fifthPrizeWinnerCount, fifthPrizeAmount, fifthPrizeTotalAmount)
+            );
+        }
+
+        /** 외부 API의 한 등수 당첨 정보를 표현한다. */
+        public record Prize(int rank, long winnerCount, long amount, long totalAmount) {
         }
     }
 }

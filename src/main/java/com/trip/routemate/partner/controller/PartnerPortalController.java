@@ -3,12 +3,16 @@ package com.trip.routemate.partner.controller;
 import com.trip.routemate.partner.dto.PartnerDashboardResponse;
 import com.trip.routemate.partner.dto.PartnerProductRequest;
 import com.trip.routemate.partner.dto.PartnerProductResponse;
+import com.trip.routemate.partner.dto.PartnerProductImageUploadResponse;
+import com.trip.routemate.partner.service.PartnerProductImageStorageService;
 import com.trip.routemate.partner.service.PartnerPortalService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,6 +27,7 @@ import java.util.List;
 @RequestMapping("/api/partner")
 public class PartnerPortalController {
     private final PartnerPortalService service;
+    private final PartnerProductImageStorageService productImageStorageService;
 
     /**
      * 로그인한 파트너사의 상품·판매 현황을 조회한다.
@@ -44,6 +49,18 @@ public class PartnerPortalController {
     @GetMapping("/products")
     public List<PartnerProductResponse> products(Authentication authentication) {
         return service.products(authentication);
+    }
+
+    /**
+     * 상품 등록 화면에서 선택한 대표 이미지를 개발용 로컬 폴더에 저장한다.
+     *
+     * 반환된 URL은 상품 저장 요청의 {@code imageUrl} 값으로 전달되어 DB에 보관된다.
+     */
+    @PostMapping(value = "/products/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public PartnerProductImageUploadResponse uploadProductImage(Authentication authentication,
+                                                                 @RequestPart("file") MultipartFile file) {
+        return productImageStorageService.store(authentication, file);
     }
 
     /**

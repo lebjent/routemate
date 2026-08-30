@@ -1,6 +1,8 @@
 package com.trip.routemate.product.service;
 
 import com.trip.routemate.product.domain.ProductOrder;
+import com.trip.routemate.product.domain.ProductOrderItem;
+import com.trip.routemate.product.domain.TravelProduct;
 import com.trip.routemate.product.dto.ProductOrderRequest;
 import com.trip.routemate.product.dto.ProductOrderResponse;
 import com.trip.routemate.product.repository.ProductOrderRepository;
@@ -16,7 +18,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
@@ -49,34 +53,49 @@ public class ProductOrderService {
         var product = productRepository.findWithDestinationByProductId(request.productId())
                 .filter(found -> "Y".equals(found.getUseYn()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "판매 중인 옵션상품을 찾을 수 없습니다."));
-        var option = optionRepository.findByOptionIdAndProductAndUseYn(request.optionId(), product, "Y")
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "선택한 상품에서 판매 중인 옵션이 아닙니다."));
-
-        var unitPrice = option.getPrice();
-        var totalPrice = unitPrice.multiply(BigDecimal.valueOf(request.quantity()));
+        var selections = resolveSelections(product, request.items());
+        var primarySelection = selections.getFirst();
+        var totalPrice = BigDecimal.ZERO;
+        var totalQuantity = 0;
+        for (var selection : selections) {
+            totalPrice = totalPrice.add(selection.totalPrice());
+            totalQuantity += selection.quantity();
+        }
         var destination = product.getDestination();
         var destinationName = String.join(" · ", destination.getCountry().getCountryName(),
                 destination.getRegion().getRegionName(), destination.getDestName());
 
-        var order = orderRepository.save(Objects.requireNonNull(ProductOrder.builder()
+        var order = Objects.requireNonNull(ProductOrder.builder()
                 .orderNo("RM" + UUID.randomUUID().toString().replace("-", "").toUpperCase(Locale.ROOT))
                 .user(user)
                 .product(product)
-                .option(option)
+                .option(primarySelection.option())
                 .productName(product.getProductName())
-                .optionName(option.getOptionName())
+                .optionName(primarySelection.option().getOptionName())
                 .productImageUrl(product.getImageUrl())
                 .destinationName(destinationName)
-                .quantity(request.quantity())
-                .unitPrice(unitPrice)
+                .quantity(totalQuantity)
+                .unitPrice(primarySelection.option().getPrice())
                 .totalPrice(totalPrice)
-                .currency(option.getCurrency())
+                .currency(primarySelection.option().getCurrency())
                 .useDate(request.useDate())
                 .buyerName(request.buyerName().trim())
                 .buyerEmail(request.buyerEmail().trim().toLowerCase(Locale.ROOT))
                 .buyerPhone(normalizeNullable(request.buyerPhone()))
-                .build()));
-        return ProductOrderResponse.from(order);
+                .build());
+        for (var selection : selections) {
+            order.addItem(ProductOrderItem.builder()
+                    .order(order)
+                    .option(selection.option())
+                    .optionName(selection.option().getOptionName())
+                    .quantity(selection.quantity())
+                    .unitPrice(selection.option().getPrice())
+                    .totalPrice(selection.totalPrice())
+                    .currency(selection.option().getCurrency())
+                    .build());
+        }
+        var savedOrder = orderRepository.save(order);
+        return ProductOrderResponse.from(savedOrder);
     }
 
     /** 현재 사용자의 예약 내역을 최신순으로 조회한다. */
@@ -118,4 +137,36 @@ public class ProductOrderService {
         if (value == null || value.isBlank()) return null;
         return value.trim();
     }
+
+    /** 요청의 같은 옵션 수량을 합산하고 판매 가능한 옵션·통화를 검증한다. */
+    private List<Selection> resolveSelections(TravelProduct product, List<ProductOrderRequest.Item> items) {
+        var quantities = new LinkedHashMap<Long, Integer>();
+        for (var item : items) {
+            var optionId = item.optionId();
+            var previousQuantity = quantities.get(optionId);
+            var mergedQuantity = (previousQuantity == null ? 0 : previousQuantity) + item.quantity();
+            if (mergedQuantity > 10) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "옵션별 구매 수량은 10개까지 가능합니다.");
+            }
+            quantities.put(optionId, mergedQuantity);
+        }
+        var selections = new ArrayList<Selection>();
+        for (var entry : quantities.entrySet()) {
+            var option = optionRepository.findByOptionIdAndProductAndUseYn(entry.getKey(), product, "Y")
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "선택한 상품에서 판매 중인 옵션이 아닙니다."));
+            selections.add(new Selection(option, entry.getValue(), option.getPrice().multiply(BigDecimal.valueOf(entry.getValue()))));
+        }
+        var currency = selections.getFirst().option().getCurrency();
+        for (var selection : selections) {
+            if (!currency.equals(selection.option().getCurrency())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "서로 다른 통화의 옵션은 함께 주문할 수 없습니다.");
+            }
+        }
+        return selections;
+    }
+
+    /** 서버에서 검증한 옵션과 수량·주문 시점 총액을 묶는다. */
+    private record Selection(com.trip.routemate.product.domain.TravelProductOption option, int quantity, BigDecimal totalPrice) {
+    }
+
 }

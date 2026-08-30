@@ -24,7 +24,40 @@ type FrequencyDrawResponse = {
   refreshedAt: string;
 };
 
+/** 일반 랜덤 추첨을 반복한 번호 출현 통계다. */
+type RandomSimulationResponse = {
+  simulatedDrawCount: number;
+  topNumbers: NumberFrequency[];
+  generatedAt: string;
+};
+
+/** 한 회차의 실제 당첨번호다. */
+type LottoDraw = {
+  drawNumber: number;
+  numbers: number[];
+  bonusNumber: number;
+  prizes: LottoPrize[];
+};
+
+/** 한 등수의 당첨자 수와 당첨금이다. */
+type LottoPrize = {
+  rank: number;
+  winnerCount: number;
+  amount: number;
+  totalAmount: number;
+  estimatedTaxAmount: number;
+  estimatedNetAmount: number;
+};
+
+/** 최신 또는 특정 회차 주변의 실제 당첨번호 조회 응답이다. */
+type LottoDrawHistoryResponse = {
+  latestDrawNumber: number;
+  draws: LottoDraw[];
+};
+
 const getBallTheme = (number: number) => ballThemes[Math.min(Math.floor((number - 1) / 10), ballThemes.length - 1)];
+const wonFormatter = new Intl.NumberFormat('ko-KR');
+const formatWon = (amount: number) => `${wonFormatter.format(amount)}원`;
 
 const formatDrawTime = (value: Date | null) => {
   if (!value) return '번호를 준비하고 있어요';
@@ -40,6 +73,14 @@ export const Lotto = () => {
   const [drawnAt, setDrawnAt] = useState<Date | null>(null);
   const [drawMode, setDrawMode] = useState<DrawMode>('RANDOM');
   const [frequencyData, setFrequencyData] = useState<FrequencyDrawResponse | null>(null);
+  const [randomSimulationData, setRandomSimulationData] = useState<RandomSimulationResponse | null>(null);
+  const [randomSimulationLoading, setRandomSimulationLoading] = useState(false);
+  const [drawHistory, setDrawHistory] = useState<LottoDrawHistoryResponse | null>(null);
+  const [recentDrawHistory, setRecentDrawHistory] = useState<LottoDrawHistoryResponse | null>(null);
+  const [selectedRecentDrawNumber, setSelectedRecentDrawNumber] = useState('');
+  const [historyQuery, setHistoryQuery] = useState('');
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const requestId = useRef(0);
 
   const drawNumbers = async (nextMode: DrawMode = drawMode) => {
@@ -68,6 +109,7 @@ export const Lotto = () => {
       setNumbers([...lottoNumbers].sort((first, second) => first - second));
       setDrawMode(nextMode);
       setFrequencyData(nextMode === 'FREQUENT' ? response.data as FrequencyDrawResponse : null);
+      if (nextMode === 'RANDOM') void loadRandomSimulation();
       setDrawnAt(new Date());
       setDrawCount((count) => count + 1);
     } catch (drawError) {
@@ -80,9 +122,77 @@ export const Lotto = () => {
     }
   };
 
+  /** 일반 랜덤 추첨을 10,000회 반복한 상위 출현 번호를 조회한다. */
+  const loadRandomSimulation = async () => {
+    setRandomSimulationLoading(true);
+    try {
+      const response = await axios.get<RandomSimulationResponse>('/api/lotto/random-statistics');
+      setRandomSimulationData(response.data);
+    } catch (simulationError) {
+      console.error('Failed to simulate random lotto draws', simulationError);
+      setRandomSimulationData(null);
+    } finally {
+      setRandomSimulationLoading(false);
+    }
+  };
+
+  /** 최신 회차와 외부 API가 반환한 최근 당첨번호 목록을 조회한다. */
+  const loadLatestDraws = async () => {
+    setHistoryLoading(true);
+    setHistoryError(null);
+    setSelectedRecentDrawNumber('');
+    try {
+      const response = await axios.get<LottoDrawHistoryResponse>('/api/lotto/draws/latest');
+      setDrawHistory(response.data);
+      setRecentDrawHistory(response.data);
+      setSelectedRecentDrawNumber(String(response.data.draws[0]?.drawNumber ?? ''));
+      setHistoryQuery(String(response.data.latestDrawNumber));
+    } catch (historyLoadError) {
+      console.error('Failed to fetch latest lotto draws', historyLoadError);
+      setHistoryError('최근 로또 회차를 불러오지 못했습니다.');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  /** 최근 회차 콤보박스에서 선택한 한 회차의 당첨번호만 표시한다. */
+  const selectRecentDraw = (drawNumber: string) => {
+    const selectedDraw = recentDrawHistory?.draws.find((draw) => draw.drawNumber === Number(drawNumber));
+    if (!selectedDraw || !recentDrawHistory) return;
+
+    setSelectedRecentDrawNumber(drawNumber);
+    setDrawHistory({
+      latestDrawNumber: recentDrawHistory.latestDrawNumber,
+      draws: [selectedDraw],
+    });
+    setHistoryError(null);
+  };
+
   useEffect(() => {
     void drawNumbers();
+    void loadLatestDraws();
   }, []);
+
+  /** 사용자가 입력한 회차 주변의 역대 당첨번호를 조회한다. */
+  const searchDrawHistory = async () => {
+    const drawNumber = Number(historyQuery);
+    if (!Number.isInteger(drawNumber) || drawNumber < 1) {
+      setHistoryError('1 이상의 회차 번호를 입력해 주세요.');
+      return;
+    }
+    setHistoryLoading(true);
+    setHistoryError(null);
+    setSelectedRecentDrawNumber('');
+    try {
+      const response = await axios.get<LottoDrawHistoryResponse>('/api/lotto/draws', { params: { drawNumber } });
+      setDrawHistory(response.data);
+    } catch (historyLoadError) {
+      console.error('Failed to fetch lotto draw history', historyLoadError);
+      setHistoryError('해당 회차의 당첨번호를 불러오지 못했습니다.');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   const selectDrawMode = (nextMode: DrawMode) => {
     if (loading || nextMode === drawMode) return;
@@ -166,6 +276,119 @@ export const Lotto = () => {
 
         <aside className="flex flex-col gap-5">
           <section className="lotto-panel p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-extrabold tracking-[0.22em] text-emerald-200">OFFICIAL DRAW HISTORY</p>
+                <h2 className="mt-2 text-xl font-bold text-white">최근·역대 당첨번호</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-400">최근 회차는 목록에서 선택하고, 더 이전 회차는 번호를 직접 입력해 조회할 수 있어요.</p>
+              </div>
+              {drawHistory ? (
+                <span className="shrink-0 rounded-full bg-emerald-400/10 px-2.5 py-1 text-xs font-bold text-emerald-100">
+                  {drawHistory.draws.length}개 표시
+                </span>
+              ) : null}
+            </div>
+            <label className="mt-4 block text-xs font-semibold text-slate-300" htmlFor="recent-lotto-draw">
+              최근 회차 선택
+            </label>
+            <select
+              id="recent-lotto-draw"
+              value={selectedRecentDrawNumber}
+              onChange={(event) => selectRecentDraw(event.target.value)}
+              disabled={historyLoading || !recentDrawHistory}
+              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2.5 text-sm font-semibold text-white outline-none focus:border-emerald-300/60 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <option value="">최근 회차 선택</option>
+              {recentDrawHistory?.draws.map((draw) => (
+                <option key={draw.drawNumber} value={draw.drawNumber}>
+                  {draw.drawNumber}회 당첨번호
+                </option>
+              ))}
+            </select>
+            <div className="mt-4 flex items-end gap-2">
+              <label className="min-w-0 flex-1 text-xs font-semibold text-slate-300" htmlFor="historic-lotto-draw">
+                역대 회차 직접 조회
+                <input
+                  id="historic-lotto-draw"
+                  value={historyQuery}
+                  onChange={(event) => setHistoryQuery(event.target.value.replace(/[^0-9]/g, ''))}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') void searchDrawHistory();
+                  }}
+                  inputMode="numeric"
+                  placeholder="회차 입력"
+                  aria-label="조회할 로또 회차"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-300/60"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => void searchDrawHistory()}
+                disabled={historyLoading}
+                className="rounded-xl bg-emerald-400 px-3 py-2 text-sm font-bold text-emerald-950 disabled:opacity-60"
+              >
+                조회
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => void loadLatestDraws()}
+              disabled={historyLoading}
+              className="mt-2 text-xs font-semibold text-emerald-200 hover:text-white disabled:opacity-60"
+            >
+              <i className={`fa-solid ${historyLoading ? 'fa-spinner fa-spin' : 'fa-rotate-right'} mr-1.5`} />
+              최신 회차 다시 조회
+            </button>
+            {historyError ? <p className="mt-3 text-xs text-rose-200">{historyError}</p> : null}
+            {drawHistory ? (
+              drawHistory.draws.length > 0 ? (
+                <div className="mt-4 max-h-64 space-y-2 overflow-y-auto pr-1">
+                  {drawHistory.draws.map((draw) => (
+                    <div key={draw.drawNumber} className="rounded-2xl border border-white/8 bg-white/[0.025] px-3 py-2.5">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-sm text-white">{draw.drawNumber}회</strong>
+                        <span className="text-[11px] text-slate-500">당첨번호</span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {draw.numbers.map((number) => (
+                          <span
+                            key={`${draw.drawNumber}-${number}`}
+                            className={`flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-black ${getBallTheme(number).className}`}
+                          >
+                            {number}
+                          </span>
+                        ))}
+                        <span className="flex h-6 w-4 items-center justify-center text-xs font-black text-slate-400" aria-hidden="true">+</span>
+                        <span
+                          className={`flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-black ring-1 ring-white/70 ${getBallTheme(draw.bonusNumber).className}`}
+                          aria-label={`보너스 번호 ${draw.bonusNumber}`}
+                        >
+                          {draw.bonusNumber}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
+                        {draw.prizes.map((prize) => (
+                          <div key={prize.rank} className="rounded-xl bg-slate-950/45 px-2.5 py-2 text-[11px] text-slate-400">
+                            <div className="flex items-center justify-between gap-2">
+                              <strong className="text-xs text-amber-100">{prize.rank}등</strong>
+                              <span>당첨 {wonFormatter.format(prize.winnerCount)}명</span>
+                            </div>
+                            <p className="mt-1 font-semibold text-slate-200">1인당 {formatWon(prize.amount)}</p>
+                            {prize.totalAmount > 0 ? <p className="mt-0.5 text-slate-500">총 {formatWon(prize.totalAmount)}</p> : null}
+                            <p className="mt-1 text-slate-500">예상 세금 {formatWon(prize.estimatedTaxAmount)}</p>
+                            <p className="mt-0.5 font-semibold text-emerald-200">예상 실수령 {formatWon(prize.estimatedNetAmount)}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-[10px] leading-4 text-slate-600">세금과 실수령액은 1인당 당첨금을 기준으로 한 예상치이며, 실제 지급액은 원천징수 결과에 따라 달라질 수 있습니다.</p>
+                    </div>
+                  ))}
+                </div>
+              ) : <p className="mt-4 text-sm text-slate-500">조회된 회차 정보가 없습니다. 다른 회차를 입력해 주세요.</p>
+            ) : <p className="mt-4 text-sm text-slate-500">회차 정보를 불러오는 중입니다.</p>}
+          </section>
+
+          <section className="lotto-panel p-5 sm:p-6">
             <p className="text-xs font-extrabold tracking-[0.22em] text-indigo-200">NUMBER GUIDE</p>
             <h2 className="mt-2 text-xl font-bold text-white">번호 구간</h2>
             <p className="mt-2 text-sm leading-6 text-slate-400">색상은 번호 범위를 빠르게 구분하기 위한 표시입니다.</p>
@@ -184,8 +407,22 @@ export const Lotto = () => {
             <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-indigo-300/15 blur-3xl" />
             <div className="relative">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-400/15 text-indigo-100"><i className="fa-solid fa-chart-simple" /></div>
-              <h2 className="mt-4 text-lg font-bold text-white">역대 빈출 번호</h2>
-              {frequencyData ? (
+              <h2 className="mt-4 text-lg font-bold text-white">{drawMode === 'RANDOM' ? '일반 랜덤 10,000회 통계' : '역대 빈출 번호'}</h2>
+              {drawMode === 'RANDOM' && randomSimulationLoading ? <p className="mt-2 text-sm leading-6 text-slate-400"><i className="fa-solid fa-spinner fa-spin mr-2" />10,000회 추첨을 시뮬레이션하는 중입니다.</p> : null}
+              {drawMode === 'RANDOM' && randomSimulationData ? (
+                <>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">무작위 추첨 {randomSimulationData.simulatedDrawCount.toLocaleString()}회에서 가장 자주 나온 번호입니다.</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {randomSimulationData.topNumbers.map((item) => (
+                      <span key={item.number} className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-slate-950/45 px-2.5 py-1.5 text-xs font-semibold text-amber-100">
+                        {item.number}<small className="font-medium text-slate-500">{item.count}회</small>
+                      </span>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-xs leading-5 text-slate-500">시뮬레이션 빈도는 다음 회차의 당첨 확률과 무관합니다.</p>
+                </>
+              ) : null}
+              {drawMode === 'FREQUENT' && frequencyData ? (
                 <>
                   <p className="mt-2 text-sm leading-6 text-slate-400">최근 집계 회차는 {frequencyData.latestDrawNumber.toLocaleString()}회입니다.</p>
                   <div className="mt-4 flex flex-wrap gap-2">
@@ -196,7 +433,8 @@ export const Lotto = () => {
                     ))}
                   </div>
                 </>
-              ) : <p className="mt-2 text-sm leading-6 text-slate-400">역대 빈출 조합을 선택하면 상위 번호와 출현 횟수를 확인할 수 있어요.</p>}
+              ) : null}
+              {drawMode === 'FREQUENT' && !frequencyData ? <p className="mt-2 text-sm leading-6 text-slate-400">역대 빈출 조합을 선택하면 상위 번호와 출현 횟수를 확인할 수 있어요.</p> : null}
             </div>
           </section>
         </aside>

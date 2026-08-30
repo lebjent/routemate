@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +50,7 @@ class ProductOrderServiceTest {
                 .price(new BigDecimal("12300.00")).currency("KRW").useYn("Y").build();
         var user = UserMstr.builder().userId(6L).userEmail("buyer@example.com").userNicknm("구매자")
                 .userStatCd("ACTIVE").delYn("N").build();
-        var request = new ProductOrderRequest(4L, 5L, LocalDate.now().plusDays(2), 3,
+        var request = new ProductOrderRequest(4L, List.of(new ProductOrderRequest.Item(5L, 3)), LocalDate.now().plusDays(2),
                 " 홍길동 ", "BUYER@EXAMPLE.COM", " 010-1234-5678 ");
 
         when(userRepository.findByUserEmail("buyer@example.com")).thenReturn(Optional.of(user));
@@ -68,7 +69,34 @@ class ProductOrderServiceTest {
         verify(orderRepository).save(captor.capture());
         assertThat(captor.getValue().getProductName()).isEqualTo("경복궁 야간 투어");
         assertThat(captor.getValue().getOptionName()).isEqualTo("성인 1인");
+        assertThat(captor.getValue().getItems()).hasSize(1);
         assertThat(captor.getValue().getBuyerName()).isEqualTo("홍길동");
         assertThat(captor.getValue().getBuyerEmail()).isEqualTo("buyer@example.com");
+    }
+
+    @Test
+    @SuppressWarnings("null")
+    void createOrder_groupsMultipleOptionQuantitiesUnderOneOrderNumber() {
+        var country = Country.builder().countryId(1L).countryName("대한민국").countryCode("KR").build();
+        var region = Region.builder().regionId(2L).country(country).regionName("서울").regionCode("SEOUL").build();
+        var destination = Destination.builder().destId(3L).country(country).region(region).destName("경복궁").build();
+        var product = TravelProduct.builder().productId(4L).destination(destination).productName("경복궁 야간 투어").useYn("Y").build();
+        var adult = TravelProductOption.builder().optionId(5L).product(product).optionName("대인").price(new BigDecimal("15000.00")).currency("KRW").useYn("Y").build();
+        var child = TravelProductOption.builder().optionId(6L).product(product).optionName("소인").price(new BigDecimal("9000.00")).currency("KRW").useYn("Y").build();
+        var user = UserMstr.builder().userId(7L).userEmail("buyer@example.com").userNicknm("구매자").userStatCd("ACTIVE").delYn("N").build();
+        var request = new ProductOrderRequest(4L, List.of(new ProductOrderRequest.Item(5L, 2), new ProductOrderRequest.Item(6L, 1)), LocalDate.now().plusDays(2), "홍길동", "buyer@example.com", null);
+
+        when(userRepository.findByUserEmail("buyer@example.com")).thenReturn(Optional.of(user));
+        when(productRepository.findWithDestinationByProductId(4L)).thenReturn(Optional.of(product));
+        when(optionRepository.findByOptionIdAndProductAndUseYn(5L, product, "Y")).thenReturn(Optional.of(adult));
+        when(optionRepository.findByOptionIdAndProductAndUseYn(6L, product, "Y")).thenReturn(Optional.of(child));
+        when(orderRepository.save(any(ProductOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = productOrderService.createOrder("buyer@example.com", request);
+
+        assertThat(response.items()).hasSize(2);
+        assertThat(response.totalPrice()).isEqualByComparingTo("39000.00");
+        assertThat(response.quantity()).isEqualTo(3);
+        assertThat(response.items()).extracting(item -> item.optionName() + ":" + item.quantity()).containsExactly("대인:2", "소인:1");
     }
 }

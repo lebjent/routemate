@@ -29,9 +29,8 @@ export const ProductDetail = () => {
   const location = useLocation();
   const { user } = useAuth();
   const [product, setProduct] = useState<ProductDetailData | null>(null);
-  const [selectedOptionId, setSelectedOptionId] = useState<number | null>(null);
+  const [optionQuantities, setOptionQuantities] = useState<Record<number, number>>({});
   const [useDate, setUseDate] = useState(today());
-  const [quantity, setQuantity] = useState(1);
   const [buyerName, setBuyerName] = useState(user?.userNicknm ?? '');
   const [buyerEmail, setBuyerEmail] = useState(user?.userEmail ?? '');
   const [buyerPhone, setBuyerPhone] = useState('');
@@ -50,14 +49,25 @@ export const ProductDetail = () => {
     axios.get<ProductDetailData>(`/api/public/products/${productId}`)
       .then((response) => {
         setProduct(response.data);
-        setSelectedOptionId(response.data.options[0]?.optionId ?? null);
+        setOptionQuantities({});
       })
       .catch(() => setError('판매 중인 상품을 찾을 수 없습니다.'))
       .finally(() => setLoading(false));
   }, [productId]);
 
-  const selectedOption = useMemo(() => product?.options.find((option) => option.optionId === selectedOptionId) ?? null, [product, selectedOptionId]);
-  const totalPrice = selectedOption ? selectedOption.price * quantity : 0;
+  const selectedOptions = useMemo(() => product?.options
+    .map((option) => ({ option, quantity: optionQuantities[option.optionId] ?? 0 }))
+    .filter((selection) => selection.quantity > 0) ?? [], [product, optionQuantities]);
+  const totalPrice = selectedOptions.reduce((sum, selection) => sum + selection.option.price * selection.quantity, 0);
+  const orderCurrency = selectedOptions[0]?.option.currency ?? product?.options[0]?.currency ?? 'KRW';
+
+  /** 옵션별 수량을 0~10 범위에서 변경한다. */
+  const changeOptionQuantity = (optionId: number, change: number) => {
+    setOptionQuantities((current) => ({
+      ...current,
+      [optionId]: Math.max(0, Math.min(10, (current[optionId] ?? 0) + change)),
+    }));
+  };
 
   const submitOrder = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -65,8 +75,8 @@ export const ProductDetail = () => {
       navigate('/login', { state: { from: location.pathname } });
       return;
     }
-    if (!product || !selectedOption) {
-      setError('구매할 옵션을 선택해 주세요.');
+    if (!product || selectedOptions.length === 0) {
+      setError('구매할 옵션과 수량을 하나 이상 선택해 주세요.');
       return;
     }
 
@@ -75,9 +85,8 @@ export const ProductDetail = () => {
     try {
       const response = await axios.post<ProductOrder>('/api/product-orders', {
         productId: product.productId,
-        optionId: selectedOption.optionId,
+        items: selectedOptions.map((selection) => ({ optionId: selection.option.optionId, quantity: selection.quantity })),
         useDate,
-        quantity,
         buyerName,
         buyerEmail,
         buyerPhone,
@@ -107,7 +116,7 @@ export const ProductDetail = () => {
         <p className="text-sm leading-6 text-slate-300">주문번호 <strong className="text-white">{order.orderNo}</strong><br />현재 {paymentStatusLabel(order.paymentStatus)} 상태이며 결제가 확인되면 예약이 확정됩니다.</p>
         <div className="my-7 rounded-2xl border border-white/10 bg-slate-950/50 p-5 text-left">
           <p className="font-bold text-white">{order.productName}</p>
-          <p className="mt-1 text-sm text-slate-400">{order.optionName} · {order.quantity}개 · {order.useDate}</p>
+          <div className="mt-2 space-y-1 text-sm text-slate-400">{order.items.map((item) => <p key={`${item.optionId}-${item.optionName}`}>{item.optionName} · {item.quantity}개</p>)}</div>
           <p className="mt-4 text-right text-xl font-bold text-indigo-200">{formatProductPrice(order.totalPrice, order.currency)}</p>
         </div>
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
@@ -152,20 +161,19 @@ export const ProductDetail = () => {
             <form onSubmit={submitOrder} className="space-y-5">
               <div className="option-scrollbar max-h-72 space-y-2 overflow-y-auto pr-1">
                 {product.options.map((option) => (
-                  <label key={option.optionId} className={`block cursor-pointer rounded-2xl border p-4 transition ${selectedOptionId === option.optionId ? 'border-indigo-400 bg-indigo-500/10' : 'border-white/10 bg-white/[0.025] hover:border-white/20'}`}>
-                    <input type="radio" className="sr-only" checked={selectedOptionId === option.optionId} onChange={() => setSelectedOptionId(option.optionId)} />
-                    <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-white">{option.optionName}</p>{option.optionDesc ? <p className="mt-1 text-xs leading-5 text-slate-400">{option.optionDesc}</p> : null}</div><span className={`mt-1 h-4 w-4 shrink-0 rounded-full border-4 ${selectedOptionId === option.optionId ? 'border-indigo-400 bg-white' : 'border-slate-600'}`} /></div>
-                    <p className="mt-3 text-right font-bold text-indigo-200">{formatProductPrice(option.price, option.currency)}</p>
-                  </label>
+                  <div key={option.optionId} className={`rounded-2xl border p-4 transition ${(optionQuantities[option.optionId] ?? 0) > 0 ? 'border-indigo-400 bg-indigo-500/10' : 'border-white/10 bg-white/[0.025]'}`}>
+                    <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-white">{option.optionName}</p>{option.optionDesc ? <p className="mt-1 text-xs leading-5 text-slate-400">{option.optionDesc}</p> : null}</div><p className="shrink-0 font-bold text-indigo-200">{formatProductPrice(option.price, option.currency)}</p></div>
+                    <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3"><span className="text-xs text-slate-500">수량</span><div className="flex items-center gap-3"><button type="button" aria-label={`${option.optionName} 수량 감소`} onClick={() => changeOptionQuantity(option.optionId, -1)} disabled={(optionQuantities[option.optionId] ?? 0) === 0} className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-slate-300 disabled:opacity-30"><i className="fa-solid fa-minus" /></button><strong className="w-5 text-center text-sm text-white">{optionQuantities[option.optionId] ?? 0}</strong><button type="button" aria-label={`${option.optionName} 수량 증가`} onClick={() => changeOptionQuantity(option.optionId, 1)} disabled={(optionQuantities[option.optionId] ?? 0) === 10} className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500 text-white disabled:opacity-30"><i className="fa-solid fa-plus" /></button></div></div>
+                  </div>
                 ))}
               </div>
-              <div className="grid grid-cols-2 gap-3"><label className="text-xs font-semibold text-slate-400">이용일<input type="date" min={today()} required value={useDate} onChange={(event) => setUseDate(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white outline-none focus:border-indigo-400" /></label><label className="text-xs font-semibold text-slate-400">수량<select value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white outline-none focus:border-indigo-400">{Array.from({ length: 10 }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value}개</option>)}</select></label></div>
+              <label className="text-xs font-semibold text-slate-400">이용일<input type="date" min={today()} required value={useDate} onChange={(event) => setUseDate(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white outline-none focus:border-indigo-400" /></label>
               <label className="block text-xs font-semibold text-slate-400">구매자명<input required maxLength={50} value={buyerName} onChange={(event) => setBuyerName(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white outline-none focus:border-indigo-400" /></label>
               <label className="block text-xs font-semibold text-slate-400">안내 이메일<input type="email" required maxLength={100} value={buyerEmail} onChange={(event) => setBuyerEmail(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white outline-none focus:border-indigo-400" /></label>
               <label className="block text-xs font-semibold text-slate-400">연락처 <span className="font-normal text-slate-600">(선택)</span><input maxLength={20} value={buyerPhone} onChange={(event) => setBuyerPhone(event.target.value)} placeholder="010-0000-0000" className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm text-white outline-none placeholder:text-slate-700 focus:border-indigo-400" /></label>
-              {selectedOption ? <div className="border-t border-white/10 pt-4"><div className="flex items-end justify-between"><span className="text-sm text-slate-400">총 주문금액</span><strong className="text-2xl text-white">{formatProductPrice(totalPrice, selectedOption.currency)}</strong></div>{selectedOption.validityText ? <p className="mt-2 text-xs text-slate-500">유효기간: {selectedOption.validityText}</p> : null}</div> : null}
+              {selectedOptions.length > 0 ? <div className="border-t border-white/10 pt-4"><div className="flex items-end justify-between"><span className="text-sm text-slate-400">총 주문금액 · {selectedOptions.length}종</span><strong className="text-2xl text-white">{formatProductPrice(totalPrice, orderCurrency)}</strong></div><div className="mt-3 space-y-1 text-xs text-slate-500">{selectedOptions.map((selection) => <p key={selection.option.optionId}>{selection.option.optionName} {selection.quantity}개 · {formatProductPrice(selection.option.price * selection.quantity, selection.option.currency)}</p>)}</div></div> : null}
               {error ? <p role="alert" className="rounded-xl bg-red-500/10 px-3 py-2 text-xs leading-5 text-red-200">{error}</p> : null}
-              <button type="submit" disabled={submitting || !selectedOption} className="theme-btn-primary w-full py-4 text-base disabled:cursor-not-allowed disabled:opacity-50">{submitting ? '주문 접수 중...' : user ? '구매 신청하기' : '로그인하고 구매하기'}</button>
+              <button type="submit" disabled={submitting || selectedOptions.length === 0} className="theme-btn-primary w-full py-4 text-base disabled:cursor-not-allowed disabled:opacity-50">{submitting ? '주문 접수 중...' : user ? '구매 신청하기' : '로그인하고 구매하기'}</button>
               <p className="text-center text-[11px] leading-5 text-slate-600">주문 접수 후 결제 상태는 예약내역에서 확인할 수 있습니다.</p>
             </form>
           )}

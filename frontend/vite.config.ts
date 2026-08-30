@@ -10,6 +10,12 @@ export default defineConfig({
         target: 'http://localhost:8090',
         changeOrigin: true,
         secure: false,
+      },
+      // 개발 서버에서도 백엔드가 관리하는 로컬 업로드 이미지를 같은 URL로 보여 준다.
+      '/uploads': {
+        target: 'http://localhost:8090',
+        changeOrigin: true,
+        secure: false,
       }
     }
   },

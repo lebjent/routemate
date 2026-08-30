@@ -4,9 +4,8 @@ import type { ProductDetail, ProductOrder, ProductSummary } from './model';
 /** 옵션 상품 예약 생성 API에 전달하는 요청 본문이다. */
 export type CreateProductOrderRequest = {
   productId: number;
-  optionId: number;
+  items: Array<{ optionId: number; quantity: number }>;
   useDate: string;
-  quantity: number;
   buyerName: string;
   buyerEmail: string;
   buyerPhone: string | null;

@@ -68,6 +68,17 @@ export interface ProductOrder {
   paymentStatus: string;
   bookingUrl: string | null;
   createDt: string;
+  items: ProductOrderItem[];
+}
+
+/** 주문 하나에 담긴 옵션별 수량과 금액이다. */
+export interface ProductOrderItem {
+  optionId: number | null;
+  optionName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  currency: string;
 }
 
 /** 공개 상품 탐색 필터에서 사용할 상품 유형과 표시명이다. */

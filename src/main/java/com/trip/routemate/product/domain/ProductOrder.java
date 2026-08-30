@@ -8,6 +8,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "TB_PRODUCT_ORDER")
@@ -85,4 +87,14 @@ public class ProductOrder {
     @CreationTimestamp
     @Column(name = "CREATE_DT", nullable = false, updatable = false)
     private LocalDateTime createDt;
+
+    /** 한 주문에 포함된 옵션별 수량·단가 스냅샷이다. 기존 단일 주문은 비어 있을 수 있다. */
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ProductOrderItem> items = new ArrayList<>();
+
+    /** 주문 항목을 추가하고 주문 헤더와의 연관관계를 유지한다. */
+    public void addItem(ProductOrderItem item) {
+        items.add(item);
+    }
 }

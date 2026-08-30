@@ -19,13 +19,38 @@ spring:
     problemdetails:
       enabled: true
 
+  threads:
+    virtual:
+      # Tomcat 요청 처리를 Java 21 가상 스레드로 전환합니다.
+      # 외부 로또 API처럼 응답 대기가 긴 블로킹 I/O에 특히 효과적입니다.
+      enabled: true
+
   cache:
     type: caffeine
     cache-names: homeData,destinationCountries,destinationRegions
     caffeine:
       spec: maximumSize=500,expireAfterWrite=1m
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 app:
+  parallel:
+    # 외부 API 호출 등 공통 병렬 작업의 기본 동시 실행 수입니다.
+    max-threads: ${PARALLEL_MAX_THREADS:5}
+
+  storage:
+    # 공통 저장 루트입니다. 다른 PC는 LOCAL_STORAGE_ROOT 환경 변수로 경로를 변경할 수 있습니다.
+    root-directory: ${LOCAL_STORAGE_ROOT:${user.home}/study/nas}
+    # 도메인·업로드 계정별 폴더 안에서 yyyy/MM/dd 단위로 파일을 분리합니다.
+    option-product-directory: optionProduct
+    travel-plan-directory: travelPlan
+    # DB에는 실제 파일 경로가 아닌 도메인별 공개 URL을 저장합니다.
+    option-product-url-prefix: /uploads/optionProduct
+    travel-plan-url-prefix: /uploads/travelPlan
+
   lotto:
     history:
       source-url: ${LOTTO_HISTORY_SOURCE_URL:https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do}

@@ -31,6 +31,9 @@ out/
 /nbbuild/
 /dist/
 /nbdist/
+
+# 개발 PC의 업로드 이미지 파일은 DB URL과 별도로 관리한다.
+/uploads/
 /.nb-gradle/
 
 ### VS Code ###
