@@ -97,4 +97,9 @@ public class ProductOrder {
     public void addItem(ProductOrderItem item) {
         items.add(item);
     }
+
+    public void changeStatus(String orderStatus, String paymentStatus) {
+        this.orderStatus = orderStatus;
+        this.paymentStatus = paymentStatus;
+    }
 }

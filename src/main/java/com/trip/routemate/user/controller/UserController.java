@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 /**
  * 회원가입과 가입 전 중복 확인을 제공하는 공개 API다.
@@ -30,7 +31,7 @@ public class UserController {
      */
     @PostMapping("/join")
     @Operation(summary = "회원가입", description = "이메일, 비밀번호, 닉네임과 기본 회원 정보를 등록합니다.")
-    public ResponseEntity<String> joinUser(@RequestBody UserJoinDto dto) {
+    public ResponseEntity<String> joinUser(@Valid @RequestBody UserJoinDto dto) {
         try {
             Long userId = userService.join(dto);
             return ResponseEntity.ok("회원가입 성공! 생성된 회원 번호: " + userId);

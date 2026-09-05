@@ -9,3 +9,6 @@ export const api = axios.create({
     Accept: 'application/json',
   },
 });
+
+/** 화면에서 직접 axios 인스턴스를 만들지 않도록 공통 오류 판별도 함께 제공한다. */
+export const isApiError = axios.isAxiosError;

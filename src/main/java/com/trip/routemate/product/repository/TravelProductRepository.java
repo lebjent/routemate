@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 
 /** 관리자·파트너·공개 카탈로그에서 사용하는 여행 옵션 상품 조회를 담당한다. */
 public interface TravelProductRepository extends JpaRepository<TravelProduct, Long> {
@@ -31,6 +34,10 @@ public interface TravelProductRepository extends JpaRepository<TravelProduct, Lo
 
     @EntityGraph(attributePaths = {"destination", "destination.country", "destination.region", "partner"})
     List<TravelProduct> findAllByUseYnOrderBySortOrderAscCreateDtDesc(String useYn);
+
+    @EntityGraph(attributePaths = {"destination", "destination.country", "destination.region", "partner"})
+    @Query("select product from TravelProduct product where (:destinationId is null or product.destination.destId = :destinationId) and (:useYn = 'ALL' or product.useYn = :useYn) order by product.sortOrder, product.createDt desc")
+    Page<TravelProduct> findAdminPage(@Param("destinationId") Long destinationId, @Param("useYn") String useYn, Pageable pageable);
 
     @EntityGraph(attributePaths = {"destination", "destination.country", "destination.region", "partner"})
     List<TravelProduct> findAllByPartnerOrderByCreateDtDesc(com.trip.routemate.partner.domain.PartnerCompany partner);

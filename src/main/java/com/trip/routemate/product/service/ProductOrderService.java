@@ -51,7 +51,7 @@ public class ProductOrderService {
     public ProductOrderResponse createOrder(String userEmail, ProductOrderRequest request) {
         var user = getActiveUser(userEmail);
         var product = productRepository.findWithDestinationByProductId(request.productId())
-                .filter(found -> "Y".equals(found.getUseYn()))
+                .filter(this::isSellable)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "판매 중인 옵션상품을 찾을 수 없습니다."));
         var selections = resolveSelections(product, request.items());
         var primarySelection = selections.getFirst();
@@ -96,6 +96,13 @@ public class ProductOrderService {
         }
         var savedOrder = orderRepository.save(order);
         return ProductOrderResponse.from(savedOrder);
+    }
+
+    /** 상품 목록·상세와 동일한 판매 가능 조건을 주문 시점에도 재검사한다. */
+    private boolean isSellable(TravelProduct product) {
+        return "Y".equals(product.getUseYn())
+                && "APPROVED".equals(product.getApprovalStatus())
+                && (product.getPartner() == null || "ACTIVE".equals(product.getPartner().getPartnerStatus()));
     }
 
     /** 현재 사용자의 예약 내역을 최신순으로 조회한다. */

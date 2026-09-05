@@ -1,3 +1,4 @@
+import { ImageUpload } from '../components/ImageUpload';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import axios from 'axios';
@@ -50,6 +51,7 @@ export const CreateTrip = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { planId } = useParams();
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -223,7 +225,7 @@ export const CreateTrip = () => {
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    event.preventDefault(); if (uploadingImage) return;
     if (!user) {
       setError('로그인 후 일정을 만들 수 있어요.');
       return;
@@ -332,7 +334,7 @@ export const CreateTrip = () => {
             onSubmit={handleSubmit}
             onKeyDown={(event) => {
               if (event.key === 'Enter' && !(event.target as HTMLElement).dataset.searchableSelect) {
-                event.preventDefault();
+                event.preventDefault(); if (uploadingImage) return;
               }
             }}
             className="space-y-5"
@@ -372,8 +374,8 @@ export const CreateTrip = () => {
                   <input value={title} onChange={(event) => setTitle(event.target.value)} className={inputClassName} placeholder="예: 여름의 파리와 로마 8일" required maxLength={150} />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-200">대표 이미지 URL <span className="font-normal text-slate-500">(선택)</span></label>
-                  <input value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} className={inputClassName} placeholder="https://..." maxLength={500} />
+                  <label className="mb-2 block text-sm font-semibold text-slate-200">대표 이미지 <span className="font-normal text-slate-500">(선택)</span></label>
+                  <ImageUpload disabled={submitting} value={imageUrl} endpoint="/api/images/travel-plan" onUploadingChange={setUploadingImage} onChange={setImageUrl} />
                 </div>
               </div>
               <div className="mt-4">
@@ -544,7 +546,7 @@ export const CreateTrip = () => {
 
               {error ? <p className="mt-5 rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</p> : null}
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <button type="submit" disabled={submitting} className="theme-btn-primary min-w-[154px] px-6 py-3.5 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? '저장 중...' : planId ? '수정 저장' : '일정 만들기'}</button>
+                <button type="submit" disabled={submitting || uploadingImage} className="theme-btn-primary min-w-[154px] px-6 py-3.5 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? '저장 중...' : planId ? '수정 저장' : '일정 만들기'}</button>
                 <Link to="/my-trips" className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-3.5 font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white">취소</Link>
               </div>
             </section>

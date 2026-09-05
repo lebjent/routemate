@@ -23,6 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Objects;
+import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @Service
 @RequiredArgsConstructor
@@ -39,13 +44,17 @@ public class AdminProductService {
     @PreAuthorize("hasAuthority('DESTINATION_MANAGE')")
     /** 여행지와 판매 상태 조건으로 전체 상품 목록을 조회한다. */
     public AdminProductResponse getProducts(Long destinationId, String useYn) {
+        return getProducts(destinationId, useYn, 0, 50);
+    }
+
+    public AdminProductResponse getProducts(Long destinationId, String useYn, int page, int size) {
         var status = normalizeStatus(useYn);
-        var products = productRepository.findAllByOrderBySortOrderAscCreateDtDesc().stream()
-                .filter(product -> destinationId == null || product.getDestination().getDestId().equals(destinationId))
-                .filter(product -> "ALL".equals(status) || status.equals(product.getUseYn()))
-                .map(product -> AdminProductResponse.Item.from(product, optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product)))
-                .toList();
-        return new AdminProductResponse(products);
+        if (page < 0 || size < 1 || size > 100) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "페이지 범위를 확인해 주세요.");
+        var result = productRepository.findAdminPage(destinationId, status, PageRequest.of(page, size, Sort.by("sortOrder").ascending().and(Sort.by("createDt").descending())));
+        var products = result.getContent();
+        var options = optionRepository.findAllByProductInOrderByProductProductIdAscSortOrderAscOptionIdAsc(products)
+                .stream().collect(Collectors.groupingBy(option -> option.getProduct().getProductId()));
+        return new AdminProductResponse(products.stream().map(product -> AdminProductResponse.Item.from(product, options.getOrDefault(product.getProductId(), List.of()))).toList(), result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
     }
 
     @Transactional
@@ -109,9 +118,10 @@ public class AdminProductService {
         var products = productRepository.findAllByOrderBySortOrderAscCreateDtDesc().stream()
                 .filter(product -> "ALL".equals(approvalStatus) || approvalStatus.equals(product.getApprovalStatus()))
                 .filter(product -> product.getPartner() != null)
-                .map(product -> AdminProductResponse.Item.from(product, optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product)))
                 .toList();
-        return new AdminProductResponse(products);
+        var options = optionRepository.findAllByProductInOrderByProductProductIdAscSortOrderAscOptionIdAsc(products)
+                .stream().collect(Collectors.groupingBy(option -> option.getProduct().getProductId()));
+        return new AdminProductResponse(products.stream().map(product -> AdminProductResponse.Item.from(product, options.getOrDefault(product.getProductId(), List.of()))).toList());
     }
 
     @Transactional
@@ -144,14 +154,22 @@ public class AdminProductService {
     }
 
     private void saveOptions(TravelProduct product, java.util.List<com.trip.routemate.admin.dto.AdminProductOptionRequest> requests) {
-        optionRepository.deleteAllByProduct(product);
         if (requests == null) return;
-        var options = requests.stream().map(request -> TravelProductOption.builder()
-                .product(product).optionName(normalize(request.optionName())).optionDesc(normalizeNullable(request.optionDesc()))
-                .price(request.price()).currency(normalizeCurrency(request.currency())).cancellationPolicy(normalizeNullable(request.cancellationPolicy()))
-                .validityText(normalizeNullable(request.validityText())).confirmationType(normalize(request.confirmationType()).toUpperCase())
-                .useYn(normalizeUseYn(request.useYn())).sortOrder(normalizeSortOrder(request.sortOrder())).build()).toList();
-        optionRepository.saveAll(Objects.requireNonNull(options));
+        var existing = optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product).stream()
+                .collect(java.util.stream.Collectors.toMap(TravelProductOption::getOptionId, java.util.function.Function.identity()));
+        var retained = new java.util.HashSet<Long>();
+        for (var request : requests) {
+            var option = request.optionId() == null ? null : existing.get(request.optionId());
+            if (request.optionId() != null && option == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "상품에 속하지 않은 옵션입니다.");
+            }
+            if (option == null) option = TravelProductOption.builder().product(product).build();
+            option.update(normalize(request.optionName()), normalizeNullable(request.optionDesc()), request.price(), normalizeCurrency(request.currency()),
+                    normalizeNullable(request.cancellationPolicy()), normalizeNullable(request.validityText()), normalize(request.confirmationType()).toUpperCase(),
+                    normalizeUseYn(request.useYn()), normalizeSortOrder(request.sortOrder()));
+            if (option.getOptionId() == null) optionRepository.save(option); else retained.add(option.getOptionId());
+        }
+        existing.values().stream().filter(option -> !retained.contains(option.getOptionId())).forEach(TravelProductOption::deactivate);
     }
 
     private Destination getDestination(Long destinationId) {

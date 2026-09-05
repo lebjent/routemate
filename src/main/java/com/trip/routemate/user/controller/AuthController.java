@@ -1,6 +1,7 @@
 package com.trip.routemate.user.controller;
 
 import com.trip.routemate.common.security.AuthorizationService;
+import com.trip.routemate.common.security.SessionAuthenticationService;
 
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.dto.UserLoginDto;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * 일반 사용자의 세션 로그인과 현재 사용자 조회를 제공하는 API다.
@@ -44,6 +46,10 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;
     private final AuthorizationService authorizationService;
+    private final SessionAuthenticationService sessionAuthenticationService;
+
+    @Value("${app.auth.password-reset-enabled:false}")
+    private boolean passwordResetEnabled;
 
     /**
      * 이메일과 비밀번호를 검증하고 로그인 세션을 생성한다.
@@ -70,14 +76,16 @@ public class AuthController {
                         "이메일 또는 비밀번호를 확인해 주세요."
                 ));
 
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
-                user.getUserEmail(),
-                null,
-                authorizationService.authoritiesFor(user.getUserId(), user.getUserRole())
-        ));
-        SecurityContextHolder.setContext(securityContext);
-        securityContextRepository.saveContext(securityContext, request, response);
+        if (sessionAuthenticationService != null) {
+            sessionAuthenticationService.login(user.getUserEmail(), request, response,
+                    authorizationService.authoritiesFor(user.getUserId(), user.getUserRole()));
+        } else {
+            var context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(user.getUserEmail(), null,
+                    authorizationService.authoritiesFor(user.getUserId(), user.getUserRole())));
+            SecurityContextHolder.setContext(context);
+            securityContextRepository.saveContext(context, request, response);
+        }
 
         return ResponseEntity.ok(toLoginResponse(user));
     }
@@ -116,6 +124,9 @@ public class AuthController {
     @PostMapping("/password-reset")
     @Operation(summary = "비밀번호 재설정", description = "현재 개발용으로 제공되는 이메일 기반 비밀번호 변경 API입니다. 운영에서는 이메일 인증 절차로 교체해야 합니다.")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody PasswordResetRequest request) {
+        if (!passwordResetEnabled) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "비밀번호 재설정 기능이 활성화되지 않았습니다.");
+        }
         UserMstr user = userMstrRepository.findByUserEmail(request.userEmail().trim())
                 .filter(this::isActiveUser)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "등록된 이메일을 찾을 수 없습니다."));

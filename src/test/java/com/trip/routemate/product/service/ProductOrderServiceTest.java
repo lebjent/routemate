@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +40,6 @@ class ProductOrderServiceTest {
     @InjectMocks ProductOrderService productOrderService;
 
     @Test
-    @SuppressWarnings("null") // Mockito matcher·ArgumentCaptor의 nullness 메타데이터 오탐을 제한합니다.
     void createOrder_usesTheCurrentServerOptionPriceAndStoresSnapshots() {
         var country = Country.builder().countryId(1L).countryName("대한민국").countryCode("KR").build();
         var region = Region.builder().regionId(2L).country(country).regionName("서울").regionCode("SEOUL").build();
@@ -75,7 +75,6 @@ class ProductOrderServiceTest {
     }
 
     @Test
-    @SuppressWarnings("null")
     void createOrder_groupsMultipleOptionQuantitiesUnderOneOrderNumber() {
         var country = Country.builder().countryId(1L).countryName("대한민국").countryCode("KR").build();
         var region = Region.builder().regionId(2L).country(country).regionName("서울").regionCode("SEOUL").build();
@@ -98,5 +97,23 @@ class ProductOrderServiceTest {
         assertThat(response.totalPrice()).isEqualByComparingTo("39000.00");
         assertThat(response.quantity()).isEqualTo(3);
         assertThat(response.items()).extracting(item -> item.optionName() + ":" + item.quantity()).containsExactly("대인:2", "소인:1");
+    }
+
+    @Test
+    void createOrder_rejectsProductThatIsNotApproved() {
+        var destination = Destination.builder().destId(3L)
+                .country(Country.builder().countryId(1L).countryName("대한민국").countryCode("KR").build())
+                .region(Region.builder().regionId(2L).regionName("서울").regionCode("SEOUL").build())
+                .destName("경복궁").build();
+        var product = TravelProduct.builder().productId(4L).destination(destination)
+                .productName("심사중 상품").useYn("Y").approvalStatus("PENDING").build();
+        when(userRepository.findByUserEmail("buyer@example.com")).thenReturn(Optional.of(
+                UserMstr.builder().userId(6L).userEmail("buyer@example.com").userNicknm("구매자").userStatCd("ACTIVE").delYn("N").build()));
+        when(productRepository.findWithDestinationByProductId(4L)).thenReturn(Optional.of(product));
+
+        assertThatThrownBy(() -> productOrderService.createOrder("buyer@example.com",
+                new ProductOrderRequest(4L, List.of(new ProductOrderRequest.Item(5L, 1)), LocalDate.now().plusDays(1), "구매자", "buyer@example.com", null)))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
+                .hasMessageContaining("판매 중인 옵션상품");
     }
 }

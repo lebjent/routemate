@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * 일반 회원의 중복 확인과 가입 처리 규칙을 담당한다.
@@ -39,11 +41,18 @@ public class UserService {
      * @throws IllegalStateException 이메일·닉네임이 중복되거나 비밀번호 확인값이 다를 때
      */
     @Transactional
-    @SuppressWarnings("null")
     public Long join(UserJoinDto dto) {
 
-        if (userMstrRepository.existsByUserEmail(dto.getUserEmail())) {
+        var email = dto.getUserEmail().trim().toLowerCase(java.util.Locale.ROOT);
+        var nickname = dto.getUserNicknm().trim();
+        if (nickname.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "닉네임을 입력해 주세요.");
+
+        if (userMstrRepository.existsByUserEmail(email)) {
             throw new IllegalStateException("이미 존재하는 이메일입니다.");
+        }
+
+        if (userMstrRepository.existsByUserNicknm(nickname)) {
+            throw new IllegalStateException("이미 존재하는 닉네임입니다.");
         }
 
         if (!dto.getUserPwd().equals(dto.getUserPwdCheck())) {
@@ -51,9 +60,9 @@ public class UserService {
         }
 
         UserMstr user = UserMstr.builder()
-                .userEmail(dto.getUserEmail())
+                .userEmail(email)
                 .userPwd(passwordEncoder.encode(dto.getUserPwd()))
-                .userNicknm(dto.getUserNicknm())
+                .userNicknm(nickname)
                 .userPhone(dto.getUserPhone())
                 .userZipcode(dto.getUserZipcode())
                 .userAddr(dto.getUserAddr())

@@ -17,5 +17,12 @@ public record AdminProductOptionRequest(
         @Size(max = 200) String validityText,
         @NotBlank @Size(max = 20) String confirmationType,
         String useYn,
-        Integer sortOrder
-) {}
+        Integer sortOrder,
+        Long optionId
+) {
+    public AdminProductOptionRequest(String optionName, String optionDesc, BigDecimal price, String currency,
+                                     String cancellationPolicy, String validityText, String confirmationType,
+                                     String useYn, Integer sortOrder) {
+        this(optionName, optionDesc, price, currency, cancellationPolicy, validityText, confirmationType, useYn, sortOrder, null);
+    }
+}

@@ -7,8 +7,8 @@ import java.nio.file.Path;
 /**
  * 개발 환경에서 업로드 파일을 보관하고 공개하는 로컬 저장소 설정이다.
  *
- * 실제 파일은 도메인별 폴더의 {@code yyyy/MM/dd} 하위 경로에 저장하고, DB에는 파일 경로가 아닌
- * 각 도메인의 공개 URL만 저장한다.
+ * 실제 파일은 도메인별 폴더의 {@code yyyy/MM/dd} 하위 경로에 저장한다.
+ * 신규 이미지의 상대 경로는 TB_STORED_IMAGE에 기록하고, URL 접두사는 기존 이미지 조회에 사용한다.
  */
 @ConfigurationProperties(prefix = "app.storage")
 public record LocalStorageProperties(

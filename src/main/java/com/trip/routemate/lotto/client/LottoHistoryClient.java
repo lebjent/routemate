@@ -68,7 +68,6 @@ public class LottoHistoryClient {
      * @throws NullPointerException API 주소 설정이 누락된 경우
      */
     @NonNull
-    @SuppressWarnings("null") // JDT가 JDK String.formatted()의 non-null 반환 계약을 알지 못하는 오탐입니다.
     private String requestUrl(int drawNumber) {
         return "%s?srchDir=center&srchLtEpsd=%d".formatted(
                 Objects.requireNonNull(properties.sourceUrl(), "로또 이력 API 주소가 필요합니다."),

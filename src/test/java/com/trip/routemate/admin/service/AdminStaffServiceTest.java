@@ -67,7 +67,6 @@ class AdminStaffServiceTest {
     }
 
     @Test
-    @SuppressWarnings("null") // Mockito any()는 스텁 설정 시에만 null을 반환합니다.
     void createStaff_createsActiveLocalStaffAccount() {
         var request = new AdminStaffCreateRequest(" Staff@RouteMate.com ", "password123", "신입 운영자", "JUNIOR");
         when(passwordEncoder.encode("password123")).thenReturn("encoded-password");

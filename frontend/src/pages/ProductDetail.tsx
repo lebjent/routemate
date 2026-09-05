@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { api } from '../lib/http';
 import { useAuth } from '../hooks/useAuth';
 import {
   formatProductPrice,
@@ -38,6 +39,7 @@ export const ProductDetail = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<ProductOrder | null>(null);
+  const [payment, setPayment] = useState<{ paymentId: number; status: string } | null>(null);
 
   useEffect(() => {
     setBuyerName((value) => value || user?.userNicknm || '');
@@ -104,6 +106,17 @@ export const ProductDetail = () => {
     }
   };
 
+  const pay = async () => {
+    if (!order) return;
+    setSubmitting(true); setError(null);
+    try {
+      const prepared = payment ?? (await api.post<{ paymentId: number; status: string }>(`/api/payments/orders/${order.orderId}/prepare`)).data;
+      const completed = await api.post<{ paymentId: number; status: string }>(`/api/payments/${prepared.paymentId}/complete`);
+      setPayment(completed.data); setOrder((current) => current ? { ...current, paymentStatus: 'PAID', orderStatus: 'CONFIRMED' } : current);
+    } catch { setError('결제 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.'); }
+    finally { setSubmitting(false); }
+  };
+
   if (loading) return <main className="flex flex-grow items-center justify-center py-24 text-slate-400"><i className="fa-solid fa-spinner fa-spin mr-3 text-2xl text-indigo-400" />상품을 불러오고 있습니다...</main>;
   if (!product) return <main className="mx-auto w-full max-w-3xl flex-grow px-6 py-24 text-center"><p className="mb-6 text-red-200">{error}</p><Link to="/products" className="theme-btn-primary inline-block px-6 py-3">상품 목록으로</Link></main>;
 
@@ -121,6 +134,7 @@ export const ProductDetail = () => {
         </div>
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <Link to="/my-product-orders" className="theme-btn-primary px-6 py-3">내 예약내역 보기</Link>
+          {order.paymentStatus === 'PENDING' && !payment ? <button type="button" onClick={() => void pay()} disabled={submitting} className="rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-white disabled:opacity-50">{submitting ? '결제 처리 중...' : '모의 결제하기'}</button> : null}
           {hasExternalBookingUrl(order.bookingUrl) ? <a href={order.bookingUrl!} target="_blank" rel="noreferrer" className="rounded-xl border border-white/15 bg-white/5 px-6 py-3 font-semibold text-white hover:bg-white/10">판매처 결제 페이지로 이동</a> : null}
           <Link to="/products" className="rounded-xl border border-white/15 bg-white/5 px-6 py-3 font-semibold text-white hover:bg-white/10">상품 더 보기</Link>
         </div>

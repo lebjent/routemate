@@ -16,6 +16,7 @@ public interface TravelProductOptionRepository extends JpaRepository<TravelProdu
             List<TravelProduct> products,
             String useYn
     );
+    List<TravelProductOption> findAllByProductInOrderByProductProductIdAscSortOrderAscOptionIdAsc(List<TravelProduct> products);
     List<TravelProductOption> findAllByProductAndUseYnOrderBySortOrderAscOptionIdAsc(TravelProduct product, String useYn);
     Optional<TravelProductOption> findByOptionIdAndProductAndUseYn(Long optionId, TravelProduct product, String useYn);
     void deleteAllByProduct(TravelProduct product);

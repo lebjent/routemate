@@ -79,7 +79,7 @@ public class SecurityConfig {
                         // 전체 RequestMapping 목록은 내부 구조 노출을 막기 위해 로그인 사용자만 허용합니다.
                         .requestMatchers("/actuator/mappings").authenticated()
                         // 공개 화면에서 사용하는 API도 함께 허용해야 브라우저의 비동기 요청이 차단되지 않습니다.
-                        .requestMatchers("/", "/join", "/api/user/join", "/api/user/check-nickname", "/api/user/check-email", "/api/auth/login", "/api/auth/password-reset", "/api/admin/auth/login", "/api/partner/auth/login", "/api/home/data", "/api/public/travel-plans/**", "/api/public/products/**", "/travel-plans/**", "/products/**", "/login", "/admin/login", "/partner/login", "/lotto", "/api/lotto/numbers", "/api/lotto/random-statistics", "/api/lotto/frequent-numbers", "/api/lotto/draws", "/api/lotto/draws/**", "/api/auth/me").permitAll()
+                        .requestMatchers("/", "/join", "/api/user/join", "/api/user/check-nickname", "/api/user/check-email", "/api/auth/login", "/api/auth/password-reset", "/api/admin/auth/login", "/api/partner/auth/login", "/api/home/data", "/api/public/travel-plans/**", "/api/public/products/**", "/api/public/images/**", "/travel-plans/**", "/products/**", "/login", "/admin/login", "/partner/login", "/lotto", "/api/lotto/numbers", "/api/lotto/random-statistics", "/api/lotto/frequent-numbers", "/api/lotto/draws", "/api/lotto/draws/**", "/api/auth/me").permitAll()
                         .requestMatchers("/admin/**", "/api/admin/**").authenticated()
                         // 그 외 모든 요청은 인증 잠금
                         .anyRequest().authenticated()

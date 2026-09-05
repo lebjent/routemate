@@ -20,6 +20,7 @@ const navigation: NavigationItem[] = [
   { label: '여행 일정 관리', icon: 'fa-map', permission: 'PLAN_MANAGE', menuCode: 'PLANS' },
   { to: '/admin/partners', label: '파트너사 관리', icon: 'fa-handshake', permission: 'PARTNER_MANAGE', menuCode: 'PARTNERS', ready: true },
   { to: '/admin/product-approvals', label: '상품 승인 관리', icon: 'fa-clipboard-check', permission: 'PARTNER_MANAGE', menuCode: 'PRODUCT_APPROVALS', ready: true },
+  { to: '/admin/orders', label: '주문 관리', icon: 'fa-receipt', permission: 'PARTNER_MANAGE', menuCode: 'ORDERS', ready: true },
   { to: '/admin/destinations', label: '국가·지역 관리', icon: 'fa-globe-asia', permission: 'DESTINATION_MANAGE', menuCode: 'DESTINATIONS', ready: true },
   { to: '/admin/recommendations', label: '추천 여행지 관리', icon: 'fa-star', permission: 'DESTINATION_MANAGE', menuCode: 'RECOMMENDATIONS', ready: true },
 ];
@@ -55,7 +56,7 @@ export const AdminLayout = () => {
     return <main className="flex min-h-screen items-center justify-center text-sm text-slate-500">관리자 권한을 확인하고 있습니다...</main>;
   }
 
-  const visibleNavigation = navigation.filter((item) => hasPermission(user, item.permission) && hasMenu(user, item.menuCode));
+  const visibleNavigation = navigation.filter((item) => hasPermission(user, item.permission) && (hasMenu(user, item.menuCode) || item.menuCode === 'ORDERS'));
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 lg:flex">

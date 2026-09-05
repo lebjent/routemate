@@ -22,6 +22,23 @@ import java.util.Objects;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    ResponseEntity<ProblemDetail> handleAccessDenied(Exception exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problem(HttpStatus.FORBIDDEN, "요청 권한이 없습니다."));
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    ResponseEntity<ProblemDetail> handleUploadSize(Exception exception) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(problem(HttpStatus.PAYLOAD_TOO_LARGE, "이미지는 10MB 이하만 업로드할 수 있습니다."));
+    }
+
+    @ExceptionHandler({org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+            org.springframework.web.multipart.support.MissingServletRequestPartException.class,
+            org.springframework.web.bind.MissingServletRequestParameterException.class})
+    ResponseEntity<ProblemDetail> handleUploadRequest(Exception exception) {
+        return ResponseEntity.badRequest().body(problem(HttpStatus.BAD_REQUEST, "요청 형식 또는 입력값을 확인해 주세요."));
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     ResponseEntity<ProblemDetail> handleResponseStatus(ResponseStatusException exception) {
         var problem = exception.getBody();

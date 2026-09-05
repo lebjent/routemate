@@ -60,8 +60,11 @@ public class PartnerPortalService {
     /** 현재 파트너사가 소유한 상품과 옵션을 조회한다. */
     public List<PartnerProductResponse> products(Authentication authentication) {
         var partner = partner(authentication);
-        return productRepository.findAllByPartnerOrderByCreateDtDesc(partner).stream()
-                .map(this::response)
+        var products = productRepository.findAllByPartnerOrderByCreateDtDesc(partner);
+        var options = optionRepository.findAllByProductInOrderByProductProductIdAscSortOrderAscOptionIdAsc(products)
+                .stream().collect(java.util.stream.Collectors.groupingBy(option -> option.getProduct().getProductId()));
+        return products.stream()
+                .map(product -> PartnerProductResponse.from(product, options.getOrDefault(product.getProductId(), List.of())))
                 .toList();
     }
 
@@ -142,14 +145,22 @@ public class PartnerPortalService {
 
     /** 기존 옵션을 교체하고 요청 순서대로 새 옵션을 저장한다. */
     private void saveOptions(TravelProduct product, List<PartnerProductOptionRequest> requests) {
-        optionRepository.deleteAllByProduct(product);
         if (requests == null) return;
-        optionRepository.saveAll(Objects.requireNonNull(requests.stream().map(request -> TravelProductOption.builder()
-                .product(product).optionName(normalize(request.optionName())).optionDesc(nullable(request.optionDesc()))
-                .price(request.price()).currency(currency(request.currency()))
-                .cancellationPolicy(nullable(request.cancellationPolicy())).validityText(nullable(request.validityText()))
-                .confirmationType(normalize(request.confirmationType()).toUpperCase())
-                .useYn(useYn(request.useYn())).sortOrder(sortOrder(request.sortOrder())).build()).toList()));
+        var existing = optionRepository.findAllByProductOrderBySortOrderAscOptionIdAsc(product).stream()
+                .collect(java.util.stream.Collectors.toMap(TravelProductOption::getOptionId, java.util.function.Function.identity()));
+        var retained = new java.util.HashSet<Long>();
+        for (var request : requests) {
+            var option = request.optionId() == null ? null : existing.get(request.optionId());
+            if (request.optionId() != null && option == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "상품에 속하지 않은 옵션입니다.");
+            }
+            if (option == null) option = TravelProductOption.builder().product(product).build();
+            option.update(normalize(request.optionName()), nullable(request.optionDesc()), request.price(), currency(request.currency()),
+                    nullable(request.cancellationPolicy()), nullable(request.validityText()), normalize(request.confirmationType()).toUpperCase(),
+                    useYn(request.useYn()), sortOrder(request.sortOrder()));
+            if (option.getOptionId() == null) optionRepository.save(option); else retained.add(option.getOptionId());
+        }
+        existing.values().stream().filter(option -> !retained.contains(option.getOptionId())).forEach(TravelProductOption::deactivate);
     }
 
     /** 상품 엔티티와 옵션 목록을 포털 응답으로 변환한다. */

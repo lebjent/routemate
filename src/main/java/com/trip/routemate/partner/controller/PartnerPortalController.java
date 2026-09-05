@@ -59,8 +59,8 @@ public class PartnerPortalController {
     @PostMapping(value = "/products/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public PartnerProductImageUploadResponse uploadProductImage(Authentication authentication,
-                                                                 @RequestPart("file") MultipartFile file) {
-        return productImageStorageService.store(authentication, file);
+                                                                 @RequestPart("file") MultipartFile file, @RequestParam(defaultValue = "false") boolean detail) {
+        return productImageStorageService.store(authentication, file, detail);
     }
 
     /**

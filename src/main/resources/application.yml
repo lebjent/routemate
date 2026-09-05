@@ -34,9 +34,12 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
-      max-request-size: 10MB
+      max-request-size: 11MB
 
 app:
+  auth:
+    # 이메일 소유권 검증이 없는 개발용 재설정 기능은 기본적으로 차단한다.
+    password-reset-enabled: ${APP_PASSWORD_RESET_ENABLED:false}
   parallel:
     # 외부 API 호출 등 공통 병렬 작업의 기본 동시 실행 수입니다.
     max-threads: ${PARALLEL_MAX_THREADS:5}
@@ -47,7 +50,7 @@ app:
     # 도메인·업로드 계정별 폴더 안에서 yyyy/MM/dd 단위로 파일을 분리합니다.
     option-product-directory: optionProduct
     travel-plan-directory: travelPlan
-    # DB에는 실제 파일 경로가 아닌 도메인별 공개 URL을 저장합니다.
+    # 신규 이미지는 TB_STORED_IMAGE에 상대 경로를 저장합니다. 아래 URL은 기존 업로드 호환용입니다.
     option-product-url-prefix: /uploads/optionProduct
     travel-plan-url-prefix: /uploads/travelPlan
 

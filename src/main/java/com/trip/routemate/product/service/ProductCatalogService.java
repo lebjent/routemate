@@ -2,6 +2,7 @@ package com.trip.routemate.product.service;
 
 import com.trip.routemate.product.dto.ProductDetailResponse;
 import com.trip.routemate.product.dto.ProductSummaryResponse;
+import com.trip.routemate.product.domain.TravelProduct;
 import com.trip.routemate.product.repository.TravelProductOptionRepository;
 import com.trip.routemate.product.repository.TravelProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,10 +59,17 @@ public class ProductCatalogService {
     /** 공개 가능한 상품 하나의 상세 설명과 판매 옵션을 조회한다. */
     public ProductDetailResponse getProduct(Long productId) {
         var product = productRepository.findWithDestinationByProductId(productId)
-                .filter(found -> "Y".equals(found.getUseYn()))
+                .filter(this::isSellable)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "판매 중인 옵션상품을 찾을 수 없습니다."));
         var options = optionRepository.findAllByProductAndUseYnOrderBySortOrderAscOptionIdAsc(product, "Y");
         return ProductDetailResponse.from(product, options);
+    }
+
+    /** 목록과 동일한 판매 정책을 상세 조회에도 적용한다. */
+    private boolean isSellable(TravelProduct product) {
+        return "Y".equals(product.getUseYn())
+                && "APPROVED".equals(product.getApprovalStatus())
+                && (product.getPartner() == null || "ACTIVE".equals(product.getPartner().getPartnerStatus()));
     }
 
     /** 상품명, 요약, 여행지, 국가, 지역 중 하나라도 검색어를 포함하는지 확인한다. */

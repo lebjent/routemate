@@ -1,6 +1,7 @@
 package com.trip.routemate.partner.controller;
 
 import com.trip.routemate.common.security.AuthorizationService;
+import com.trip.routemate.common.security.SessionAuthenticationService;
 import com.trip.routemate.partner.repository.PartnerUserRepository;
 import com.trip.routemate.user.dto.UserLoginDto;
 import com.trip.routemate.user.dto.UserLoginResponse;
@@ -36,6 +37,7 @@ public class PartnerAuthController {
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;
     private final AuthorizationService authorizationService;
+    private final SessionAuthenticationService sessionAuthenticationService;
 
     /**
      * 파트너 포털에 로그인하고 서버 세션을 만든다.
@@ -58,11 +60,16 @@ public class PartnerAuthController {
         partnerUserRepository.findByUserUserEmailAndUseYn(user.getUserEmail(), "Y")
                 .filter(mapping -> "ACTIVE".equals(mapping.getPartner().getPartnerStatus()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "활성 상태의 파트너사 직원 계정이 아닙니다."));
-        var context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(user.getUserEmail(), null,
-                authorizationService.authoritiesFor(user.getUserId(), user.getUserRole())));
-        SecurityContextHolder.setContext(context);
-        securityContextRepository.saveContext(context, servletRequest, response);
+        if (sessionAuthenticationService != null) {
+            sessionAuthenticationService.login(user.getUserEmail(), servletRequest, response,
+                    authorizationService.authoritiesFor(user.getUserId(), user.getUserRole()));
+        } else {
+            var context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(user.getUserEmail(), null,
+                    authorizationService.authoritiesFor(user.getUserId(), user.getUserRole())));
+            SecurityContextHolder.setContext(context);
+            securityContextRepository.saveContext(context, servletRequest, response);
+        }
         return ResponseEntity.ok(new UserLoginResponse(user.getUserId(), user.getUserEmail(), user.getUserNicknm(), user.getUserRole(),
                 authorizationService.permissionNamesFor(user.getUserId(), user.getUserRole()),
                 authorizationService.menuCodesFor(user.getUserId(), user.getUserRole())));

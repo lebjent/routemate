@@ -34,7 +34,6 @@ class AdminDestinationServiceTest {
     @InjectMocks private AdminDestinationService adminDestinationService;
 
     @Test
-    @SuppressWarnings("null") // Mockito any()는 스텁 설정 시에만 null을 반환합니다.
     void createPlace_savesCategoryAndCountryRegionRelationship() {
         var country = country(1L, "대한민국");
         var region = region(10L, country, "서울");

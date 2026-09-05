@@ -37,8 +37,10 @@ public class AdminProductController {
     @Operation(summary = "관리자 상품 목록 조회", description = "여행지와 판매 상태를 기준으로 전체 상품, 판매 상품, 미판매 상품을 조회합니다.")
     public ResponseEntity<AdminProductResponse> getProducts(
                                                             @Parameter(description = "여행지 ID") @RequestParam(required = false) Long destinationId,
-                                                            @Parameter(description = "판매 상태 필터: ALL, Y, N", example = "ALL") @RequestParam(defaultValue = "ALL") String useYn) {
-        return ResponseEntity.ok(productService.getProducts(destinationId, useYn));
+                                                            @Parameter(description = "판매 상태 필터: ALL, Y, N", example = "ALL") @RequestParam(defaultValue = "ALL") String useYn,
+                                                            @RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "50") int size) {
+        return ResponseEntity.ok(productService.getProducts(destinationId, useYn, page, size));
     }
 
     /**

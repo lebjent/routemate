@@ -32,6 +32,7 @@ const AdminRecommendations = lazy(() => import('./pages/admin/AdminRecommendatio
 const AdminPartners = lazy(() => import('./pages/admin/AdminPartners').then((module) => ({ default: module.AdminPartners })));
 const AdminPartnerOnboarding = lazy(() => import('./pages/admin/AdminPartnerOnboarding').then((module) => ({ default: module.AdminPartnerOnboarding })));
 const AdminProductApprovals = lazy(() => import('./pages/admin/AdminProductApprovals').then((module) => ({ default: module.AdminProductApprovals })));
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders').then((module) => ({ default: module.AdminOrders })));
 const PartnerLogin = lazy(() => import('./pages/partner/PartnerLogin').then((module) => ({ default: module.PartnerLogin })));
 const PartnerStaffManagement = lazy(() => import('./pages/partner/PartnerStaffManagement').then((module) => ({ default: module.PartnerStaffManagement })));
 const PartnerDashboard = lazy(() => import('./pages/partner/PartnerDashboard').then((module) => ({ default: module.PartnerDashboard })));
@@ -70,6 +71,7 @@ function AppRoutes() {
           <Route path="partners" element={<AdminPartners />} />
           <Route path="partners/new" element={<AdminPartnerOnboarding />} />
           <Route path="product-approvals" element={<AdminProductApprovals />} />
+          <Route path="orders" element={<AdminOrders />} />
         </Route>
         <Route path="/join" element={<Join />} />
         <Route path="/lotto" element={<Lotto />} />

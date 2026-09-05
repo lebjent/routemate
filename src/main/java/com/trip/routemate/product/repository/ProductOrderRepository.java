@@ -12,6 +12,7 @@ import java.util.List;
 /** 사용자 예약 내역과 일정 연결 후보 조회를 담당한다. */
 public interface ProductOrderRepository extends JpaRepository<ProductOrder, Long> {
     List<ProductOrder> findAllByUserOrderByCreateDtDescOrderIdDesc(UserMstr user);
+    List<ProductOrder> findAllByOrderByCreateDtDescOrderIdDesc();
 
     @Query("""
             select productOrder from ProductOrder productOrder

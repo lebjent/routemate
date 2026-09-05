@@ -48,4 +48,20 @@ public class TravelProductOption {
 
     @Column(name = "SORT_ORDER", nullable = false)
     private Integer sortOrder;
+
+    public void update(String optionName, String optionDesc, BigDecimal price, String currency,
+                       String cancellationPolicy, String validityText, String confirmationType,
+                       String useYn, Integer sortOrder) {
+        this.optionName = optionName;
+        this.optionDesc = optionDesc;
+        this.price = price;
+        this.currency = currency;
+        this.cancellationPolicy = cancellationPolicy;
+        this.validityText = validityText;
+        this.confirmationType = confirmationType;
+        this.useYn = useYn;
+        this.sortOrder = sortOrder;
+    }
+
+    public void deactivate() { this.useYn = "N"; }
 }

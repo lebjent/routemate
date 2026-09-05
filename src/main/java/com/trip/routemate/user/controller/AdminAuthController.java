@@ -1,6 +1,7 @@
 package com.trip.routemate.user.controller;
 
 import com.trip.routemate.common.security.AuthorizationService;
+import com.trip.routemate.common.security.SessionAuthenticationService;
 
 import com.trip.routemate.user.domain.UserMstr;
 import com.trip.routemate.user.dto.UserLoginDto;
@@ -40,6 +41,7 @@ public class AdminAuthController {
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository;
     private final AuthorizationService authorizationService;
+    private final SessionAuthenticationService sessionAuthenticationService;
 
     /**
      * 관리자 역할과 계정 상태를 검증한 뒤 관리자 세션을 생성한다.
@@ -64,14 +66,16 @@ public class AdminAuthController {
                         "관리자 계정 정보를 확인해 주세요."
                 ));
 
-        var securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
-                admin.getUserEmail(),
-                null,
-                authorizationService.authoritiesFor(admin.getUserId(), admin.getUserRole())
-        ));
-        SecurityContextHolder.setContext(securityContext);
-        securityContextRepository.saveContext(securityContext, request, response);
+        if (sessionAuthenticationService != null) {
+            sessionAuthenticationService.login(admin.getUserEmail(), request, response,
+                    authorizationService.authoritiesFor(admin.getUserId(), admin.getUserRole()));
+        } else {
+            var context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(admin.getUserEmail(), null,
+                    authorizationService.authoritiesFor(admin.getUserId(), admin.getUserRole())));
+            SecurityContextHolder.setContext(context);
+            securityContextRepository.saveContext(context, request, response);
+        }
 
         return ResponseEntity.ok(new UserLoginResponse(
                 admin.getUserId(),

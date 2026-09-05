@@ -50,7 +50,6 @@ class TravelPlanServiceTest {
     @InjectMocks private TravelPlanService travelPlanService;
 
     @Test
-    @SuppressWarnings("null") // Mockito any()는 검증용 matcher이며 저장 호출에는 전달되지 않습니다.
     void createTravelPlan_rejectsEndDateBeforeStartDateBeforeSaving() {
         when(userMstrRepository.findByUserEmail(USER_EMAIL)).thenReturn(Optional.of(activeUser()));
         var request = new CreateTravelPlanRequest(
